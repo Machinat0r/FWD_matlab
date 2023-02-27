@@ -1,0 +1,328 @@
+clear;clc;close all
+
+date = '2016-08-01';
+datesp = strsplit(date,'-');
+% Tsmag = [date,'T00:00:01.307'];
+% Temag = [datesp{1:2},num2str(str2num(datesp{3})+1),'T00:00:00.390'];
+
+Tsta='2016-08-01T23:50:00.000Z';
+format = 'yyyy-mm-ddTHH:MM:SSZ';
+DS = datenum(date);datetag={[date,'T00:00:00Z']};
+ParentDir = ['C:\Matlab\bin\新建文件夹\fwd\zcl\',datesp{:},'\'];
+for i = 1:144
+    datetag{end+1} = datestr(DS+i/144,format);
+end
+
+
+for i = 1:144
+close all
+Tsta = datetag{i};
+Tend = datetag{i+1};
+% tintStr='01-Aug-2016';
+
+% Tsta='2016-08-01T18:20:00.000Z';
+% Tend='2016-08-01T18:30:00.000Z';
+% 
+% Tsta='2016-08-01T23:50:00.000Z';
+% Tend='2016-08-01T23:59:00.000Z';
+filenames = dir(ParentDir);
+clear insitu mag swe swi_spec swi_mom
+for j = 3:length(filenames)
+    temp = filenames(j).name;
+    if strfind(temp,'insitu') > 0
+        insitu = temp;
+    elseif strfind(temp,'mag') > 0
+        mag = temp;
+    elseif strfind(temp,'swe') > 0
+        swe = temp;
+    elseif strfind(temp,'swi') > 0
+        if strfind(temp,'spec') > 0
+            swi_spec = temp;
+        else
+            swi_mom = temp;
+        end
+    end
+end
+try
+    insitu; mag; swe ;swi_spec; swi_mom;
+catch
+    disp('缺失文件，请检查')
+end
+%Tsta='2016-08-01T14:30:00.000Z';
+%Tend='2016-08-01T14:40:00.000Z';  
+
+% Tsta='2016-08-01T20:20:00.000Z';
+% Tend='2016-08-01T20:40:00.000Z';
+    
+Tmia='/';
+Tints=[Tsta,Tmia,Tend];%投掷角
+
+tint1=irf.tint(Tsta,Tend);
+% tint1=irf.tint('2016-10-06T17:00:00.000Z/2016-10-06T17:20:00.000Z');
+tint = irf_time(tint1,'epochtt>epoch');
+tintS=tint1;
+
+%% load data B\n\T\vi\R
+%-------------------
+% mvn_insitu_kp-4sec
+Xk_NAME=[ParentDir,insitu];
+Xk_File=dataobj(Xk_NAME);
+Time_k=get_variable(Xk_File,'epoch');
+Timek=Time_k.data;
+
+% mvu_mag_ss highres 
+dataBR=importdata([ParentDir,mag]);
+datesp = strsplit(date,'-');
+Tsmag = [date,'T00:00:01.307'];
+Temag = [datesp{1},'-',datesp{2},'-',...
+    num2str(str2num(datesp{3})+1),'T00:00:00.390'];
+T1=iso2epoch(Tsmag);
+T2=iso2epoch(Temag);
+TT = linspace(T1,T2,length(dataBR(:,1)))';
+%-------------------
+
+
+
+%% 磁场 insitu(4s)\mst(1s)\MAG(30ms) MSO
+B_mso=[TT,dataBR(:,8),dataBR(:,9),dataBR(:,10)];% nT
+B=irf_tlim(B_mso,tint);
+
+%% |B|
+Bt=[];
+Bt(:,2)=sqrt(B(:,2).^2+B(:,3).^2+B(:,4).^2);
+Bt(:,1)=B(:,1);
+
+%% 电子密度 cm-3
+n_e= get_variable(Xk_File,'SWEA_Electron_density');
+Ne=getmat(Xk_File,'SWEA_Electron_density');
+Ne=irf_tlim(Ne,tint);
+
+%% 电子温度 eV
+T_e= get_variable(Xk_File,'SWEA_Electron_temperature');
+Te=getmat(Xk_File,'SWEA_Electron_temperature');
+Te=irf_tlim(Te,tint);
+
+%% 离子温度密度流速
+%-------------------
+% svymom 密度、速度、温度(太阳风、磁鞘中比较准确)all ion 
+XIon_NAME=[ParentDir,swi_mom];
+XIon_File=dataobj(XIon_NAME);
+N_i= get_variable(XIon_File,'density');
+Ni= getmat(XIon_File,'density');
+Ni=irf_tlim(Ni,tint);
+pressure= get_variable(XIon_File,'pressure');
+
+v_i_mso= get_variable(XIon_File,'velocity_mso');
+vi_mso= getmat(XIon_File,'velocity_mso');
+vi_mso=irf_tlim(vi_mso,tint);
+% T_i_mso= get_variable(XIon_File,'temperature_mso');
+Ti_mso= getmat(XIon_File,'temperature_mso');
+Ti_mso=irf_tlim(Ti_mso,tint);
+Ti_mso=irf_abs(Ti_mso);
+Ti=[];
+Ti(:,1)=Ti_mso(:,1);
+Ti(:,2)=Ti_mso(:,5);
+%-------------------
+%% 卫星高度、经度纬度
+sp_altitude= get_variable(Xk_File,'SPICE_spacecraft_altitude');
+s_altitude= getmat(Xk_File,'SPICE_spacecraft_altitude');
+s_altitude=irf_tlim(s_altitude,tint);
+
+sp_longitude= get_variable(Xk_File,'SPICE_spacecraft_longitude_GEO');%经度
+sp_latitude= get_variable(Xk_File,'SPICE_spacecraft_latitude_GEO');%纬度
+
+%% 卫星位置
+% 4s
+sp_MSO= get_variable(Xk_File,'SPICE_spacecraft_MSO');
+R_mso= getmat(Xk_File,'SPICE_spacecraft_MSO');
+R_mso=irf_tlim(R_mso,tint);
+R=R_mso;
+% 30ms
+% R_mso=[TT,dataBR(:,12),dataBR(:,13),dataBR(:,14)];% km
+% R_mso=irf_tlim(R_mso,tint);
+%
+
+
+
+
+%-------------------
+% Ee
+XEe_NAME=[ParentDir,swe];
+XEe_File=dataobj(XEe_NAME);
+Eep_ST =get_variable(XEe_File,'diff_en_fluxes');
+Eep=getmat(XEe_File,'diff_en_fluxes');
+Eep=Eep(:,2:end);
+Eet = getmat(XEe_File,'time_unix');
+Eet1=irf_tlim(Eet(:,1),tint);
+Eet_ta=Eet1(1,1);
+Eet_tb=Eet1(end,1);
+[m_e,n_e]=find(Eet_ta==Eet);
+[mm_e,nn_e]=find(Eet_tb==Eet);
+Eep_p=Eep(m_e:mm_e,:);
+Ee_f=Eep_ST.DEPEND_1.data;
+Ee = struct('t',Eet1,'f',Ee_f,'p',Eep_p);
+%-------------------
+%Ei
+XEi_NAME=[ParentDir,swi_spec];
+XEi_File=dataobj(XEi_NAME);
+spectra_diff_en_fluxes= get_variable(XEi_File,'spectra_diff_en_fluxes');
+energy_spectra= get_variable(XEi_File,'energy_spectra');
+Eip_ST =get_variable(XEi_File,'spectra_diff_en_fluxes');
+Eip=getmat(XEi_File,'spectra_diff_en_fluxes');
+Eip=Eip(:,2:end);
+Eit = getmat(XEi_File,'time_unix');
+Eit1=irf_tlim(Eit(:,1),tint);
+Eit_ta=Eit1(1,1);
+Eit_tb=Eit1(end,1);
+[m_e,n_e]=find(Eit_ta==Eit);
+[mm_e,nn_e]=find(Eit_tb==Eit);
+Eip_p=Eip(m_e:mm_e,:);
+Ei_f=Eip_ST.DEPEND_1.data;
+Ei = struct('t',Eit1,'f',Ei_f,'p',Eip_p);
+
+%% Init figure
+n_subplots=7;
+i_subplot=1;
+set(0,'DefaultAxesFontSize',8);
+set(0,'DefaultLineLineWidth', 0.5);
+fn=figure(1);clf;           
+set(gcf,'PaperUnits','centimeters');
+xSize = 19; ySize = 29; coef=floor(min(600/xSize,600/ySize));
+xLeft = (20-xSize)/2; yTop = (30-ySize)/2;
+set(gcf,'PaperPosition',[xLeft yTop xSize ySize]);
+set(gcf,'Position',[20 20 400 800]);
+colormap(jet);
+
+%% B plot
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+irf_plot([B(:,1) B(:,2)], 'color','b', 'Linewidth',0.75); hold on;
+irf_plot([B(:,1) B(:,3)], 'color','g', 'Linewidth',0.75); hold on;
+irf_plot([B(:,1) B(:,4)], 'color','r', 'Linewidth',0.75); hold on;
+% irf_plot([Bt(:,1) Bt(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+irf_plot([B(:,1) B(:,2)*0],'k--', 'Linewidth',0.75);hold off;
+grid off;
+y=ylabel({'Bmso','(nT)'},'fontsize',8);
+% set(y,'position',get(y,'position')-[0.1,0,0]); %将y标签向左移动0.1
+% set(h(1),'Ylim',[fix(min([min(B1(:,2)) min(B1(:,3)) min(B1(:,4))])/10)*10-10 fix(max(Bt1(:,2))/10)*10+10]);
+% set(gca,'Ylim',[-20 30]);
+[maxB,I1]=max(Bt(:,2));
+BB1=B(:,2);BB2=B(:,3);BB3=B(:,4);
+BBB=[BB1 BB2 BB3];
+minB=min(min(BBB));
+set(gca,'Ylim',[1.2*minB 1.2*maxB]);
+% pos1=get(gca,'pos');
+set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+irf_legend(gca,{'B_x','B_y','B_z'},[0.1 0.12],'fontsize',8);
+% irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
+
+%% |B|
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+irf_plot([Bt(:,1) Bt(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+grid off;
+ylabel({'|B|','(nT)'},'fontsize',8);
+set(gca,'ColorOrder',[0 0 0]);
+irf_legend(gca,{'|B|'},[0.1 0.12],'fontsize',8);
+% irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
+
+%% Ne\Ni
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+irf_plot([Ne(:,1) Ne(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+irf_plot([Ni(:,1) Ni(:,2)], 'color','r', 'Linewidth',0.75); hold on;
+grid off;
+ylabel({'N','(cm-3)'},'fontsize',8);
+%ylabel({'Ni','(cm-3)'},'fontsize',8);Ne没数据时
+%set(gca,'yscale','log');
+set(gca,'ylim',[0 10]);
+set(gca,'ytick',[0 2.5 5 7.5 10]);
+set(gca,'ColorOrder',[[0 0 0];[1 0 0]]);
+%irf_legend(gca,{'Ne'},[0.1 0.12],'fontsize',8);
+irf_legend(gca,{'Ne','Ni'},[0.1 0.12],'fontsize',8);
+%% Te\Ti
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+irf_plot([Te(:,1) Te(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+irf_plot([Ti(:,1) Ti(:,2)], 'color','r', 'Linewidth',0.75); hold on;
+grid off;
+ylabel({'T','(eV)'},'fontsize',8);
+%ylabel({'Ti','(eV)'},'fontsize',8);Te没数据时
+set(gca,'yscale','log');
+set(gca,'ylim',[1 1000]);
+set(gca,'ytick',[1e0 1e1 1e2 1e3 1e4]);
+set(gca,'ColorOrder',[[0 0 0];[1 0 0]]);
+irf_legend(gca,{'Te','Ti'},[0.1 0.12],'fontsize',8);    
+%irf_legend(gca,{'Ti'},[0.1 0.12],'fontsize',8);
+%% vi_mso
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+irf_plot([vi_mso(:,1) vi_mso(:,2)], 'color','b', 'Linewidth',0.75); hold on;
+irf_plot([vi_mso(:,1) vi_mso(:,3)], 'color','g', 'Linewidth',0.75); hold on;
+irf_plot([vi_mso(:,1) vi_mso(:,4)], 'color','r', 'Linewidth',0.75); hold on;
+irf_plot([vi_mso(:,1) vi_mso(:,2)*0],'k--', 'Linewidth',0.75);hold off;
+grid off;
+ylabel({'vi','(km/s)'},'fontsize',8);
+set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+irf_legend(gca,{'Vix','Viy','Viz'},[0.1 0.12],'fontsize',8);
+set(gca,'Ylim',[min(min(vi_mso(:,2:4))) 1.2*max(max(vi_mso(:,2:4)))]);
+      
+%% plot Ee (1-5000ev)
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+colormap(gca,jet);
+specEe=struct('t',Ee.t);
+specEe.f=Ee.f;
+specEe.p=Ee.p;
+specEe.f_label='';
+specEe.p_label={' ','keV/(cm^2 s sr keV)'};
+[h(6) hcb6]=irf_spectrogram(h(6),specEe);
+ylabel({'Ee','(eV)'},'fontsize',12)
+set(gca,'yscale','log');
+set(gca,'ytick',[1e1 1e2 1e3 1e4]);
+poscbarx=get(hcb6,'pos');
+poscbarx(3)=poscbarx(3)*0.5;
+set(hcb6,'pos',poscbarx);
+set(hcb6,'fontsize',8);
+%% plot Ei 
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+colormap(gca,jet)
+specEi=struct('t',Ei.t);
+specEi.f=Ei.f;
+specEi.p=Ei.p;
+specEi.f_label='';
+specEi.p_label={' ','keV/(cm^2 s sr keV)'};
+[h(7) hcb7]=irf_spectrogram(h(7),specEi);
+ylabel({'Ei','(eV)'},'fontsize',12)
+set(gca,'yscale','log');
+set(gca,'ytick',[1e1 1e2 1e3 1e4]);
+poscbarx=get(hcb7,'pos');
+poscbarx(3)=poscbarx(3)*0.5;
+set(hcb7,'pos',poscbarx);
+set(hcb7,'fontsize',8);
+
+
+
+add_position_Mars(h(7),R), xlabel(h(7),'');
+  set(h(1:end),'fontsize',8);
+  irf_adjust_panel_position;
+  irf_zoom(tintS,'x',h(1:end));
+%   irf_plot_axis_align;
+
+titlename=[Tsta(1:4) Tsta(6:7) Tsta(9:10) Tsta(12:13) Tsta(15:16) Tsta(18:19) '-' ...
+           Tend(1:4) Tend(6:7) Tend(9:10) Tend(12:13) Tend(15:16) Tend(18:19)];
+%titlename=['15-Nov-2017']
+title(h(1),titlename);
+set(gcf,'color','w');
+
+
+% %% save figure
+%   set(gcf,'render','painters');%矢量图
+% %   set(gcf,'visible','off');
+%   figname=['Mars_OverPAD' '_' Tsta(1:4) Tsta(6:7)...
+%       Tsta(9:10) '_' Tsta(12:13) Tsta(15:16) Tsta(18:19)...
+%       '_' Tend(12:13) Tend(15:16) Tend(18:19)];
+% %   print(gcf, '-dpdf', [figname '.pdf'])
+% %   print(gcf, '-dpng', [figname '.png'])
+%% save jpg
+figpath= [ParentDir,'fig\'];
+mkdir(figpath)
+figname=['overview' '_' Tsta(1:4) Tsta(6:7)...
+      Tsta(9:10) '_' Tsta(12:13) Tsta(15:16) Tsta(18:19)...
+      '_' Tend(12:13) Tend(15:16) Tend(18:19)];
+  saveas(gcf,[figpath,figname,'.jpg'])
+end
