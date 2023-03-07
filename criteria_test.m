@@ -67,6 +67,7 @@ indices(indices<=-0.5) = -1;
 
 %% div & FOTE err
 gradB=c_4_grad('a?','B?','grad');
+% gradB=c_4_grad(a3,a2,a1,a4,B3,B2,B1,B4,'grad');
 divB=sum([gradB(:,1) gradB(:,5) gradB(:,9)],2); %nT/km^2
 
 % FOTE err
@@ -162,11 +163,11 @@ end
 
 B1 = irf_abs(B1);
 %% movie1
-figname = ['C:\Users\fwd\Desktop\Ti~mor~\M\magnetic_monopole\supplementary\illustration\RotationModel(S2)\RotationModel-paras.mp4'];
-v = VideoWriter(figname, 'MPEG-4');
-v.FrameRate = 60;
-v.Quality = 100;
-open(v)
+% % % figname = ['C:\Users\fwd\Desktop\Ti~mor~\M\magnetic_monopole\supplementary\illustration\RotationModel(S2)\RotationModel-paras.mp4'];
+% % % v = VideoWriter(figname, 'MPEG-4');
+% % % v.FrameRate = 60;
+% % % v.Quality = 100;
+% % % open(v)
 for f = 1:1:361
 %% Init figure 1
 figure(1)
@@ -324,18 +325,18 @@ set(gcf,'color','w')
 
 % figname = [OutputDir,'OverviewFig\',NameTags{TDT}(2:end-2)];    
 % print(gcf, '-dpng', [figname '.png']);
-frame = getframe(figure(1));
-writeVideo(v,frame)
+% % % frame = getframe(figure(1));
+% % % writeVideo(v,frame)
 % print(gcf, '-dpdf', [figname '.pdf']);
 end
-close(v)
+% % % close(v)
 
 %% Init figure 2
-figname = ['C:\Users\fwd\Desktop\Ti~mor~\M\magnetic_monopole\supplementary\illustration\RotationModel(S2)\RotationModel-configuration.mp4'];
-v = VideoWriter(figname, 'MPEG-4');
-v.FrameRate = 60; % 默认 30
-v.Quality = 100; % 默认 75
-open(v)
+% % % figname = ['C:\Users\fwd\Desktop\Ti~mor~\M\magnetic_monopole\supplementary\illustration\RotationModel(S2)\RotationModel-configuration.mp4'];
+% % % v = VideoWriter(figname, 'MPEG-4');
+% % % v.FrameRate = 60; % 默认 30
+% % % v.Quality = 100; % 默认 75
+% % % open(v)
 
 for i = 1:1:361
 if ~isnan(LocRes{i})
@@ -405,12 +406,12 @@ set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
 set(gcf,'color','w')
 
-frame = getframe(figure(2));
-writeVideo(v,frame)
+% % % frame = getframe(figure(2));
+% % % writeVideo(v,frame)
 % print(gcf, '-dpdf', [figname '.pdf']);
 end
 end
-close(v);
+% % % close(v);
 
 % print(gcf, '-dpng', [figname '.png']);
 
