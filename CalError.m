@@ -67,6 +67,7 @@ try
 catch
     LocPoint = mean(resLoc);
 end
+
 return
 %% 无限边界
 [t,residual] = LineIntersection(R1,R2,R3,R4,B1,B2,B3,B4,lb,ub);
@@ -329,6 +330,7 @@ function myfun6 = myfunc6(t,B1,B2,B3,B4,R1,R2,R3,R4)
     myfun6 = [t(1)/(4*pi*(d2(4))^2)*dnorm2' - B2(:,2:4)';...
              t(1)/(4*pi*(d4(4))^2)*dnorm4' - B4(:,2:4)';];
 end
+
 %% plane equation
 % % % function [a,b,c,d] = PlaneEquation(R1,R2,R3)
 % % % % ax+by+cz+d=0

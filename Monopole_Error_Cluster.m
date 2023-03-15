@@ -30,7 +30,8 @@ close all
 %                金光速现，覆护真人。急急如律令，bug全去除！
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% load data
-cd /Volumes/FWD-WorkDisk/Cluster
+% cd /Volumes/FWD-WorkDisk/Cluster
+cd /Users/fwd/Documents/MATLAB/Cluster/
 ic=1:4;
 % 
 % Tsta='2002-02-18T08:41:00.00Z';
