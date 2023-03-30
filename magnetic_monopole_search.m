@@ -28,6 +28,7 @@ catch
     caa_load_changed_by_fwd('CL_SP_AUX',Tsta,Tend);
 end
 
+
 clear RR
 R = c_caa_var_get('sc_r_xyz_gse__CL_SP_AUX','mat');
 tint = [R(1,1) R(end,1)];

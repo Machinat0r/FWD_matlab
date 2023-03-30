@@ -30,9 +30,9 @@ for ii=1:length(filenames0)
                     mkdir(destDir,filename1(1:4))
                  end
            if  filename1(num(2)+1:num(3)-1)=='brst'
-                 destDir1=[destDir,filename1(1:4),'\'];     
+                 destDir1=[destDir,filename1(1:4),'/'];     
                   for numi=1:length(num)-2
-                         destDir_mms=[destDir1,filename1(num(numi)+1:num(numi+1)-1),'\'];
+                         destDir_mms=[destDir1,filename1(num(numi)+1:num(numi+1)-1),'/'];
                          if ~isfolder([destDir1,filename1(num(numi)+1:num(numi+1)-1)])
                             mkdir(destDir1,filename1(num(numi)+1:num(numi+1)-1))
                          end
@@ -43,17 +43,17 @@ for ii=1:length(filenames0)
                   if ~isfolder([destDir1,datefile1(1:4)])
                       mkdir(destDir1,datefile1(1:4))
                   end
-                  destDir_mms=[destDir_mms,datefile1(1:4),'\'];
+                  destDir_mms=[destDir_mms,datefile1(1:4),'/'];
                   if ~isfolder([destDir_mms,datefile1(5:6)])
                       mkdir(destDir_mms,datefile1(5:6))
                   end
-                  destDir_mms=[destDir_mms,datefile1(5:6),'\'];
+                  destDir_mms=[destDir_mms,datefile1(5:6),'/'];
                   if ~isfolder([destDir_mms,datefile1(7:8)])
                       mkdir(destDir_mms,datefile1(7:8))
                   end
-                  destDir_mms=[destDir_mms,datefile1(7:8),'\'];          
+                  destDir_mms=[destDir_mms,datefile1(7:8),'/'];          
             else 
-                 destDir1=[destDir,filename1(1:4),'\'];
+                 destDir1=[destDir,filename1(1:4),'/'];
                   for numi=1:length(num)-2
                          destDir_mms=[destDir1,filename1(num(numi)+1:num(numi+1)-1),'\'];
                          if ~isfolder([destDir1,filename1(num(numi)+1:num(numi+1)-1)])
@@ -66,11 +66,11 @@ for ii=1:length(filenames0)
                   if ~isfolder([destDir1,datefile1(1:4)])
                       mkdir(destDir1,datefile1(1:4))
                   end
-                  destDir_mms=[destDir_mms,datefile1(1:4),'\'];
+                  destDir_mms=[destDir_mms,datefile1(1:4),'/'];
                   if ~isfolder([destDir_mms,datefile1(5:6)])
                       mkdir(destDir_mms,datefile1(5:6))
                   end
-                  destDir_mms=[destDir_mms,datefile1(5:6),'\'];
+                  destDir_mms=[destDir_mms,datefile1(5:6),'/'];
             end
          movefile([sourceDir,filename1],destDir_mms,'f');
          j=j+1;

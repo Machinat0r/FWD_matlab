@@ -38,8 +38,12 @@ ic=1:4;
 % Tend='2002-02-18T08:42:00.00Z';%1,114
 % Tsta='2003-12-30T18:55:00.00Z';
 % Tend='2003-12-30T18:56:00.00Z';%7,268
-Tsta = '2004-01-17T19:31:00.000Z';
-Tend = '2004-01-17T19:32:00.000Z';
+% % % % % Tsta = '2004-01-17T19:31:00.000Z';
+% % % % % Tend = '2004-01-17T19:32:00.000Z';
+
+Tsta = '2000-01-01T00:00:00.000Z';
+Tend = '2020-01-01T00:00:00.000Z';
+
 
 % Tsta='2004-01-01T11:10:00.00Z';
 % Tend='2004-01-01T11:11:00.00Z';
@@ -88,7 +92,8 @@ Tend2 = '2004-01-17T19:31:45.925Z';
 % % % Tend2='2004-01-21T08:56:59.435Z';
 % tint2=[iso2epoch(Tsta2) iso2epoch(Tend2)];
 
-
+caa_download(tint,'C?_CP_EFW_L3_E3D_INERT');
+caa_download(tint,'C?_CP_EFW_L?_E');
 try
     c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
     c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
