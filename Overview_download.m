@@ -1,8 +1,8 @@
 clear;clc
 
 global ParentDir 
-ParentDir = 'C:\MMS\'; 
-TempDir = 'C:\MMS\temp\';mkdir(TempDir);
+ParentDir = '/Users/fwd/Documents/MATLAB/MMS/'; 
+TempDir = '/Users/fwd/Documents/MATLAB/MMS/temp/';mkdir(TempDir);
 % TT = '2021-08-15T03:35:15.00Z/2021-08-15T03:35:30.00Z';
 % TT = '2021-08-22T06:39:30.00Z/2021-08-22T06:43:00.00';
 % TT = '2018-02-06T13:29:00.00Z/2018-02-06T13:30:30.00Z';
@@ -45,11 +45,12 @@ while str2double(TTlist(17:30)) > NameTags{i}  % 如果时间段刚好仅在某�
     end
 end
 
+% '/' for MacOs, '\' for Windows
 if flag == 0
     tempTag = num2str(NameTags{i-1});
     filenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag)));
-    desmoms =  [ParentDir,'mms',num2str(ic),'\fpi\brst\l2\des-moms\',tempTag(1:4),'\',tempTag(5:6),'\',...
-            tempTag(7:8),'\',filenames{cellfun(@(x)(~isempty(x)),strfind(filenames,'des-moms'))}];
+    desmoms =  [ParentDir,'mms',num2str(ic),'/fpi/brst/l2/des-moms/',tempTag(1:4),'/',tempTag(5:6),'/',...
+            tempTag(7:8),'/',filenames{cellfun(@(x)(~isempty(x)),strfind(filenames,'des-moms'))}];
     desmoms1 = desmoms; desmoms2 = desmoms1;
 else
     if i == 1
@@ -60,10 +61,10 @@ else
     filenames1 = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag1)));
     filenames2 = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag2)));
     filenames = [filenames1,filenames2];
-    desmoms1 = [ParentDir,'mms',num2str(ic),'\fpi\brst\l2\des-moms\',tempTag1(1:4),'\',tempTag1(5:6),'\',...
-            tempTag1(7:8),'\',filenames1{cellfun(@(x)(~isempty(x)),strfind(filenames1,'des-moms'))}];
-    desmoms2 = [ParentDir,'mms',num2str(ic),'\fpi\brst\l2\des-moms\',tempTag2(1:4),'\',tempTag2(5:6),'\',...
-            tempTag2(7:8),'\',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
+    desmoms1 = [ParentDir,'mms',num2str(ic),'/fpi/brst/l2/des-moms/',tempTag1(1:4),'/',tempTag1(5:6),'/',...
+            tempTag1(7:8),'/',filenames1{cellfun(@(x)(~isempty(x)),strfind(filenames1,'des-moms'))}];
+    desmoms2 = [ParentDir,'mms',num2str(ic),'/fpi/brst/l2/des-moms/',tempTag2(1:4),'/',tempTag2(5:6),'/',...
+            tempTag2(7:8),'/',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
 end
 SDCFilesDownload(filenames,TempDir)
 % SDCFilesDownload(filenames_srvy(1),TempDir)
@@ -275,8 +276,12 @@ c_eval('Pti? = irf_multiply(11604.505*kB*1e6*1e9,[Ni?(:,1) Ni?(:,2)],1,[Ti?(:,1)
 c_eval('Pte? = irf_multiply(11604.505*kB*1e6*1e9,[Ne?(:,1) Ne?(:,2)],1,[Te?(:,1) Te?(:,2)],1);',ic);
 c_eval('Pt? = [Pti?(:,1) Pti?(:,2)+Pte?(:,2)];',ic);
 miu0=400*pi;
+c_eval('R?(:,2:4) = R?(:,2:4)./units.RE*1000;')
 c_eval('VE?=10^0.7368.*sqrt(R?(:,2).^2+R?(:,3).^2).^0.7634.*abs(B?(:,4)).^(-0.3059)./sqrt(B?(:,4).^2+2.*miu0.*Pt?(:,2));',ic);
 c_eval('S?=Pt?(:,2).*VE?.^(5/3);',ic);
+
+c_eval('Br? = sqrt(B?(:,2).^2+B?(:,3).^2);')
+c_eval('S?(B?(:,4) < Br? | B?(:,4) < 0) = nan;')
 
 c_eval('beta? = [Bt?(:,1) Pt?(:,2)./Pb?(:,2)];',ic);
 c_eval('pe_pb? = [Bt?(:,1) Pte?(:,2)./Pb?(:,2)];',ic);
@@ -432,7 +437,7 @@ c_eval('Blmn?=irf_newxyz(B?,L,M,N);',ic);
 % % % c_eval('lmnJ? = irf.ts2mat(lmnJ?_ts);',ic);
 % end
 %% Init figure
-n=12;
+n=13;
 i=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
@@ -1008,24 +1013,24 @@ i=i+1;
 % % % irf_legend(gca,{'Ti','Tipara','Tiperp'},[0.97 0.92]);
 % % % i=i+1;
 %% Pressure
-% % % h(i)=irf_subplot(n,1,-i);
-% % % c_eval("irf_plot([Pm(:,1) Pm(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
-% % % c_eval("irf_plot([Pthe(:,1) Pthe(:,2)], 'color','r', 'Linewidth',0.75);",ic); hold on;
-% % % c_eval("irf_plot([Ptotal(:,1) Ptotal(:,2)], 'color','k', 'Linewidth',0.75);",ic); hold on;
-% % % % irf_plot([Pthe_para(:,1) Pthe_para(:,2)], 'color','g', 'Linewidth',0.75);hold on;
-% % % % irf_plot([Pthe_perp(:,1) Pthe_perp(:,2)], 'color','y', 'Linewidth',0.75);hold on;
-% % % grid off;
-% % % % set(h(i),'yscale','log');
-% % % % set(h(i),'ytick',[0 0.25 0.5],'fontsize',9);
-% % % % set(gca,'Ylim',[0 0.5]);
-% % % c_eval("set(gca,'Ylim',[0 max(Ptotal(:,2))+0.01]);",ic);
-% % % set(gca,'ColorOrder',[[0 0 1];[1 0 0];[0 0 0]]);
-% % % irf_legend(gca,{'Pm','Pthe','Ptotal'},[0.97 0.92]);
-% % % % pos3=get(gca,'pos');
-% % % % set(gca,'ColorOrder',[[0 1 0]]);
-% % % %irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
-% % % ylabel('P [nPa]','fontsize',8)
-% % % i=i+1; 
+h(i)=irf_subplot(n,1,-i);
+c_eval("irf_plot([Pb1(:,1) Pb1(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+c_eval("irf_plot([Pt1(:,1) Pt1(:,2)], 'color','r', 'Linewidth',0.75);",ic); hold on;
+c_eval("irf_plot([Pt1(:,1) Pt1(:,2)+Pb1(:,2)], 'color','k', 'Linewidth',0.75);",ic); hold on;
+% irf_plot([Pthe_para(:,1) Pthe_para(:,2)], 'color','g', 'Linewidth',0.75);hold on;
+% irf_plot([Pthe_perp(:,1) Pthe_perp(:,2)], 'color','y', 'Linewidth',0.75);hold on;
+grid off;
+% set(h(i),'yscale','log');
+% set(h(i),'ytick',[0 0.25 0.5],'fontsize',9);
+% set(gca,'Ylim',[0 0.5]);
+c_eval("set(gca,'Ylim',[0 max(Pt1(:,2)+Pb1(:,2))+0.01]);",ic);
+set(gca,'ColorOrder',[[0 0 1];[1 0 0];[0 0 0]]);
+irf_legend(gca,{'Pm','Pthe','Ptotal'},[0.97 0.92]);
+% pos3=get(gca,'pos');
+% set(gca,'ColorOrder',[[0 1 0]]);
+%irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
+ylabel('P [nPa]','fontsize',8)
+i=i+1; 
 %% K
 % % % h(i)=irf_subplot(n,1,-i);
 % % % c_eval("irf_plot([Pte(:,1) K(:,2)], 'color','k', 'Linewidth',0.75);",ic); hold on;
@@ -1067,15 +1072,15 @@ c_eval("irf_plot([beta?(:,1) S?], 'color','b', 'Linewidth',0.75); hold on;",1);
 grid off;
 % set(h(i),'yscale','log');
 % set(h(i),'ytick',[1 2 3 4],'fontsize',9);
-% set(gca,'Ylim',[1e0 1e2]);
+set(gca,'Ylim',[0 1]);
 % set(gca,'Ylim',[round(min(S1))-1 round(max(S1))]);
 set(gca,'ColorOrder',[0 0 1]);
 % irf_legend(gca,{'/beta'},[0.97 0.92]);
 % pos3=get(gca,'pos');
 % set(gca,'ColorOrder',[[0 1 0]]);
 %irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
-ylabel('\beta','fontsize',12)
-% ylabel('Entropy','fontsize',12)
+% ylabel('\beta','fontsize',12)
+ylabel('Entropy','fontsize',12)
 i=i+1; 
 %% plot low e pad
 %     %0-200eV
@@ -1501,7 +1506,7 @@ irf_plot_axis_align(h)
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
 colormap(jet)
-cd  C:\Matlab\bin\新建文件夹\fwd\
-rmdir(TempDir,'s'); 
-figname = 'overview';
+% cd  C:\Matlab\bin\新建文件夹\fwd\
+% rmdir(TempDir,'s'); 
+% figname = 'overview';
 %     print(gcf, '-dpdf', [figname '.pdf']);    

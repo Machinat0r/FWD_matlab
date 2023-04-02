@@ -22,7 +22,7 @@ filenames0=dir;
 j=0;
 for ii=1:length(filenames0)
 % for ii=2850:2870
-    if  ~strcmp(filenames0(ii).name,'.') && ~strcmp(filenames0(ii).name,'..')
+    if  ~strcmp(filenames0(ii).name,'.') && ~strcmp(filenames0(ii).name,'..') && ~strcmp(filenames0(ii).name,'.DS_Store')
         filename1=filenames0(ii).name;
       
                  num=find(filename1=='_');

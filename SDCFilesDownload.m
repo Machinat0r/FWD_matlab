@@ -15,10 +15,11 @@ global ParentDir
 spPath = cell(1);
 for ii = 1:4
     Maindir = [ParentDir,'mms',num2str(ii)];
-    tempPath =  regexp(genpath(Maindir),';','split');
+    tempPath =  regexp(genpath(Maindir),':','split'); % ':' for MacOs, ';' for Windows
     spPath = [spPath,tempPath];
 end
 
+% '/' for MacOs, '\' for Windows
 % % h = waitbar(0,'正在下载✧(≖ ◡ ≖✿)');
 disp(['□□□□□□□□□□','开始下载✧(≖ ◡ ≖✿)'])
 i = 1;
@@ -26,7 +27,7 @@ while i <= length(filenames)
     %检查文件是否已下载过   
     flag = 0;
     for ii = 1:length(spPath) 
-        if isfile([OutputFiles_dir,filenames{i}]) || isfile([spPath{ii},'\',filenames{i}])
+        if isfile([OutputFiles_dir,filenames{i}]) || isfile([spPath{ii},'/',filenames{i}])
             %这样判别会导致重复计算，当前任务文件夹被重复判别了很多次
             s1 = ['本次任务文件夹或总文件夹中已有文件:',num2str(i),'/',num2str(length(filenames))];
 %             waitbar(i/length(filenames),h,s1);
