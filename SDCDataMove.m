@@ -55,7 +55,7 @@ for ii=1:length(filenames0)
             else 
                  destDir1=[destDir,filename1(1:4),'/'];
                   for numi=1:length(num)-2
-                         destDir_mms=[destDir1,filename1(num(numi)+1:num(numi+1)-1),'\'];
+                         destDir_mms=[destDir1,filename1(num(numi)+1:num(numi+1)-1),'/'];
                          if ~isfolder([destDir1,filename1(num(numi)+1:num(numi+1)-1)])
                             mkdir(destDir1,filename1(num(numi)+1:num(numi+1)-1))
                          end
