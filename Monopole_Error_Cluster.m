@@ -38,11 +38,11 @@ ic=1:4;
 % Tend='2002-02-18T08:42:00.00Z';%1,114
 % Tsta='2003-12-30T18:55:00.00Z';
 % Tend='2003-12-30T18:56:00.00Z';%7,268
-% % % % % Tsta = '2004-01-17T19:31:00.000Z';
-% % % % % Tend = '2004-01-17T19:32:00.000Z';
+Tsta = '2004-01-17T19:31:00.000Z';
+Tend = '2004-01-17T19:32:00.000Z';
 
-Tsta = '2000-01-01T00:00:00.000Z';
-Tend = '2020-01-01T00:00:00.000Z';
+% % % Tsta = '2000-01-01T00:00:00.000Z';
+% % % Tend = '2020-01-01T00:00:00.000Z';
 
 
 % Tsta='2004-01-01T11:10:00.00Z';
@@ -464,7 +464,7 @@ maxB = max([B1_gse(tempidx_B1,5),B2_gse(tempidx_B1,5),B3_gse(tempidx_B1,5),B4_gs
 c_eval("quiver3(R?(tempidx_R,2),R?(tempidx_R,3),R?(tempidx_R,4),RR_mean*B?_gse(tempidx_B1,2)/maxB,RR_mean*B?_gse(tempidx_B1,3)/maxB,RR_mean*B?_gse(tempidx_B1,4)/maxB,'color',cor(?));hold on;")
 % c_eval("quiver3(R?(tempidx_R,2),R?(tempidx_R,3),R?(tempidx_R,4),RR_mean*Bm?(tempidx_B1,2)/maxB,RR_mean*Bm?(tempidx_B1,3)/maxB,RR_mean*Bm?(tempidx_B1,4)/maxB,'linewidth',1.5,'color',cor(?));hold on;")
 %% Loc res
-% plotPolyhedron(LocRes{tempidx_B1}(:,1),LocRes{tempidx_B1}(:,2),LocRes{tempidx_B1}(:,3),'#FFB8CE',0.3);
+plotPolyhedron(LocRes{tempidx_B1}(:,1),LocRes{tempidx_B1}(:,2),LocRes{tempidx_B1}(:,3),'#FFB8CE',0.3);
 % idx = [166:198];
 % plot3(LocPoint(idx,1),LocPoint(idx,2),LocPoint(idx,3),'*','color','#FFBAF1');
 % line(LocPoint(173:195,1),LocPoint(173:195,2),LocPoint(173:195,3),'color','#FFBAF1');
