@@ -34,7 +34,7 @@ tint = Tint;
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 2;
+ic = 3;
 iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
@@ -549,7 +549,7 @@ Fpp = irf.ts_scalar(magB.time,Fpp);
 Fce01=irf.ts_scalar(magB.time,Fce01);
 Fce05=irf.ts_scalar(magB.time,Fce05);
 %% Init figure 2
-n_subplots=9;
+n_subplots=8;
 i_subplot=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
@@ -686,30 +686,30 @@ set(hcb,'pos',poscbar);
 set(hcb,'fontsize',10);
  %% J dot E' plot
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)], 'color','k', 'Linewidth',0.75); hold on;",ic)
+c_eval("irf_plot([JdotEplus?(:,1) abs(JdotEplus?(:,2))], 'color','k', 'Linewidth',0.75); hold on;",ic)
 % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
 % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
 c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
 grid off;
-ylabel('JdotE [pw/m]','fontsize',10);
+ylabel('|J\dotE| [pw/m]','fontsize',10);
 % set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
 % set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
 % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
 % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
 % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
  %% J dot E' integrate plot
-h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-c_eval("irf_plot([JdotEint(:,1) JdotEint(:,2)], 'color','k', 'Linewidth',0.75); hold on;",ic)
-% irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
-% irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
-% c_eval("irf_plot([JdotEint(:,1) JdotEint(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
-grid off;
-ylabel('JdotE [pw/m]','fontsize',10);
-% set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
-% set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
-% irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
-% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
-% irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+% % % h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+% % % c_eval("irf_plot([JdotEint(:,1) JdotEint(:,2)], 'color','k', 'Linewidth',0.75); hold on;",ic)
+% % % % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% % % % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
+% % % % c_eval("irf_plot([JdotEint(:,1) JdotEint(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
+% % % grid off;
+% % % ylabel('JdotE [pw/m]','fontsize',10);
+% % % % set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
+% % % % set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
+% % % % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
  %% 
 set(gca,"XTickLabelRotation",0)
 colormap(jet);
