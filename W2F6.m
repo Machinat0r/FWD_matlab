@@ -400,8 +400,9 @@ ylabel('|Eplus| [mV/m]','fontsize',10);
  %% Theta plot
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 c_eval('theta? = acosd(JdotEplus?(:,2)./(Eplus?(:,5).*J_B(:,5)));',ic)
-c_eval('theta?(theta?>90) = theta?(theta?>90)-90;',ic)
-c_eval("irf_plot([J_B(:,1) abs(theta?(:,1))], 'color','k', 'Linewidth',0.75); hold on;",ic)
+c_eval('theta?(theta?>90) = 180-theta?(theta?>90);',ic)
+c_eval('theta? = theta?(1:5:length(theta?));',ic)
+c_eval("irf_plot([J_B(1:5:length(theta?),1) abs(theta?(:,1))], 'color','k', 'Linewidth',0.75); hold on;",ic)
 % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
 % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
 c_eval("irf_plot([J_B(:,1) theta?(:,1)*0],'k--', 'Linewidth',0.75); hold off;",ic)
