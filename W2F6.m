@@ -34,7 +34,7 @@ tint = Tint;
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 3;
+ic = 2;
 iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
@@ -349,9 +349,12 @@ J_B(:,2:4) = 1e9*J_B(:,2:4);
 c_eval('E_resJ? = irf_resamp(E?,J_B);',ic);
 c_eval('JdotE_B? = [E_resJ?(:,1) irf_dot(J_B(:,2:4),E_resJ?(:,2:4))];',ic);
 
-c_eval('gsmVe? = irf_resamp(gsmVe?,B?);',ic)
+c_eval('gsmVe? = irf_resamp(gsmVe?,B?);',ic);
 c_eval('Eplus? = [E_resJ?(:,1) E_resJ?(:,2:4) + 1e3*irf_cross(1e3*gsmVe?(:,2:4),1e-9*B?(:,2:4))];',ic)
-c_eval('JdotEplus? = [Eplus?(:,1) irf_dot(J_B(:,2:4),Eplus?(:,2:4))];',ic);
+c_eval('JdotEplus? = [Eplus?(:,1) irf_dot(J_B(:,2:4),Eplus?(:,2:4))];',ic); % J_B dot E'
+
+c_eval('Eplus_resJ = irf_resamp(Eplus?,J?);',ic);
+c_eval('JdotEplus_res = [Eplus_resJ(:,1) irf_dot(J?(:,2:4),Eplus_resJ(:,2:4))];',ic);%J dot E'
 % c_eval('B?_resE = irf_resamp(B?,E?);',ic)
 % c_eval('gsmVe? = irf_resamp(gsmVe?,E?);',ic)
 % c_eval('J_B = irf_resamp(J_B,E?);',ic)
@@ -359,17 +362,31 @@ c_eval('JdotEplus? = [Eplus?(:,1) irf_dot(J_B(:,2:4),Eplus?(:,2:4))];',ic);
 % c_eval('JdotEplus? = [Eplus?(:,1) irf_dot(J_B(:,2:4),Eplus?(:,2:4))];',ic);
 % c_eval('JdotEint = [JdotEplus?(:,1) cumsum(JdotEplus?(:,2))];',ic);
 %% Init figure
-n_subplots=4;
+n_subplots=6;
 i_subplot=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
 fn=figure(2);clf;
 set(gcf,'PaperUnits','centimeters')
-xSize = 20; ySize = 20; coef=floor(min(600/xSize,800/ySize));
+xSize = 20; ySize = 40; coef=floor(min(600/xSize,800/ySize));
 xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
 set(gcf,'PaperPosition',[xLeft yTop xSize ySize]);
 set(gcf,'Position',[10 10 xSize*coef ySize*coef]);
  %% J plot
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+c_eval('J? = irf_abs(J?);',ic)
+c_eval("irf_plot([J?(:,1) abs(J?(:,5))], 'color','k', 'Linewidth',0.75); hold on;",ic)
+% irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
+c_eval("irf_plot([J?(:,1) J?(:,5)*0],'k--', 'Linewidth',0.75); hold off;",ic)
+grid off;
+ylabel('|J| [nA/m]','fontsize',10);
+% set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
+% set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
+% irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+ %% J_B plot
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 J_B = irf_abs(J_B);
 c_eval("irf_plot([J_B(:,1) abs(J_B(:,5))], 'color','k', 'Linewidth',0.75); hold on;",ic)
@@ -377,7 +394,7 @@ c_eval("irf_plot([J_B(:,1) abs(J_B(:,5))], 'color','k', 'Linewidth',0.75); hold 
 % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
 c_eval("irf_plot([J_B(:,1) J_B(:,5)*0],'k--', 'Linewidth',0.75); hold off;",ic)
 grid off;
-ylabel('|J| [nA/m]','fontsize',10);
+ylabel('|J_B| [nA/m]','fontsize',10);
 % set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
 % set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
 % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
@@ -401,11 +418,11 @@ ylabel('|Eplus| [mV/m]','fontsize',10);
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 c_eval('theta? = acosd(JdotEplus?(:,2)./(Eplus?(:,5).*J_B(:,5)));',ic)
 c_eval('theta?(theta?>90) = 180-theta?(theta?>90);',ic)
-c_eval('theta? = theta?(1:5:length(theta?));',ic)
-c_eval("irf_plot([J_B(1:5:length(theta?),1) abs(theta?(:,1))], 'color','k', 'Linewidth',0.75); hold on;",ic)
+c_eval('theta? = mean([theta?(1:5:length(theta?)),theta?(2:5:length(theta?)),theta?(3:5:length(theta?)),theta?(4:5:length(theta?)),theta?(5:5:length(theta?))],2);',ic)
+c_eval("irf_plot([J_B(1:5:length(J_B),1) abs(theta?(:,1))], 'color','k', 'Linewidth',0.75); hold on;",ic)
 % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
 % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
-c_eval("irf_plot([J_B(:,1) theta?(:,1)*0],'k--', 'Linewidth',0.75); hold off;",ic)
+c_eval("irf_plot([J_B(1:5:length(J_B),1) theta?(:,1)*0],'k--', 'Linewidth',0.75); hold off;",ic)
 grid off;
 ylabel('|theta| [deg]','fontsize',10);
 % set(gca,'Ylim',[fix(min(d[min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
@@ -415,12 +432,25 @@ set(gca,'Ylim',[0 90], 'ytick',[0 90 180]);
 % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
  %% J dot E' plot
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+c_eval("irf_plot([JdotEplus_res(:,1) abs(JdotEplus_res(:,2))], 'color','k', 'Linewidth',0.75); hold on;",ic)
+% irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
+c_eval("irf_plot([JdotEplus_res(:,1) JdotEplus_res(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
+grid off;
+ylabel('|J\dotE| [pw/m]','fontsize',10);
+% set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
+% set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
+% irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+ %% J_B dot E' plot
+h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 c_eval("irf_plot([JdotEplus?(:,1) abs(JdotEplus?(:,2))], 'color','k', 'Linewidth',0.75); hold on;",ic)
 % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
 % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
 c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
 grid off;
-ylabel('|J\dotE| [pw/m]','fontsize',10);
+ylabel('|J_B\dotE| [pw/m]','fontsize',10);
 % set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
 % set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
 % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
