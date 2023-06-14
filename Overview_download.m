@@ -7,7 +7,7 @@ TempDir = '/Users/fwd/Documents/MATLAB/MMS/temp/';mkdir(TempDir);
 % TT = '2021-08-15T03:35:15.00Z/2021-08-15T03:35:30.00Z';
 % TT = '2021-08-22T06:39:30.00Z/2021-08-22T06:43:00.00';
 % TT = '2018-02-06T13:29:00.00Z/2018-02-06T13:30:30.00Z';
-% % % TT = '2019-08-05T16:24:00.00Z/2019-08-05T16:25:00.00Z';
+TT = '2019-08-05T16:24:00.00Z/2019-08-05T16:25:00.00Z';
 % TT = '2015-11-04T04:34:00.00Z/2015-11-04T04:37:00.00Z';
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:16:30.00Z';
 % TT = '2019-08-16T01:03:33.00Z/2019-08-16T01:05:13.00Z';
@@ -19,7 +19,7 @@ TempDir = '/Users/fwd/Documents/MATLAB/MMS/temp/';mkdir(TempDir);
 % TT = '2021-07-21T12:46:20.00Z/2021-07-21T12:46:40.00Z';
 % TT = '2017-05-05T20:06:30.00Z/2017-05-05T20:07:10.00';
 % TT = '2022-08-18T23:53:00.00Z/2022-08-18T23:54:00.00Z';
-TT = '2022-08-19T01:13:40.00Z/2022-08-19T01:14:40.00Z';
+% TT = '2022-08-19T01:13:40.00Z/2022-08-19T01:14:40.00Z';
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
@@ -446,7 +446,7 @@ c_eval('Blmn?=irf_newxyz(B?,L,M,N);',ic);
 % % % c_eval('lmnJ? = irf.ts2mat(lmnJ?_ts);',ic);
 % end
 %% Init figure
-n=14;
+n=12;
 i=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
@@ -1325,176 +1325,176 @@ i=i+1;
 % i=i+1;
 
 %% plot waves
-c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',tint);',ic);
-c_eval('Exyz=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',tint);',ic);
-c_eval('Bscm=mms.db_get_ts(''mms?_scm_brst_l2_scb'',''mms?_scm_acb_gse_scb_brst_l2'',tint);',ic);
-% Bscm=Bscm{1};            %Bscm??cell
-c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',tint);',ic);
-magB = Bxyz.abs;
-
-%gse2gsm
-c_eval(['Egse=irf.ts2mat(Exyz);'],ic);
-c_eval(['Egsm=irf_gse2gsm(Egse);'],ic);
-Exyz.data=Egsm(:,2:4);
-try
-c_eval(['Bscmgse=irf.ts2mat(Bscm);'],ic);
-c_eval(['Bscmgsm=irf_gse2gsm(Bscmgse);'],ic);
-Bscm.data=Bscmgsm(:,2:4);
-
-% Rotate E and B into field-aligned coordinates
-Exyzfac = irf_convert_fac(Exyz,Bxyz,[1 0 0]);
-Bscmfac = irf_convert_fac(Bscm,Bxyz,[1 0 0]);
-% Bandpass filter E and B waveforms
-dfE = 1/median(diff(Exyz.time.epochUnix));
-dfB = 1/median(diff(Bscm.time.epochUnix));
-Exyzfachf = Exyzfac.filt(10,0,dfE,5);
-Exyzfaclf = Exyzfac.filt(0,10,dfE,5);
-Bscmfachf = Bscmfac.filt(10,0,dfB,5);
-catch
-% % 当Bscm发生bug时其会变为{1,2}的cell，点进去发现两部分是一样的，有时候重启matlab会好使有时候不好使就用下面这部分（到wave transforms之前）
-c_eval(['Bscmgse=irf.ts2mat(Bscm{1,1});'],ic);
-c_eval(['Bscmgsm=irf_gse2gsm(Bscmgse);'],ic);
-Bscm{1,1}.data=Bscmgsm(:,2:4);
-
-% Rotate E and B into field-aligned coordinates
-Exyzfac = irf_convert_fac(Exyz,Bxyz,[1 0 0]);
-Bscmfac = irf_convert_fac(Bscm{1,1},Bxyz,[1 0 0]);
-% Bandpass filter E and B waveforms
-dfE = 1/median(diff(Exyz.time.epochUnix));
-dfB = 1/median(diff(Bscm{1,1}.time.epochUnix));
-Exyzfachf = Exyzfac.filt(10,0,dfE,5);
-Exyzfaclf = Exyzfac.filt(0,10,dfE,5);
-Bscmfachf = Bscmfac.filt(10,0,dfB,5);
-end
-
-% Wavelet transforms
-nf = 100;
-Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[5 4000]);
-Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[5 50000]);
-Bwavelet = irf_wavelet(Bscmfac,'nf',nf,'f',[5 4000]);
-
-%compress wavelet transform data 10 point average
-nc = 20;
-idx = [nc/2:nc:length(Ewavelet.t)-nc/2];
-Ewavelettimes = Ewavelet.t(idx);
-Ewaveletx = zeros(length(idx),nf);
-Ewavelety = zeros(length(idx),nf);
-Ewaveletz = zeros(length(idx),nf);
-for ii = [1:length(idx)];
-        Ewaveletx(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,1}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Ewavelety(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,2}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Ewaveletz(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,3}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-end
-specperpE=struct('t',Ewavelettimes);
-specperpE.f=Ewavelet.f;
-specperpE.p=Ewaveletx+Ewavelety;
-specperpE.f_label='';
-specperpE.p_label={'log_{10} E_{\perp}^2','mV^2 m^{-2} Hz^{-1}'};
-
-specparE=struct('t',Ewavelettimes);
-specparE.f=Ewavelet.f;
-specparE.p=Ewaveletz;
-specparE.f_label='';
-specparE.p_label={'log_{10} E_{||}^2','mV^2 m^{-2} Hz^{-1}'};
-
-specE=struct('t',Ewavelettimes);
-specE.f=Ewavelet.f;
-specE.p=Ewaveletx+Ewavelety+Ewaveletz;
-specE.f_label='';
-specE.p_label={'log_{10} E^2','mV^2 m^{-2} Hz^{-1}'};
-
-
-idx = [nc/2:nc:length(Bwavelet.t)-nc/2];
-Bwavelettimes = Bwavelet.t(idx);
-Bwaveletx = zeros(length(idx),nf);
-Bwavelety = zeros(length(idx),nf);
-Bwaveletz = zeros(length(idx),nf);
-for ii = [1:length(idx)];
-        Bwaveletx(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,1}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Bwavelety(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,2}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-        Bwaveletz(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,3}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
-end
-specB=struct('t',Bwavelettimes);
-specB.f=Bwavelet.f;
-specB.p=Bwaveletx+Bwavelety+Bwaveletz;
-specB.f_label='';
-specB.p_label={'log_{10} B^2','nT^2 Hz^{-1}'};
-
-
-% Compute characteristic frequencies
-Units=irf_units; % read in standard units
-Me=Units.me;
-Mp=Units.mp;
-e=Units.e;
-epso=Units.eps0;
-mu0=Units.mu0;
-Mp_Me = Mp/Me;
-B_SI=magB.data*1e-9;
-Wpe = sqrt(ne.resample(Bxyz).data*1e6*e^2/Me/epso);
-Wce = e*B_SI/Me;
-Wpp = sqrt(ne.resample(Bxyz).data*1e6*e^2/Mp/epso);
-Fce = Wce/2/pi;
-Fce01=Fce*0.1;
-Fce05=Fce*0.5;
-Fpe = Wpe/2/pi;
-Fcp = Fce/Mp_Me;
-Fpp = Wpp/2/pi;
-Flh = sqrt(Fcp.*Fce./(1+Fce.^2./Fpe.^2)+Fcp.^2);
-Fpe = irf.ts_scalar(magB.time,Fpe);
-Fce = irf.ts_scalar(magB.time,Fce);
-Flh = irf.ts_scalar(magB.time,Flh);
-Fpp = irf.ts_scalar(magB.time,Fpp);
-Fce01=irf.ts_scalar(magB.time,Fce01);
-Fce05=irf.ts_scalar(magB.time,Fce05);
-
-h(i)=irf_subplot(n,1,-i);
-colormap(h(i),jet)
-[a8,b8]=irf_spectrogram(h(i),specE,'log');
-
-hold(h(i),'on');
-irf_plot(h(i),Fpe,'color','k','LineWidth',1)
-irf_plot(h(i),Flh,'color','k','LineWidth',1)
-irf_plot(h(i),Fce,'color','r','LineWidth',1)
-irf_plot(h(i),Fce01,'color','w','LineWidth',1)
-irf_plot(h(i),Fce05,'color','c','LineWidth',1)
-hold(h(i),'off');
-
-% irf_legend(h(i),'(h)',[0.99 0.97],'color','w','fontsize',12)
-caxis(h(i),[-12 0]);
-set(h(i),'yscale','log');
-set(h(i),'ytick',[1e1 1e2 1e3 1e4]);
-ylabel(h(i),{'f (Hz)'},'fontsize',12,'Interpreter','tex');
-ylabel(b8,{'log_{10} E^2','mV^2 m^{-2} Hz^{-1}'},'fontsize',10);
-grid(h(i),'off');
-poscbar8=get(b8,'pos');
-poscbar8(3)=poscbar8(3)*0.5;
-set(b8,'pos',poscbar8);
-i=i+1;
-
-h(i)=irf_subplot(n,1,-i);
-colormap(h(i),jet)
-[a9,b9]=irf_spectrogram(h(i),specB,'log');
-%[h(i),b9]=irf_spectrogram(h(i),specB,'log');
-
-hold(h(i),'on');
-irf_plot(h(i),Flh,'color','k','LineWidth',1)
-irf_plot(h(i),Fce,'color','r','LineWidth',1)
-irf_plot(h(i),Fce01,'color','w','LineWidth',1)
-irf_plot(h(i),Fce05,'color','c','LineWidth',1)
-hold(h(i),'off');
-
-% irf_legend(h(i),'(zhaomingjie)',[0.99 0.97],'color','w','fontsize',12)
-caxis(h(i),[-12 0]);
-set(h(i),'yscale','log');
-set(h(i),'ytick',[1e1 1e2 1e3 1e4]);
-ylabel(h(i),{'f (Hz)'},'fontsize',12,'Interpreter','tex');
-ylabel(b9,{'log_{10} B^2','nT^2 Hz^{-1}'},'fontsize',10);
-grid(h(i),'off');
-poscbar9=get(b9,'pos');
-poscbar9(3)=poscbar9(3)*0.5;
-set(b9,'pos',poscbar9);
-i=i+1;
-% 
+% % % c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',tint);',ic);
+% % % c_eval('Exyz=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',tint);',ic);
+% % % c_eval('Bscm=mms.db_get_ts(''mms?_scm_brst_l2_scb'',''mms?_scm_acb_gse_scb_brst_l2'',tint);',ic);
+% % % % Bscm=Bscm{1};            %Bscm??cell
+% % % c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',tint);',ic);
+% % % magB = Bxyz.abs;
+% % % 
+% % % %gse2gsm
+% % % c_eval(['Egse=irf.ts2mat(Exyz);'],ic);
+% % % c_eval(['Egsm=irf_gse2gsm(Egse);'],ic);
+% % % Exyz.data=Egsm(:,2:4);
+% % % try
+% % % c_eval(['Bscmgse=irf.ts2mat(Bscm);'],ic);
+% % % c_eval(['Bscmgsm=irf_gse2gsm(Bscmgse);'],ic);
+% % % Bscm.data=Bscmgsm(:,2:4);
+% % % 
+% % % % Rotate E and B into field-aligned coordinates
+% % % Exyzfac = irf_convert_fac(Exyz,Bxyz,[1 0 0]);
+% % % Bscmfac = irf_convert_fac(Bscm,Bxyz,[1 0 0]);
+% % % % Bandpass filter E and B waveforms
+% % % dfE = 1/median(diff(Exyz.time.epochUnix));
+% % % dfB = 1/median(diff(Bscm.time.epochUnix));
+% % % Exyzfachf = Exyzfac.filt(10,0,dfE,5);
+% % % Exyzfaclf = Exyzfac.filt(0,10,dfE,5);
+% % % Bscmfachf = Bscmfac.filt(10,0,dfB,5);
+% % % catch
+% % % % % 当Bscm发生bug时其会变为{1,2}的cell，点进去发现两部分是一样的，有时候重启matlab会好使有时候不好使就用下面这部分（到wave transforms之前）
+% % % c_eval(['Bscmgse=irf.ts2mat(Bscm{1,1});'],ic);
+% % % c_eval(['Bscmgsm=irf_gse2gsm(Bscmgse);'],ic);
+% % % Bscm{1,1}.data=Bscmgsm(:,2:4);
+% % % 
+% % % % Rotate E and B into field-aligned coordinates
+% % % Exyzfac = irf_convert_fac(Exyz,Bxyz,[1 0 0]);
+% % % Bscmfac = irf_convert_fac(Bscm{1,1},Bxyz,[1 0 0]);
+% % % % Bandpass filter E and B waveforms
+% % % dfE = 1/median(diff(Exyz.time.epochUnix));
+% % % dfB = 1/median(diff(Bscm{1,1}.time.epochUnix));
+% % % Exyzfachf = Exyzfac.filt(10,0,dfE,5);
+% % % Exyzfaclf = Exyzfac.filt(0,10,dfE,5);
+% % % Bscmfachf = Bscmfac.filt(10,0,dfB,5);
+% % % end
+% % % 
+% % % % Wavelet transforms
+% % % nf = 100;
+% % % Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[5 4000]);
+% % % Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[5 50000]);
+% % % Bwavelet = irf_wavelet(Bscmfac,'nf',nf,'f',[5 4000]);
+% % % 
+% % % %compress wavelet transform data 10 point average
+% % % nc = 20;
+% % % idx = [nc/2:nc:length(Ewavelet.t)-nc/2];
+% % % Ewavelettimes = Ewavelet.t(idx);
+% % % Ewaveletx = zeros(length(idx),nf);
+% % % Ewavelety = zeros(length(idx),nf);
+% % % Ewaveletz = zeros(length(idx),nf);
+% % % for ii = [1:length(idx)];
+% % %         Ewaveletx(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,1}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
+% % %         Ewavelety(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,2}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
+% % %         Ewaveletz(ii,:) = squeeze(irf.nanmean(Ewavelet.p{1,3}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
+% % % end
+% % % specperpE=struct('t',Ewavelettimes);
+% % % specperpE.f=Ewavelet.f;
+% % % specperpE.p=Ewaveletx+Ewavelety;
+% % % specperpE.f_label='';
+% % % specperpE.p_label={'log_{10} E_{\perp}^2','mV^2 m^{-2} Hz^{-1}'};
+% % % 
+% % % specparE=struct('t',Ewavelettimes);
+% % % specparE.f=Ewavelet.f;
+% % % specparE.p=Ewaveletz;
+% % % specparE.f_label='';
+% % % specparE.p_label={'log_{10} E_{||}^2','mV^2 m^{-2} Hz^{-1}'};
+% % % 
+% % % specE=struct('t',Ewavelettimes);
+% % % specE.f=Ewavelet.f;
+% % % specE.p=Ewaveletx+Ewavelety+Ewaveletz;
+% % % specE.f_label='';
+% % % specE.p_label={'log_{10} E^2','mV^2 m^{-2} Hz^{-1}'};
+% % % 
+% % % 
+% % % idx = [nc/2:nc:length(Bwavelet.t)-nc/2];
+% % % Bwavelettimes = Bwavelet.t(idx);
+% % % Bwaveletx = zeros(length(idx),nf);
+% % % Bwavelety = zeros(length(idx),nf);
+% % % Bwaveletz = zeros(length(idx),nf);
+% % % for ii = [1:length(idx)];
+% % %         Bwaveletx(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,1}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
+% % %         Bwavelety(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,2}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
+% % %         Bwaveletz(ii,:) = squeeze(irf.nanmean(Bwavelet.p{1,3}([idx(ii)-nc/2+1:idx(ii)+nc/2-1],:),1));
+% % % end
+% % % specB=struct('t',Bwavelettimes);
+% % % specB.f=Bwavelet.f;
+% % % specB.p=Bwaveletx+Bwavelety+Bwaveletz;
+% % % specB.f_label='';
+% % % specB.p_label={'log_{10} B^2','nT^2 Hz^{-1}'};
+% % % 
+% % % 
+% % % % Compute characteristic frequencies
+% % % Units=irf_units; % read in standard units
+% % % Me=Units.me;
+% % % Mp=Units.mp;
+% % % e=Units.e;
+% % % epso=Units.eps0;
+% % % mu0=Units.mu0;
+% % % Mp_Me = Mp/Me;
+% % % B_SI=magB.data*1e-9;
+% % % Wpe = sqrt(ne.resample(Bxyz).data*1e6*e^2/Me/epso);
+% % % Wce = e*B_SI/Me;
+% % % Wpp = sqrt(ne.resample(Bxyz).data*1e6*e^2/Mp/epso);
+% % % Fce = Wce/2/pi;
+% % % Fce01=Fce*0.1;
+% % % Fce05=Fce*0.5;
+% % % Fpe = Wpe/2/pi;
+% % % Fcp = Fce/Mp_Me;
+% % % Fpp = Wpp/2/pi;
+% % % Flh = sqrt(Fcp.*Fce./(1+Fce.^2./Fpe.^2)+Fcp.^2);
+% % % Fpe = irf.ts_scalar(magB.time,Fpe);
+% % % Fce = irf.ts_scalar(magB.time,Fce);
+% % % Flh = irf.ts_scalar(magB.time,Flh);
+% % % Fpp = irf.ts_scalar(magB.time,Fpp);
+% % % Fce01=irf.ts_scalar(magB.time,Fce01);
+% % % Fce05=irf.ts_scalar(magB.time,Fce05);
+% % % 
+% % % h(i)=irf_subplot(n,1,-i);
+% % % colormap(h(i),jet)
+% % % [a8,b8]=irf_spectrogram(h(i),specE,'log');
+% % % 
+% % % hold(h(i),'on');
+% % % irf_plot(h(i),Fpe,'color','k','LineWidth',1)
+% % % irf_plot(h(i),Flh,'color','k','LineWidth',1)
+% % % irf_plot(h(i),Fce,'color','r','LineWidth',1)
+% % % irf_plot(h(i),Fce01,'color','w','LineWidth',1)
+% % % irf_plot(h(i),Fce05,'color','c','LineWidth',1)
+% % % hold(h(i),'off');
+% % % 
+% % % % irf_legend(h(i),'(h)',[0.99 0.97],'color','w','fontsize',12)
+% % % caxis(h(i),[-12 0]);
+% % % set(h(i),'yscale','log');
+% % % set(h(i),'ytick',[1e1 1e2 1e3 1e4]);
+% % % ylabel(h(i),{'f (Hz)'},'fontsize',12,'Interpreter','tex');
+% % % ylabel(b8,{'log_{10} E^2','mV^2 m^{-2} Hz^{-1}'},'fontsize',10);
+% % % grid(h(i),'off');
+% % % poscbar8=get(b8,'pos');
+% % % poscbar8(3)=poscbar8(3)*0.5;
+% % % set(b8,'pos',poscbar8);
+% % % i=i+1;
+% % % 
+% % % h(i)=irf_subplot(n,1,-i);
+% % % colormap(h(i),jet)
+% % % [a9,b9]=irf_spectrogram(h(i),specB,'log');
+% % % %[h(i),b9]=irf_spectrogram(h(i),specB,'log');
+% % % 
+% % % hold(h(i),'on');
+% % % irf_plot(h(i),Flh,'color','k','LineWidth',1)
+% % % irf_plot(h(i),Fce,'color','r','LineWidth',1)
+% % % irf_plot(h(i),Fce01,'color','w','LineWidth',1)
+% % % irf_plot(h(i),Fce05,'color','c','LineWidth',1)
+% % % hold(h(i),'off');
+% % % 
+% % % % irf_legend(h(i),'(zhaomingjie)',[0.99 0.97],'color','w','fontsize',12)
+% % % caxis(h(i),[-12 0]);
+% % % set(h(i),'yscale','log');
+% % % set(h(i),'ytick',[1e1 1e2 1e3 1e4]);
+% % % ylabel(h(i),{'f (Hz)'},'fontsize',12,'Interpreter','tex');
+% % % ylabel(b9,{'log_{10} B^2','nT^2 Hz^{-1}'},'fontsize',10);
+% % % grid(h(i),'off');
+% % % poscbar9=get(b9,'pos');
+% % % poscbar9(3)=poscbar9(3)*0.5;
+% % % set(b9,'pos',poscbar9);
+% % % i=i+1;
+% % % % 
 %   set(h(1:n),'fontsize',8);
 % %   irf_zoom(tint,'x',h(1:n));
 
@@ -1510,7 +1510,7 @@ irf_plot_axis_align(h)
 %   irf_pl_mark(h(1:8),[iso2epoch('2015-10-16T13:04:29.589Z')],'b');
 %   irf_pl_mark(h(1:8),[iso2epoch('2015-10-16T13:04:29.789Z')],'k'); 
 %   irf_pl_mark(h(1:8),[iso2epoch('2015-10-16T13:04:30Z')],'g');
-%   irf_pl_mark(h(1:8),[iso2epoch('2015-10-16T13:04:30.209Z')],'k');
+%   irf_pl_marak(h(1:8),[iso2epoch('2015-10-16T13:04:30.209Z')],'k');
 %  add_position(gca,gseR1), xlabel(gca,'')
 %  irf_zoom(tintlmn,'x',h(4:7))
 
