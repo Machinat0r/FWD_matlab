@@ -2,12 +2,12 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Users/fwd/Documents/MATLAB/MMS/'; 
-TempDir = '/Users/fwd/Documents/MATLAB/MMS/temp/';mkdir(TempDir);
+ParentDir = '/Volumes/FWD-T7Disk/MMS/'; 
+TempDir = '/Volumes/FWD-T7Disk/MMS/temp/';mkdir(TempDir);
 % TT = '2021-08-15T03:35:15.00Z/2021-08-15T03:35:30.00Z';
 % TT = '2021-08-22T06:39:30.00Z/2021-08-22T06:43:00.00';
 % TT = '2018-02-06T13:29:00.00Z/2018-02-06T13:30:30.00Z';
-TT = '2019-08-05T16:24:00.00Z/2019-08-05T16:25:00.00Z';
+% % % TT = '2019-08-05T16:24:00.00Z/2019-08-05T16:25:00.00Z';
 % TT = '2015-11-04T04:34:00.00Z/2015-11-04T04:37:00.00Z';
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:16:30.00Z';
 % TT = '2019-08-16T01:03:33.00Z/2019-08-16T01:05:13.00Z';
@@ -20,6 +20,8 @@ TT = '2019-08-05T16:24:00.00Z/2019-08-05T16:25:00.00Z';
 % TT = '2017-05-05T20:06:30.00Z/2017-05-05T20:07:10.00';
 % TT = '2022-08-18T23:53:00.00Z/2022-08-18T23:54:00.00Z';
 % TT = '2022-08-19T01:13:40.00Z/2022-08-19T01:14:40.00Z';
+TT = '2020-08-02T16:56:10.00Z/2020-08-02T16:56:25.00Z';
+% TT = '2015-09-23T09:25:40.00Z/2015-09-23T09:26:00.00Z';
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
@@ -30,7 +32,7 @@ iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
 filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
+filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce,scpot');
 % filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); %为了知道坐标
 filenames = [filenames1,filenames2,filenames3,filenames4];
 

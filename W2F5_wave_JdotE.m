@@ -34,7 +34,7 @@ tint = Tint;
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 1;
+ic = 2;
 iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
@@ -575,7 +575,7 @@ set(h(1),'Ylim',[fix(min([min(B(:,2)) min(B(:,3)) min(B(:,4))])/10)*10-10 fix(ma
 % set(gca,'Ylim',[-10 25]);
 % pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
-irf_legend(gca,{'B_x','B_y','B_z','|B|'},[0.1 0.12]);
+irf_legend(gca,{'B_x','B_y','B_z','|B|'},[0.05 0.06]);
 %% E plot
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 irf_plot([E(:,1) E(:,2)], 'color','b', 'Linewidth',0.75); hold on;
@@ -589,7 +589,7 @@ ylabel('E [mV/m]','fontsize',12);
 set(gca,'Ylim',[-10 10]);
 % pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0]]);
-irf_legend(gca,{'E_x','E_y','E_z'},[0.1 0.12]);
+irf_legend(gca,{'E_x','E_y','E_z'},[0.05 0.06]);
 
 %% Efachf plot
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
@@ -601,8 +601,8 @@ grid off;
 ylabel('\deltaE [mV m^{-1}]');
 % set(gca,'Ylim',[-10 10], 'ytick',[-9:3:9]);
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0]]);
-irf_legend(gca,{'\deltaE_{\perp 1}','\deltaE_{\perp 2}','\deltaE_{||}'},[0.1 0.12]);
-irf_legend(gca,{'f>',num2str(lf),'Hz'},[0.8 0.12]);
+irf_legend(gca,{'\deltaE_{\perp 1}','\deltaE_{\perp 2}','\deltaE_{||}'},[0.05 0.06]);
+% irf_legend(gca,{'f>',num2str(lf),'Hz'},[0.05 0.06]);
 %% Especperp
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 % colormap(gca,jet);
@@ -617,7 +617,7 @@ grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e1 1e2 1e3 1e4]);
 set(gca,'ylim',[8 1e4]);
-caxis(h(4),[-7 -2]);
+caxis(h(4),[-6 -2]);
 ylabel(h(4),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
 poscbar(3)=poscbar(3)*0.5;
@@ -638,7 +638,7 @@ grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e1 1e2 1e3 1e4]);
 set(gca,'ylim',[8 1e4]);
-caxis(h(5),[-7 -2]);
+caxis(h(5),[-6 -2]);
 ylabel(h(5),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
 poscbar(3)=poscbar(3)*0.5;
@@ -661,7 +661,7 @@ hold off; grid off;
 ylabel('\deltaB [nT]');
 set(gca,'ylim',[min(min(Bfachf1(:,2:4))) max(max(Bfachf1(:,2:4)))]);
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0]]);
-irf_legend(gca,{'\deltaB_{\perp 1}','\deltaB_{\perp 2}','\deltaB_{||}'},[0.1 0.12]);
+irf_legend(gca,{'\deltaB_{\perp 1}','\deltaB_{\perp 2}','\deltaB_{||}'},[0.05 0.06]);
 irf_legend(gca,{'f>',num2str(lf),'Hz'},[0.8 0.12]);
 %% Bspec 1
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
@@ -725,6 +725,6 @@ irf_zoom(h(1:end),'x',Tint);
 set(h(1:end),'fontsize',12);
 set(gcf,'paperpositionmode','auto');
 % irf_adjust_panel_position;
-% figname = 'wave';
-% figname=['C:\Users\fwd\Desktop\Ti~mor~\M\Formation of the rolling-pin distribution of suprathermal electrons behind dipolarization fronts\obs\wave'];
-% print(gcf, '-dpdf', [figname '.pdf']);
+
+figname=['/Users/fwd/Documents/lalala/硕士毕业论文/中期/wave&JdotE'];
+print(gcf, '-dpdf', [figname '.pdf']);

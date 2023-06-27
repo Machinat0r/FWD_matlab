@@ -416,46 +416,46 @@ end
 % print(gcf, '-dpng', [figname '.png']);
 
 %% Init figure 3
-close(figure(3))
-figure(3)
-set(gcf,'PaperUnits','centimeters')
-xSize = 100; ySize = 40; coef=floor(min(800/xSize,800/ySize));
-xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
-set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
-set(gcf,'Position',[10 10 xSize*coef ySize*coef])
-%%
-% S/C Projection
-R_x = [a1(i,2);a2(i,2);a3(i,2);a4(i,2)];
-R_y = [a1(i,3);a2(i,3);a3(i,3);a4(i,3)];
-R_z = [a1(i,4);a2(i,4);a3(i,4);a4(i,4)];
-R_side = ones(4,1)*(-RR_max);
-Vx = [R_side,R_y,R_z];
-Vy = [R_x,R_side,R_z];
-Vz = [R_x,R_y,R_side];
-Faces = [1,2,3,4;1,2,4,3;1,4,2,3;1,4,3,2;1,3,2,4;1,3,4,2];
-
-subplot(1,3,1)
-plotPolyhedron(-RR_max*ones(size(LocRes{i},1),1),LocRes{i}(:,2),LocRes{i}(:,3),'#FFB8CE',0.3);hold on;
-patch('Faces',Faces,'Vertices',Vx,'FaceColor',[0.5,0.5,0.5],'FaceAlpha',0.1,'EdgeColor','none');hold on;
-ylabel('e2 [km]');zlabel('e3 [km]');
-axis equal; view(90,0);
-ylim([-RR_max,RR_max]);zlim([-RR_max,RR_max]);
-
-subplot(1,3,2)
-plotPolyhedron(LocRes{i}(:,1),-RR_max*ones(size(LocRes{i},2),1),LocRes{i}(:,3),'#FFB8CE',0.3);hold on;
-patch('Faces',Faces,'Vertices',Vy,'FaceColor',[0.5,0.5,0.5],'FaceAlpha',0.1,'EdgeColor','none');hold on;
-xlabel('e1 [km]');zlabel('e3 [km]');
-axis equal; view(0,0);
-xlim([-RR_max,RR_max]);zlim([-RR_max,RR_max]);
-
-subplot(1,3,3)
-QErrorbar(Q(i),resQ{i},'m')
-%%
-set(gcf,'render','painters');
-set(gcf,'paperpositionmode','auto')
-figname = ['C:\Users\fwd\Desktop\Ti~mor~\M\magnetic_monopole\ErrParaTest\errorbar-model\',num2str(theta(i)),'-err'];
-% print(gcf, '-dpng', [figname '.png']);
-% else
-%     continue
-% end
-% end
+% % % close(figure(3))
+% % % figure(3)
+% % % set(gcf,'PaperUnits','centimeters')
+% % % xSize = 100; ySize = 40; coef=floor(min(800/xSize,800/ySize));
+% % % xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+% % % set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
+% % % set(gcf,'Position',[10 10 xSize*coef ySize*coef])
+% % % %%
+% % % % S/C Projection
+% % % R_x = [a1(i,2);a2(i,2);a3(i,2);a4(i,2)];
+% % % R_y = [a1(i,3);a2(i,3);a3(i,3);a4(i,3)];
+% % % R_z = [a1(i,4);a2(i,4);a3(i,4);a4(i,4)];
+% % % R_side = ones(4,1)*(-RR_max);
+% % % Vx = [R_side,R_y,R_z];
+% % % Vy = [R_x,R_side,R_z];
+% % % Vz = [R_x,R_y,R_side];
+% % % Faces = [1,2,3,4;1,2,4,3;1,4,2,3;1,4,3,2;1,3,2,4;1,3,4,2];
+% % % 
+% % % subplot(1,3,1)
+% % % plotPolyhedron(-RR_max*ones(size(LocRes{i},1),1),LocRes{i}(:,2),LocRes{i}(:,3),'#FFB8CE',0.3);hold on;
+% % % patch('Faces',Faces,'Vertices',Vx,'FaceColor',[0.5,0.5,0.5],'FaceAlpha',0.1,'EdgeColor','none');hold on;
+% % % ylabel('e2 [km]');zlabel('e3 [km]');
+% % % axis equal; view(90,0);
+% % % ylim([-RR_max,RR_max]);zlim([-RR_max,RR_max]);
+% % % 
+% % % subplot(1,3,2)
+% % % plotPolyhedron(LocRes{i}(:,1),-RR_max*ones(size(LocRes{i},2),1),LocRes{i}(:,3),'#FFB8CE',0.3);hold on;
+% % % patch('Faces',Faces,'Vertices',Vy,'FaceColor',[0.5,0.5,0.5],'FaceAlpha',0.1,'EdgeColor','none');hold on;
+% % % xlabel('e1 [km]');zlabel('e3 [km]');
+% % % axis equal; view(0,0);
+% % % xlim([-RR_max,RR_max]);zlim([-RR_max,RR_max]);
+% % % 
+% % % subplot(1,3,3)
+% % % QErrorbar(Q(i),resQ{i},'m')
+% % % %%
+% % % set(gcf,'render','painters');
+% % % set(gcf,'paperpositionmode','auto')
+% % % figname = ['C:\Users\fwd\Desktop\Ti~mor~\M\magnetic_monopole\ErrParaTest\errorbar-model\',num2str(theta(i)),'-err'];
+% % % % print(gcf, '-dpng', [figname '.png']);
+% % % % else
+% % % %     continue
+% % % % end
+% % % % end
