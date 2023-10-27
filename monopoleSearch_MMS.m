@@ -3,8 +3,14 @@
 clear;
 clc;
 %%
+<<<<<<< HEAD
+% Date = '2015-09-01/2017-04-30';
+% Date = '2015-09-01/2023-04-30';
+Date = '2018-06-16/2018-06-17';
+=======
 Date = '2015-09-01/2017-04-30';
 % Date = '2017-04-30/2017-05-01';
+>>>>>>> parent of 6233c67 (Ver23.9.11)
 % Date = '2017-01-01/2021-01-01';
 % Date = '2022-06-09/2022-07-02';
 
@@ -26,17 +32,17 @@ end
 FileGroups = cellfun(@cellstr,FileGroups,'UniformOutput',false);%按时间分类整理后的文件名组
 
 global OutputDir ParentDir
-ParentDir = 'E:\MMS\'; 
+ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
 %The dir of "SDCFilesDownload" to "datamove" must be the ParentDir!
-OutputDir = [ParentDir,splitDate{1},'To',splitDate{2},'\'];
-if ~isfolder([OutputDir,'meanFig\'])
-    mkdir([OutputDir,'meanFig\']);
+OutputDir = [ParentDir,splitDate{1},'To',splitDate{2},'/'];
+if ~isfolder([OutputDir,'meanFig/'])
+    mkdir([OutputDir,'meanFig/']);
 end
 %%
 units = irf_units;
 NameTags{end+1} = ['_' strrep(splitDate{2},'-','') '235959_v'];
 for TDT = 1:length(NameTags)-1 %This is a distinctive temp  (๑ˉ∀ˉ๑)
-tempDir = [OutputDir,NameTags{TDT}(2:end-2),'\'];
+tempDir = [OutputDir,NameTags{TDT}(2:end-2),'/'];
 clc
 fprintf(['当前处理时间为:',NameTags{TDT}(2:end-2),'\n'])
 
@@ -51,7 +57,7 @@ tempTint=irf.tint(tempDate);
 flag = 0;flag2 = 0;
 if length(FileGroups{TDT}) == 4 
 try
-    SDCFilesDownload(FileGroups{TDT},tempDir);
+    SDCFilesDownload_NAS(FileGroups{TDT},tempDir);
     SDCDataMove(tempDir,ParentDir); mms.db_init('local_file_db',ParentDir);
     B1_ts=mms.get_data('B_gsm_brst',tempTint,1);%先导入一个文件看看文件中包含的时间段
     tint = irf.tint(B1_ts.time.epoch(1),B1_ts.time.epoch(end));  
@@ -137,7 +143,7 @@ try
     switch flag_m
         case 1
         writematrix(['Flag 03 find at: ',datestr(datenum(1970,1,1,0,0,0)+time_flagm/86400,'yyyymmdd HH:MM:SS.FFF')],...
-                    [OutputDir,'case_mean_03.txt'],'WriteMode','append','Encoding','UTF-8')
+            [OutputDir,'case_mean_03.txt'],'WriteMode','append','Encoding','UTF-8')
         writematrix(['mean RR = ', num2str(mean(tempd),5),],...
             [OutputDir,'case_mean_03.txt'],'WriteMode','append','Encoding','UTF-8')
         case 2
@@ -151,6 +157,12 @@ try
         writematrix(['mean RR = ', num2str(mean(tempd),5),],...
             [OutputDir,'case_mean_1.txt'],'WriteMode','append','Encoding','UTF-8')
     end
+<<<<<<< HEAD
+%% Plot
+if flag_m ~=0
+try
+    monopoleSearch_MMS_plot('tint',[OutputDir,'meanFig/'])
+=======
     
     tof05 = tempd<0.5;tof1 = tempd<1;
     if sum(tof05) == 15
@@ -210,9 +222,17 @@ try
 % % %         flag_ang = 2;
 % % %     end
 % % %     end
+>>>>>>> parent of 6233c67 (Ver23.9.11)
 catch
-    writematrix([NamesTags{TDT}(2:end-2),'的数据下载或读取出现问题'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
-    continue
+    writematrix([NameTags{TDT}(2:end-2),'的画图出现问题'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
+end
+break
+end
+
+    end
+    end
+catch
+    writematrix([NameTags{TDT}(2:end-2),'的数据下载或读取出现问题'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
 end
 %% Delete folder
 try

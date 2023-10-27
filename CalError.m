@@ -255,7 +255,7 @@ function [t,residual]=ModelSolve(R1,R2,R3,R4,B1,B2,B3,B4,lb,ub,MultiPower,idx,Lo
 % x0 = [sign(idx)*1e4*MultiPower+15,0,0,0];
 % x0 = [sign(idx)*1e4*MultiPower+15,LocationSkew*ones(1,3)];
 % x0 = [sign(idx)*1e4*MultiPower,3,-1,2];
-x0 = [sign(idx)*1e4*MultiPower,0,0,0];
+x0 = [sign(idx)*1e4*MultiPower,0.1*ones(1,3)*MultiPower];
 % lb = [lb,-inf,-inf,-inf]; ub = [ub,inf,inf,inf];
 lb = [];ub = [];
 options = optimoptions('lsqnonlin','Algorithm','trust-region-reflective');
