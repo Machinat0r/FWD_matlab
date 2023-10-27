@@ -2,13 +2,9 @@ close all
 clear;clc
 
 global ParentDir 
-<<<<<<< HEAD
 ParentDir = '/Users/fwd/Documents/MATLAB/MMS/'; 
 TempDir = '/Users/fwd/Documents/MATLAB/MMS/temp/';mkdir(TempDir);
-=======
-ParentDir = '/Volumes/FWD-T7Disk/MMS/'; 
-TempDir = '/Volumes/FWD-T7Disk/MMS/temp/';mkdir(TempDir);
->>>>>>> parent of 6233c67 (Ver23.9.11)
+
 % TT = '2021-08-15T03:35:15.00Z/2021-08-15T03:35:30.00Z';
 % TT = '2021-08-22T06:39:30.00Z/2021-08-22T06:43:00.00';
 % TT = '2018-02-06T13:29:00.00Z/2018-02-06T13:30:30.00Z';
@@ -27,14 +23,6 @@ TempDir = '/Volumes/FWD-T7Disk/MMS/temp/';mkdir(TempDir);
 % TT = '2022-08-19T01:13:40.00Z/2022-08-19T01:14:40.00Z';
 TT = '2020-08-02T16:56:10.00Z/2020-08-02T16:56:25.00Z';
 % TT = '2015-09-23T09:25:40.00Z/2015-09-23T09:26:00.00Z';
-<<<<<<< HEAD
-% TT = '2021-07-14T18:08:00.000Z/2021-07-14T18:08:15.000Z';
-% TT = '2018-07-06T12:37:30.000Z/2018-07-06T12:39:30.000Z';
-% TT = '2019-07-19T13:46:50.000Z/2019-07-19T13:47:20.000Z';
-% TT = '2016-11-21T07:21:00.000Z/2016-11-21T07:23:30.000Z';
-TT = '2015-12-15T23:43:00.000Z/2015-12-15T23:44:00.000Z';
-=======
->>>>>>> parent of 6233c67 (Ver23.9.11)
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
@@ -46,7 +34,7 @@ filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
 filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
 filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce,scpot');
-% filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); %为了知道坐标
+filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
 filenames = [filenames1,filenames2,filenames3,filenames4];
 
 expr1 = '_\d+\_v';
@@ -65,7 +53,7 @@ while str2double(TTlist(17:30)) > NameTags{i}  % 如果时间段刚好仅在某�
         break
     end
 end
-identification
+
 % '/' for MacOs, '\' for Windows
 if flag == 0
     tempTag = num2str(NameTags{i-1});
@@ -87,8 +75,8 @@ else
     desmoms2 = [ParentDir,'mms',num2str(ic),'/fpi/brst/l2/des-moms/',tempTag2(1:4),'/',tempTag2(5:6),'/',...
             tempTag2(7:8),'/',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
 end
-SDCFilesDownload(filenames,TempDir)
-% SDCFilesDownload(filenames_srvy(1),TempDir)
+SDCFilesDownload_NAS(filenames,TempDir)
+SDCFilesDownload_NAS(filenames_srvy,TempDir)
 % % % id_flagTime = OverView_download(tint,desmoms,IC,Name,flagTime)
 %% load data
 SDCDataMove(TempDir,ParentDir)
@@ -254,7 +242,7 @@ units = irf_units;
 % % % % % % % c_eval('BzE? = B?(:,3).*sqrt(1+(Br?.^2./(B?(:,3).^2+2*miu0*Pthe_interp)));',ic);
 % % % % % % c_eval('PE? = Pthe_interp?+Br?.^2/(2*miu0);',ic);
 % % % % % % C = 0.7368;D = 0.7634;F = -0.3059;
-% % % Pos = mms.get_data('R_gsm',tint);
+Pos = mms.get_data('R_gsm',tint);
 % % % Pos = Pos.gsmR1/units.RE/1000;
 % % % c_eval('v?=10^0.7368.*sqrt(R?(:,2).^2+R?(:,3).^2).^0.7634.*B?(:,4).^(-0.3059)./sqrt(B?(:,4).^2+2.*miu0.*Pthe?(:,2));',ic);
 % % % c_eval('etr?=Pt?(:,2).*v?.^(5/3);',ic);

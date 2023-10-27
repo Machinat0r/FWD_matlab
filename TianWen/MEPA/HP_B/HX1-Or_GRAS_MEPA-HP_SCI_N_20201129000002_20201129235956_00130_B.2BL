@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1C00.sch"
+schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<Product_Observational xmlns="http://pds.nasa.gov/pds4/pds/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 &#x0A;                     https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1C00.xsd">
+    <Identification_Area>
+        <logical_identifier>HX1-Or_GRAS_MEPA-HP_SCI_N_20201129000002_20201129235956_00130.2B</logical_identifier>
+        <version_id>2.0</version_id>
+        <title>HX-1 mission</title>
+        <information_model_version>1.12.0.0</information_model_version>
+        <product_class>Product_Observational</product_class>
+        <Modification_History>
+            <Modification_Detail>
+                <modification_date>2020-07-23</modification_date>
+                <version_id>1.0</version_id>
+                <description>First release</description>
+            </Modification_Detail>
+            <Modification_Detail>
+                <modification_date>2022-03-28</modification_date>
+                <version_id>2.0</version_id>
+                <description>Second release</description>
+            </Modification_Detail>
+        </Modification_History>
+    </Identification_Area>
+    <Reference_List>
+        <Source_Product_Internal>
+            <lidvid_reference>HX1-Or_GRAS_MEPA-HP_SCI_N_20201129000002_20201129235956_00130_B.2A</lidvid_reference>
+            <reference_type>data_to_calibrated_source_product</reference_type>
+            <comment>none</comment>
+        </Source_Product_Internal>
+    </Reference_List>
+    <Observation_Area>
+        <Time_Coordinates>
+            <start_date_time>2020-11-29T00:00:02.830000Z</start_date_time>
+            <stop_date_time>2020-11-29T23:59:56.442000Z</stop_date_time>
+        </Time_Coordinates>
+        <Primary_Result_Summary>
+            <purpose>Science</purpose>
+            <processing_level>Calibrated</processing_level>
+        </Primary_Result_Summary>
+        <Investigation_Area>
+            <name>HX-1</name>
+            <type>Mission</type>
+        </Investigation_Area>
+        <Observing_System>
+            <name>HX-1 Orbiter</name>
+            <Observing_System_Component>
+                <name>Mars Energetic Particles Analyzer</name>
+                <type>Instrument</type>
+            </Observing_System_Component>
+        </Observing_System>
+        <Target_Identification>
+            <name>Mars</name>
+            <type>Planet</type>
+        </Target_Identification>
+        <Mission_Area>
+            <product_id>HX1-Or_GRAS_MEPA-HP_SCI_N_20201129000002_20201129235956_00130_B.2B</product_id>
+            <product_version>B</product_version>
+            <product_level>2B</product_level>
+            <instrument_name>Mars Energetic Particles Analyzer</instrument_name>
+            <instrument_id>MEPA</instrument_id>
+            <sequence_id>00130</sequence_id>
+            <Instrument_Parm>
+                <Energy_Range>
+                    <electrons unit="MeV">“0.1~12”</electrons>
+                    <protons unit="MeV">“2~100”</protons>
+                    <heavy_ion unit="MeV">“25~300”</heavy_ion>
+                </Energy_Range>
+                <Energy_Resolution>“＞15%”</Energy_Resolution>
+                <Elementary_Composition>“H~Fe（1≤Z≤26）”</Elementary_Composition>
+                <FOV>60°</FOV>
+            </Instrument_Parm>
+        </Mission_Area>
+    </Observation_Area>
+    <File_Area_Observational>
+        <File>
+            <file_name>HX1-Or_GRAS_MEPA-HP_SCI_N_20201129000002_20201129235956_00130_B.2B</file_name>
+            <local_identifier>None</local_identifier>
+            <creation_date_time>2022-03-23T02:10:38.000000Z</creation_date_time>
+            <file_size unit="byte">67456800</file_size>
+            <records>21600</records>
+        </File>
+        <Table_Character>
+            <offset unit="byte">0</offset>
+            <records>21600</records>
+            <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+            <Record_Character>
+                <fields>27</fields>
+                <groups>2</groups>
+                <record_length>3123</record_length>
+                <Field_Character>
+                    <name>UTC</name>
+                    <field_number>1</field_number>
+                    <field_location unit="byte">1</field_location>
+                    <data_type>ASCII_Date_Time_YMD_UTC</data_type>
+                    <field_length unit="byte">27</field_length>
+                    <field_format>%27s</field_format>
+                    <description>Coordinated Universal Time</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Flag</name>
+                    <field_number>2</field_number>
+                    <field_location unit="byte">29</field_location>
+                    <data_type>ASCII_Integer</data_type>
+                    <field_length unit="byte">1</field_length>
+                    <field_format>%1d</field_format>
+                    <description>0：normal mode data，1：extraction mode data</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Heavy-Ion_Events_Count</name>
+                    <field_number>3</field_number>
+                    <field_location unit="byte">31</field_location>
+                    <data_type>ASCII_Integer</data_type>
+                    <field_length unit="byte">3</field_length>
+                    <field_format>%3d</field_format>
+                    <description>The number of heavy ion events, excluding fake events</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Heavy-Ion_Fake_Events_Count</name>
+                    <field_number>4</field_number>
+                    <field_location unit="byte">35</field_location>
+                    <data_type>ASCII_Integer</data_type>
+                    <field_length unit="byte">3</field_length>
+                    <field_format>%3d</field_format>
+                    <description>The number of fake events</description>
+                </Field_Character>
+                <Group_Field_Character>
+                    <name>Heavy-Ion_Science_Data</name>
+                    <group_number>1</group_number>
+                    <repetitions>84</repetitions>
+                    <fields>3</fields>
+                    <groups>0</groups>
+                    <group_location unit="byte">39</group_location>
+                    <group_length unit="byte">2268</group_length>
+                    <Field_Character>
+                        <name>Heavy-Ion_Event_n_Energy1</name>
+                        <field_number>1</field_number>
+                        <field_location unit="byte">1</field_location>
+                        <data_type>ASCII_Real</data_type>
+                        <field_length unit="byte">8</field_length>
+                        <field_format>%8.3f</field_format>
+                        <unit>MeV</unit>
+                        <description>Si1 detector energy</description>
+                    </Field_Character>
+                    <Field_Character>
+                        <name>Heavy-Ion_Event_n_Energy2</name>
+                        <field_number>2</field_number>
+                        <field_location unit="byte">10</field_location>
+                        <data_type>ASCII_Real</data_type>
+                        <field_length unit="byte">8</field_length>
+                        <field_format>%8.3f</field_format>
+                        <unit>MeV</unit>
+                        <description>Si2 detector energy</description>
+                    </Field_Character>
+                    <Field_Character>
+                        <name>Heavy-Ion_Event_n_Energy3</name>
+                        <field_number>3</field_number>
+                        <field_location unit="byte">19</field_location>
+                        <data_type>ASCII_Real</data_type>
+                        <field_length unit="byte">8</field_length>
+                        <field_format>%8.3f</field_format>
+                        <unit>MeV</unit>
+                        <description>CsI detector energy</description>
+                    </Field_Character>
+                </Group_Field_Character>
+                <Field_Character>
+                    <name>e/p/he_Events_Count</name>
+                    <field_number>5</field_number>
+                    <field_location unit="byte">2307</field_location>
+                    <data_type>ASCII_Integer</data_type>
+                    <field_length unit="byte">3</field_length>
+                    <field_format>%3d</field_format>
+                    <description>The number of heavy ion events, excluding fake events</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>e/p/he_Fake_Events_Count</name>
+                    <field_number>6</field_number>
+                    <field_location unit="byte">2311</field_location>
+                    <data_type>ASCII_Integer</data_type>
+                    <field_length unit="byte">3</field_length>
+                    <field_format>%3d</field_format>
+                    <description>The number of fake events</description>
+                </Field_Character>
+                <Group_Field_Character>
+                    <name>e/p/he_Science_Data</name>
+                    <group_number>2</group_number>
+                    <repetitions>22</repetitions>
+                    <fields>3</fields>
+                    <groups>0</groups>
+                    <group_location unit="byte">2315</group_location>
+                    <group_length unit="byte">594</group_length>
+                    <Field_Character>
+                        <name>e/p/he_Event_n_Energy1</name>
+                        <field_number>1</field_number>
+                        <field_location unit="byte">1</field_location>
+                        <data_type>ASCII_Real</data_type>
+                        <field_length unit="byte">8</field_length>
+                        <field_format>%8.3f</field_format>
+                        <unit>MeV</unit>
+                        <description>Si1 detector energy</description>
+                    </Field_Character>
+                    <Field_Character>
+                        <name>e/p/he_Event_n_Energy2</name>
+                        <field_number>2</field_number>
+                        <field_location unit="byte">10</field_location>
+                        <data_type>ASCII_Real</data_type>
+                        <field_length unit="byte">8</field_length>
+                        <field_format>%8.3f</field_format>
+                        <unit>MeV</unit>
+                        <description>Si2 detector energy</description>
+                    </Field_Character>
+                    <Field_Character>
+                        <name>e/p/he_Event_n_Energy3</name>
+                        <field_number>3</field_number>
+                        <field_location unit="byte">19</field_location>
+                        <data_type>ASCII_Real</data_type>
+                        <field_length unit="byte">8</field_length>
+                        <field_format>%8.3f</field_format>
+                        <unit>MeV</unit>
+                        <description>CsI detector energy</description>
+                    </Field_Character>
+                </Group_Field_Character>
+                <Field_Character>
+                    <name>VA_Temperature</name>
+                    <field_number>7</field_number>
+                    <field_location unit="byte">2909</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">6</field_length>
+                    <field_format>%6.2f</field_format>
+                    <unit>℃</unit>
+                    <description>VA160 chip temperature</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>CSI2_Temperature</name>
+                    <field_number>8</field_number>
+                    <field_location unit="byte">2916</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">6</field_length>
+                    <field_format>%6.2f</field_format>
+                    <unit>℃</unit>
+                    <description>CSI2 detector temperature</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>SI2_Temperature</name>
+                    <field_number>9</field_number>
+                    <field_location unit="byte">2923</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">6</field_length>
+                    <field_format>%6.2f</field_format>
+                    <unit>℃</unit>
+                    <description>Si2 detector temperature</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>PSDH_Temperature</name>
+                    <field_number>10</field_number>
+                    <field_location unit="byte">2930</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">6</field_length>
+                    <field_format>%6.2f</field_format>
+                    <unit>℃</unit>
+                    <description>PSDH device temperature</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Total_Trigger_Count</name>
+                    <field_number>11</field_number>
+                    <field_location unit="byte">2937</field_location>
+                    <data_type>ASCII_Integer</data_type>
+                    <field_length unit="byte">6</field_length>
+                    <field_format>%6d</field_format>
+                    <description>Total trigger count</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>e/p/he_Trigger_Count</name>
+                    <field_number>12</field_number>
+                    <field_location unit="byte">2944</field_location>
+                    <data_type>ASCII_Integer</data_type>
+                    <field_length unit="byte">5</field_length>
+                    <field_format>%5d</field_format>
+                    <description>e/p/he trigger count</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Heavy-ion_Trigger_Count</name>
+                    <field_number>13</field_number>
+                    <field_location unit="byte">2950</field_location>
+                    <data_type>ASCII_Integer</data_type>
+                    <field_length unit="byte">5</field_length>
+                    <field_format>%5d</field_format>
+                    <description>Heavy-ion trigger count</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Penetration_Count</name>
+                    <field_number>14</field_number>
+                    <field_location unit="byte">2956</field_location>
+                    <data_type>ASCII_Integer</data_type>
+                    <field_length unit="byte">5</field_length>
+                    <field_format>%5d</field_format>
+                    <description>High energy particle penetration count</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Divide_Ratio</name>
+                    <field_number>15</field_number>
+                    <field_location unit="byte">2962</field_location>
+                    <data_type>ASCII_Integer</data_type>
+                    <field_length unit="byte">3</field_length>
+                    <field_format>%3d</field_format>
+                    <description>Divide ratio</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Longitude</name>
+                    <field_number>16</field_number>
+                    <field_location unit="byte">2966</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">12</field_length>
+                    <field_format>%12.6f</field_format>
+                    <description />
+                </Field_Character>
+                <Field_Character>
+                    <name>Latitude</name>
+                    <field_number>17</field_number>
+                    <field_location unit="byte">2979</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">12</field_length>
+                    <field_format>%12.6f</field_format>
+                    <description />
+                </Field_Character>
+                <Field_Character>
+                    <name>Altitude</name>
+                    <field_number>18</field_number>
+                    <field_location unit="byte">2992</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">12</field_length>
+                    <field_format>%12.6f</field_format>
+                    <description />
+                </Field_Character>
+                <Field_Character>
+                    <name>X-axis_Position_J2000</name>
+                    <field_number>19</field_number>
+                    <field_location unit="byte">3005</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">17</field_length>
+                    <field_format>%17.6f</field_format>
+                    <description>J2000 Coordinate System</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Y-axis_Position_J2000</name>
+                    <field_number>20</field_number>
+                    <field_location unit="byte">3023</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">17</field_length>
+                    <field_format>%17.6f</field_format>
+                    <description>J2000 Coordinate System</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Z-axis_Position_J2000</name>
+                    <field_number>21</field_number>
+                    <field_location unit="byte">3041</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">17</field_length>
+                    <field_format>%17.6f</field_format>
+                    <description>J2000 Coordinate System</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Instrument_Observation_Direction_X</name>
+                    <field_number>22</field_number>
+                    <field_location unit="byte">3059</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">12</field_length>
+                    <field_format>%12.6f</field_format>
+                    <description>incidence vector of the symmetry axis of the sensor FOV in J2000 Coordinate System</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Instrument_Observation_Direction_Y</name>
+                    <field_number>23</field_number>
+                    <field_location unit="byte">3072</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">12</field_length>
+                    <field_format>%12.6f</field_format>
+                    <description>incidence vector of the symmetry axis of the sensor FOV in J2000 Coordinate System</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Instrument_Observation_Direction_Z</name>
+                    <field_number>24</field_number>
+                    <field_location unit="byte">3085</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">12</field_length>
+                    <field_format>%12.6f</field_format>
+                    <description>incidence vector of the symmetry axis of the sensor FOV in J2000 Coordinate System</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Solar_Incident_Angle</name>
+                    <field_number>25</field_number>
+                    <field_location unit="byte">3098</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">9</field_length>
+                    <field_format>%9.3f</field_format>
+                    <description>Solar incident angle</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Solar_Azimuth_Angle</name>
+                    <field_number>26</field_number>
+                    <field_location unit="byte">3108</field_location>
+                    <data_type>ASCII_Real</data_type>
+                    <field_length unit="byte">9</field_length>
+                    <field_format>%9.3f</field_format>
+                    <description>Solar azimuth angle</description>
+                </Field_Character>
+                <Field_Character>
+                    <name>Quality</name>
+                    <field_number>27</field_number>
+                    <field_location unit="byte">3118</field_location>
+                    <data_type>ASCII_String</data_type>
+                    <field_length unit="byte">4</field_length>
+                    <field_format>%4s</field_format>
+                    <description>0x00 means normal data, and other values means defective data.</description>
+                </Field_Character>
+            </Record_Character>
+        </Table_Character>
+    </File_Area_Observational>
+</Product_Observational>
