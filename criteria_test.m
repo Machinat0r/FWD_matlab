@@ -1,5 +1,6 @@
 clear;clc;close all
 %------written by Wending Fu, Jul.8.2022 in Beijing------------
+%------modified by Wending Fu, Nov.2023 in Beijing for dipole------------
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                       南无电子阿弥陀佛驱散仿生bug
@@ -165,6 +166,7 @@ end
 end
 
 B1 = irf_abs(B1);
+save dipole_data.mat
 %% movie1
 % % % figname = ['C:\Users\fwd\Desktop\Ti~mor~\M\magnetic_monopole\supplementary\illustration\RotationModel(S2)\RotationModel-paras.mp4'];
 % % % v = VideoWriter(figname, 'MPEG-4');

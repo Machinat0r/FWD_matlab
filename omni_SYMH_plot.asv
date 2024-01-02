@@ -1,0 +1,6 @@
+clear;clc;close all
+filepath = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/omni_hro_1min_20190801_v01.cdf';
+TT = '2019-08-05T14:00:00.00Z/2019-08-05T18:00:00.00Z';
+tint = irf.tint(TT);
+
+SYM_H= irf_get_data_omni_modified(tint,'symh','min');

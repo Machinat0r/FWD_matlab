@@ -1,6 +1,6 @@
 clear
 clc;close all
-mms.db_init('local_file_db','/Volumes/FWD-T7Disk/MMS/')
+mms.db_init('local_file_db','/Volumes/172.17.190.41/Data/MMS/')
 %% Load PDist using mms.make_pdist
 %for ic = 1:3; % spacecraft id
 ic=1;
@@ -124,7 +124,7 @@ colormap("jet")
 %   print(gcf, '-dpdf', [figname '.pdf']);
  %end 
  %end
- 
+
 % figure('Name','Time');
 % print(hhh,'-dpdf','C:\Users\Guo Zhizhong\Desktop\tupian'); 
 end

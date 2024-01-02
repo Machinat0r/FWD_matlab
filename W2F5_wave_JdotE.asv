@@ -21,13 +21,13 @@ TempDir = '/Users/fwd/Documents/MATLAB/MMS/temp/';mkdir(TempDir);
 % Tend = '2020-07-05T00:32:00.00Z';
 % Tsta='2019-08-05T16:24:00.00Z';   
 % Tend='2019-08-05T16:25:00.00Z';
-Tsta='2019-08-05T16:24:32.00Z';   
-Tend='2019-08-05T16:24:36.00Z';
+Tsta='2017-06-25T05:06:50.00Z';   
+Tend='2017-06-25T05:07:10.00Z';
 % Tsta='2021-08-22T06:40:45.000Z';   
 % Tend='2021-08-22T06:41:45.000Z';
 % Tsta='2021-07-22T12:44:30.00Z';   
 % Tend='2021-07-22T12:45:30.00Z';
-TT = '2019-08-05T16:24:18.00Z/2019-08-05T16:24:39.00Z';
+TT = '2017-06-25T05:06:50.00Z/2017-06-25T05:07:10.00Z';
 Tint=irf.tint(Tsta,Tend);
 % Tint=irf.tint('2019-07-22T17:09:45.00Z/2019-07-22T17:11:00.00Z');
 tint = Tint;
@@ -43,43 +43,8 @@ filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
 filename_scpot = SDCFilenames(Date,iic,'inst','edp','drm','brst','dpt','scpot');
 % filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); %为了知道坐标
 filenames = [filenames1,filenames2,filenames3,filenames4,filename_scpot];
-
-expr1 = '_\d+\_v';
-NameTags = regexp(filenames,expr1,'match');
-NameTags = cellfun(@(x)(str2double(x(2:end-2))),unique(cellfun(@cellstr,NameTags)),'UniformOutput',false);
-
-TTlist = strjoin(regexp(TT,'\d+','match'),'');
-i = 1;flag = 0;%若flag=0，说明整段时间都在第i-1个Tag里
-while str2double(TTlist(17:30)) > NameTags{i}  % 如果时间段刚好仅在某天的最后一个文件里会出bug，可以把时间往前调1ms
-    if str2double(TTlist(1:14)) < NameTags{i}
-        flag=1; break  %若flag=1，说明时间段的开始在第i-1个Tag里，结束在第i个里
-    else
-        i=i+1;
-    end
-end
-
-% '/' for MacOs, '\' for Windows
-if flag == 0
-    tempTag = num2str(NameTags{i-1});
-    filenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag)));
-    desmoms =  [ParentDir,'mms',num2str(ic),'/fpi/brst/l2/des-moms/',tempTag(1:4),'/',tempTag(5:6),'/',...
-            tempTag(7:8),'/',filenames{cellfun(@(x)(~isempty(x)),strfind(filenames,'des-moms'))}];
-    desmoms1 = desmoms; desmoms2 = desmoms1;
-else
-    if i == 1
-        errordlg('时间起始处无brst数据，请检查时间范围,或使用Overview_srvydownload程序')
-    end
-    tempTag1 = num2str(NameTags{i-1});
-    tempTag2 = num2str(NameTags{i});
-    filenames1 = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag1)));
-    filenames2 = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag2)));
-    filenames = [filenames1,filenames2];
-    desmoms1 = [ParentDir,'mms',num2str(ic),'/fpi/brst/l2/des-moms/',tempTag1(1:4),'/',tempTag1(5:6),'/',...
-            tempTag1(7:8),'/',filenames1{cellfun(@(x)(~isempty(x)),strfind(filenames1,'des-moms'))}];
-    desmoms2 = [ParentDir,'mms',num2str(ic),'/fpi/brst/l2/des-moms/',tempTag2(1:4),'/',tempTag2(5:6),'/',...
-            tempTag2(7:8),'/',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
-end
-SDCFilesDownload(filenames,TempDir)
+[filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
+SDCFilesDownload_NAS(filenames,TempDir)
 SDCDataMove(TempDir,ParentDir)
 mms.db_init('local_file_db',ParentDir);
 %%
@@ -427,12 +392,12 @@ c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensit
 %% Rotate E and B into field-aligned coordinates
 Exyzfac = irf_convert_fac(Exyz,Bxyz,[1 0 0]);
 Bscmfac1 = irf_convert_fac(Bscm1,Bxyz,[1 0 0]);
-lf=2;
+lf=0.2;
 if flag == 2
     Bscmfac2 = irf_convert_fac(Bscm2,Bxyz,[1 0 0]);
     dfB2 = 1/median(diff(Bscm2.time.epochUnix));
-    % Bscmfachf2 = Bscmfac2.filt(lf,0,dfB2,5);
-    Bscmfachf2 = Bscmfac2.filt(100,1000,dfB2,5);
+    Bscmfachf2 = Bscmfac2.filt(lf,0,dfB2,5);
+%     Bscmfachf2 = Bscmfac2.filt(40,300,dfB2,5);
     Bfachf2=irf.ts2mat(Bscmfachf2);
 end
 %% Bandpass filter E and B waveforms
@@ -442,22 +407,16 @@ dfB1 = 1/median(diff(Bscm1.time.epochUnix));
 
 
 % 
-% % % Exyzfachf = Exyzfac.filt(lf,0,dfE,5);
-% % % Exyzfaclf = Exyzfac.filt(0,lf,dfE,5);
-% % % Bscmfachf1 = Bscmfac1.filt(lf,0,dfB1,5);
-% % % Bscmfachf1=irf_convert_fac(Bscmfachf1,B,[1,0,0]);
-lf=100;hf=1000;
-Exyzfachf = Exyzfac.filt(lf,hf,dfE,5);
-% Exyzfaclf = Exyzfac.filt(0,lf,dfE,5);
-Bscmfachf1 = Bscmfac1.filt(lf,hf,dfB1,5);
+Exyzfachf = Exyzfac.filt(lf,0,dfE,5);
+Exyzfaclf = Exyzfac.filt(0,lf,dfE,5);
+Bscmfachf1 = Bscmfac1.filt(lf,0,dfB1,5);
 Bscmfachf1=irf_convert_fac(Bscmfachf1,B,[1,0,0]);
-
 % Bscmfachf1 = Bscmfac1.filt(0.02,0,128,5);
 % Bscmfachf1 = Bscmfac1.filt(40,300,dfB1,5);
 % % % 
-% hf = 40;
-% Exyzfachf = Exyzfac.filt(lf,hf,dfE,5);
-% Bscmfachf1 = Bscmfac1.filt(lf,hf,dfB1,5);
+% % % hf = 40;
+% % % Exyzfachf = Exyzfac.filt(lf,hf,dfE,5);
+% % % Bscmfachf1 = Bscmfac1.filt(lf,hf,dfB1,5);
 
 
 Efachf=irf.ts2mat(Exyzfachf);
@@ -465,11 +424,8 @@ Bfachf1=irf.ts2mat(Bscmfachf1);
 %% Wavelet transforms
 nf = 100;
 % Ewavelet = irf_wavelet(Exyzfachf,'nf',nf,'f',[lf 1]);
-% % % Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[5 50000]);
-% % % Bwavelet1 = irf_wavelet(Bscmfachf1,'nf',nf,'f',[lf 6000]);
-Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[lf hf]);
-Bwavelet1 = irf_wavelet(Bscmfachf1,'nf',nf,'f',[lf hf]);
-
+Ewavelet = irf_wavelet(Exyzfac,'w',5.56,'nf',nf,'f',[5 100]);
+Bwavelet1 = irf_wavelet(Bscmfachf1,'w',5.56,'nf',nf,'f',[lf 100]);
 % Bwavelet1 = irf_wavelet(Bscmfachf1,'nf',nf,'f',[lf 1]);
 if flag == 2
 Bwavelet2 = irf_wavelet(Bscmfachf2,'nf',nf,'f',[lf 6000]);
@@ -560,13 +516,13 @@ Fpp = irf.ts_scalar(magB.time,Fpp);
 Fce01=irf.ts_scalar(magB.time,Fce01);
 Fce05=irf.ts_scalar(magB.time,Fce05);
 %% Init figure 2
-n_subplots=7;
+n_subplots=8;
 i_subplot=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
 fn=figure(2);clf;
 set(gcf,'PaperUnits','centimeters')
-xSize = 20; ySize = 30; coef=floor(min(600/xSize,800/ySize));
+xSize = 20; ySize = 20; coef=floor(min(600/xSize,800/ySize));
 xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
 set(gcf,'PaperPosition',[xLeft yTop xSize ySize]);
 set(gcf,'Position',[10 10 xSize*coef ySize*coef]);
@@ -625,8 +581,8 @@ irf_plot(h(4),Fce05,'color','c','LineWidth',1.5);hold off;
 grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e1 1e2 1e3 1e4]);
-set(gca,'ylim',[8 1e4]);
-caxis(h(4),[-6 -2]);
+set(gca,'ylim',[2 1e3]);
+caxis(h(4),[-7 -3]);
 ylabel(h(4),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
 poscbar(3)=poscbar(3)*0.5;
@@ -646,8 +602,8 @@ irf_plot(h(5),Fce05,'color','c','LineWidth',1.5);hold off;
 grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e1 1e2 1e3 1e4]);
-set(gca,'ylim',[8 1e4]);
-caxis(h(5),[-6 -2]);
+set(gca,'ylim',[2 1e3]);
+caxis(h(5),[-7 -3]);
 ylabel(h(5),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
 poscbar(3)=poscbar(3)*0.5;
@@ -687,9 +643,9 @@ irf_plot(h(7),Fce05,'color','c','LineWidth',1.5);hold off;
 grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e-1 1e0 1e1 1e2 1e3 1e4]);
-set(gca,'ylim',[lf hf]);
+set(gca,'ylim',[2 1e3]);
 set(gca,'XTickLabelRotation',0)
-caxis(h(7),[-7 -2]);
+caxis(h(7),[-6 -3]);
 ylabel(h(7),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
 poscbar(3)=poscbar(3)*0.5;
@@ -697,7 +653,7 @@ set(hcb,'pos',poscbar);
 set(hcb,'fontsize',10);
  %% J dot E' plot
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-c_eval("irf_plot([JdotEplus?(:,1) abs(JdotEplus?(:,2))], 'color','k', 'Linewidth',0.75); hold on;",ic)
+c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)], 'color','k', 'Linewidth',0.75); hold on;",ic)
 % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
 % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
 c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
@@ -736,4 +692,4 @@ set(gcf,'paperpositionmode','auto');
 % irf_adjust_panel_position;
 
 figname=['/Users/fwd/Documents/lalala/硕士毕业论文/中期/wave&JdotE'];
-% print(gcf, '-dpdf', [figname '.pdf']);
+print(gcf, '-dpdf', [figname '.pdf']);

@@ -23,7 +23,7 @@ if isfolder(tempDir)
     if ismember('brst',filename_sep)
         ToF = isfile([tempDir, filename_sep{ii}(1:4),'/', filename_sep{ii}(5:6)...
             ,'/', filename_sep{ii}(7:8), '/', filename]);
-    elseif ismember('srvy',filename_sep)
+    elseif ismember('srvy',filename_sep) || ismember('fast', filename_sep)
         ToF = isfile([tempDir, filename_sep{ii}(1:4),'/', filename_sep{ii}(5:6)...
             , '/', filename]);
     else

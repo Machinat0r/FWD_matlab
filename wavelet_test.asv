@@ -1,0 +1,9 @@
+clc; close all
+
+% 连续小波变换
+figure
+fs = 8192;
+wavename='morse';
+[cfs, frq] = cwt(Bt1(:,2),wavename,fs,FrequencyLimits=[500 3e3]);
+tms = (0:numel(mtlb)-1)/Fs;
+clim([0.01,0.05]);
