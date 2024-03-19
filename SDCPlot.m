@@ -1,4 +1,4 @@
-function id_flagTime = SDCPlot(tint,desmoms,IC,Name,flagTime)
+function id_flagTime = SDCPlot(tint,desmoms1,desmoms2,IC,Name,flagTime)
 % see also SDCFilenames,SDCFilesDownload,SDCDataMove
 %% 底下就是原来的overview程序
     %zhuanhuan
@@ -144,13 +144,13 @@ function id_flagTime = SDCPlot(tint,desmoms,IC,Name,flagTime)
     % c_eval('dfB? = 1/median(diff(Bscm?.time.epochUnix));',ic);
     % c_eval('Exyzfachf? = Exyzfac?.filt(9,12,dfE?,5);',ic);
 
-    c_eval(['fpiFilee1 = dataobj(','''',desmoms,'''',');'],ic);
+    c_eval(['fpiFilee1 = dataobj(','''',desmoms1,'''',');'],ic);
     c_eval('energy_low1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_lowen_brst'');',ic);
     c_eval('energy_mid1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_miden_brst'');',ic);
     c_eval('energy_high1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_highen_brst'');',ic);
     c_eval('energy_e1 = get_variable(fpiFilee1,''mms?_des_energyspectr_omni_brst'');',ic);
 
-    c_eval(['fpiFilee2 = dataobj(','''',desmoms,'''',');'],ic);
+    c_eval(['fpiFilee2 = dataobj(','''',desmoms2,'''',');'],ic);
     c_eval('energy_low2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_lowen_brst'');',ic);
     c_eval('energy_mid2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_miden_brst'');',ic);
     c_eval('energy_high2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_highen_brst'');',ic);
@@ -982,7 +982,8 @@ function id_flagTime = SDCPlot(tint,desmoms,IC,Name,flagTime)
 %%  出图保存部分
     set(gcf,'render','painters');
     set(gcf,'paperpositionmode','auto')
-    figname = [OutputDir,'OverviewFig\',Name(2:end-2)];    
+    % figname = [OutputDir,'OverviewFig\',Name(2:end-2)];    
+    figname = [OutputDir,Name];  
     colormap(jet)
     print(gcf, '-dpng', [figname '.png']);    
 %     pause(1)

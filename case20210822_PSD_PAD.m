@@ -2,8 +2,11 @@ clear;
 clc;
 close all
 
-
-mms.db_init('local_file_db','D:\MMS\');
+global ParentDir 
+ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
+mms.db_init('local_file_db', ParentDir);
 
 ic=1;
 

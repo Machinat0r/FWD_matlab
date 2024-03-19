@@ -10,7 +10,7 @@ if length(varargin) == 6 || length(varargin)==12
     varargin = varargin(1:end-1);
     MultiPower = varargin{end};
     varargin = varargin(1:end-1);
-    idx = varargin{end};
+    idx = varargin{end};        idx_flag = sign(idx);
     if sign(idx) == -1 
         lb = -inf;ub = 0;
         idx = abs(idx);
@@ -51,7 +51,11 @@ end
 
 %% residual
 %% 使用2颗卫星代入模型求解
-[t,res] = ModelSolve(R1,R2,R3,R4,B1,B2,B3,B4,lb,ub,MultiPower,idx,LocationSkew);
+[t,res,flag] = ModelSolve(R1,R2,R3,R4,B1,B2,B3,B4,lb,ub,MultiPower,idx_flag,LocationSkew);
+if isempty(find(cell2mat(flag)>=-1, 1))
+    Q = nan;resQ = nan*ones(6,1);
+    resLoc = nan*ones(6,3);LocPoint = nan*ones(1,3);
+else
 resQ = [t{1}(1);t{2}(1);t{3}(1);t{4}(1);t{5}(1);t{6}(1)];
 % units = irf_units;
 % resQ = resQ / units.mu0;
@@ -67,7 +71,7 @@ try
 catch
     LocPoint = mean(resLoc);
 end
-
+end
 return
 %% 无限边界
 [t,residual] = LineIntersection(R1,R2,R3,R4,B1,B2,B3,B4,lb,ub);
@@ -251,23 +255,34 @@ function fun6 = fun6(t,B2,B4,R2,R4)
   fun6 = B2(:,2:4).*t(1)+R2(:,2:4) - B4(:,2:4).*t(2)-R4(:,2:4);
 end
 %% 2 S/C data into the monopole model to solve the Q & location
-function [t,residual]=ModelSolve(R1,R2,R3,R4,B1,B2,B3,B4,lb,ub,MultiPower,idx,LocationSkew)
-% x0 = [sign(idx)*1e4*MultiPower+15,0,0,0];
-% x0 = [sign(idx)*1e4*MultiPower+15,LocationSkew*ones(1,3)];
-% x0 = [sign(idx)*1e4*MultiPower,3,-1,2];
-x0 = [sign(idx)*1e4*MultiPower,0.1*ones(1,3)*MultiPower];
-% lb = [lb,-inf,-inf,-inf]; ub = [ub,inf,inf,inf];
+function [t,residual,flag]=ModelSolve(R1,R2,R3,R4,B1,B2,B3,B4,lb,ub,MultiPower,idx_flag,LocationSkew)
+% % % x0 = [idx_flag*1e4*MultiPower+15,10,10,10];
+x0 = [idx_flag*1e4*MultiPower+15,LocationSkew*ones(1,3)];
+% x0 = [idx_flag*1e4*MultiPower,3,-1,2];
+% x0 = [idx_flag*1e4*MultiPower,ones(1,3)*MultiPower];
+% x0 = [idx_flag*1e4*MultiPower,0,0,0];
+% lb = [0.1*idx_flag*1e4*MultiPower,1000*ones(1,3)*MultiPower]; ub = [ub,1000*ones(1,3)*MultiPower];
 lb = [];ub = [];
-options = optimoptions('lsqnonlin','Algorithm','trust-region-reflective');
+options = optimoptions('lsqnonlin');
+% options = optimoptions('lsqnonlin','Algorithm','trust-region-reflective',...
+    % 'OptimalityTolerance',1e-10,'FunctionTolerance',1e-10,'MaxFunctionEvaluations',1e4,'MaxIterations',1e4);
 [t1,~,residual1] = lsqnonlin(@(t)myfunc1(t,B1,B2,B3,B4,R1,R2,R3,R4),x0,lb,ub,options);
 [t2,~,residual2] = lsqnonlin(@(t)myfunc2(t,B1,B2,B3,B4,R1,R2,R3,R4),x0,lb,ub,options);
 [t3,~,residual3] = lsqnonlin(@(t)myfunc3(t,B1,B2,B3,B4,R1,R2,R3,R4),x0,lb,ub,options);
 [t4,~,residual4] = lsqnonlin(@(t)myfunc4(t,B1,B2,B3,B4,R1,R2,R3,R4),x0,lb,ub,options);
 [t5,~,residual5] = lsqnonlin(@(t)myfunc5(t,B1,B2,B3,B4,R1,R2,R3,R4),x0,lb,ub,options);
 [t6,~,residual6] = lsqnonlin(@(t)myfunc6(t,B1,B2,B3,B4,R1,R2,R3,R4),x0,lb,ub,options);
+% % % [t1,residual1,flag1] = fsolve(@(t)myfunc1(t,B1,B2,B3,B4,R1,R2,R3,R4),x0);
+% % % [t2,residual2,flag2] = fsolve(@(t)myfunc2(t,B1,B2,B3,B4,R1,R2,R3,R4),x0);
+% % % [t3,residual3,flag3] = fsolve(@(t)myfunc3(t,B1,B2,B3,B4,R1,R2,R3,R4),x0);
+% % % [t4,residual4,flag4] = fsolve(@(t)myfunc4(t,B1,B2,B3,B4,R1,R2,R3,R4),x0);
+% % % [t5,residual5,flag5] = fsolve(@(t)myfunc5(t,B1,B2,B3,B4,R1,R2,R3,R4),x0);
+% % % [t6,residual6,flag6] = fsolve(@(t)myfunc6(t,B1,B2,B3,B4,R1,R2,R3,R4),x0);
 
 t = {t1,t2,t3,t4,t5,t6};
 residual = {residual1,residual2,residual3,residual4,residual5,residual6};
+c_eval('flag? = 2;',1:6);
+flag = {flag1,flag2,flag3,flag4,flag5,flag6};
 end
 
 function myfun1 = myfunc1(t,B1,B2,B3,B4,R1,R2,R3,R4)

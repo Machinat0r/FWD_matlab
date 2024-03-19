@@ -1,37 +1,34 @@
-clear;
-clc;
 close all
+clear;clc
 
 global ParentDir 
 ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
-TempDir = [ParentDir, 'temp/'];mkdir(TempDir);
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
+% TT = '2021-08-15T03:35:15.00Z/2021-08-15T03:35:30.00Z';
+% TT = '2021-08-22T06:39:30.00Z/2021-08-22T06:43:00.00Z';
+% TT = '2018-02-06T13:29:00.00Z/2018-02-06T13:30:30.00Z';
+% % % TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+% TT = '2015-11-04T04:34:00.00Z/2015-11-04T04:37:00.00Z';
+% TT = '2018-07-03T15:50:10.00Z/2018-07-03T15:50:25.00Z';
+% TT = '2018-08-19T18:24:30.00Z/2018-08-19T18:26:20.00Z';
+% TT = '2019-08-16T01:03:33.00Z/2019-08-16T01:05:13.00Z';
+% % TT='2017-08-23T15:38:30.00Z/2017-08-23T15:39:15.00Z';
+% TT = '2021-07-10T12:41:23.00Z/2021-07-10T12:42:23.00Z';
+% TT = '2018-07-03T15:50:00.00Z/2018-07-03T15:51:00.00Z';
+% TT = '2017-08-20T02:01:30.00Z/2017-08-20T02:03:00.00Z';
+% TT = '2017-08-07T16:01:00.00Z/2017-08-07T16:02:00.00Z';
+% TT = '2021-07-21T12:46:20.00Z/2021-07-21T12:46:40.00Z';
+% TT = '2017-05-05T20:06:30.00Z/2017-05-05T20:07:10.00Z';
+% TT = '2022-08-18T23:53:00.00Z/2022-08-18T23:54:00.00Z';
+% TT = '2022-08-19T01:13:40.00Z/2022-08-19T01:14:40.00Z';
+% TT = '2020-08-02T16:56:10.00Z/2020-08-02T16:56:25.00Z';
+% TT = '2017-06-25T05:06:58.00Z/2017-06-25T05:07:02.00Z';
+% % % TT = '2017-06-11T17:55:10.000Z/2017-06-11T17:55:30.000Z';
+TT = '2016-01-07T09:34:27.00Z/2016-01-07T09:34:37.00Z';
 
-% Tint=irf.tint('2018-08-22T15:34:32.00Z/2018-08-22T15:34:36.00Z');
-% Tsta='2018-06-02T18:28:50Z';   
-% Tend='2018-06-02T18:31:50Z';
-% Tsta='2017-08-23T15:38:30.00Z';   
-% Tend='2017-08-23T15:39:13.00Z';
-
-% Tsta='2020-08-03T02:36:04.00Z';
-% Tend='2020-08-03T02:36:30.00Z';   
-% Tsta = '2017-08-20T02:02:00.00Z';
-% Tend = '2017-08-20T02:03:00.00Z';
-% Tsta = '2020-07-05T00:31:00.00Z';
-% Tend = '2020-07-05T00:32:00.00Z';
-% Tsta='2019-08-05T16:24:00.00Z';   
-% Tend='2019-08-05T16:25:00.00Z';
-Tsta='2017-06-11T17:55:00.00Z';   
-Tend='2017-06-11T17:55:40.00Z';
-% Tsta='2021-08-22T06:40:45.000Z';   
-% Tend='2021-08-22T06:41:45.000Z';
-% Tsta='2021-07-22T12:44:30.00Z';   
-% Tend='2021-07-22T12:45:30.00Z';
-% TT = '2017-06-25T05:06:50.00Z/2017-06-25T05:07:10.00Z';
-TT = '2017-06-11T17:55:00.00Z/2017-06-11T17:55:40.00Z';
-Tint=irf.tint(Tsta,Tend);
-% Tint=irf.tint('2019-07-22T17:09:45.00Z/2019-07-22T17:11:00.00Z');
-tint = Tint;
+tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
@@ -40,12 +37,18 @@ iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
 filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
-filename_scpot = SDCFilenames(Date,iic,'inst','edp','drm','brst','dpt','scpot');
-% filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); %为了知道坐标
-filenames = [filenames1,filenames2,filenames3,filenames4,filename_scpot];
+filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce,scpot');
+filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
+% filenames_fast = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms,des-dist,dis-dist');
+filenames = [filenames1,filenames2,filenames3,filenames4];
+
 [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
-SDCFilesDownload_NAS(filenames,TempDir)
+% [filenames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
+[filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
+
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+% SDCFilesDownload_NAS(filenames_fast,TempDir)
+SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 32, 'CheckSize', 0)
 SDCDataMove(TempDir,ParentDir)
 mms.db_init('local_file_db',ParentDir);
 %%
@@ -327,17 +330,17 @@ c_eval('J? = irf_resamp(J?,E?);',ic);
 c_eval('JdotEplus? = [Eplus?(:,1) irf_dot(J?(:,2:4),Eplus?(:,2:4))];',ic);
 c_eval('JdotEint = [JdotEplus?(:,1) cumsum(JdotEplus?(:,2))];',ic);
 %% Load Data 
-c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',Tint);',ic);
+c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',tint);',ic);
 magB = Bxyz.abs;
 B=irf.ts2mat(Bxyz);
 Bt=irf.ts2mat(magB);
-c_eval('Exyz_gse=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',Tint);',ic);
+c_eval('Exyz_gse=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',tint);',ic);
 % E_temp=irf.ts2mat(Exyz_gse);
 Exyz=irf_gse2gsm(Exyz_gse);
 E=irf.ts2mat(Exyz);
 % Exyz = TSeries(Exyz_gse.time,[Exyz_gsm(:,2:4)]);
 % Exyz = irf.ts_vec_xyz(Exyz_gse.time,Exyz_gsm(:,2:4));
-c_eval('Bscm_ts=mms.db_get_ts(''mms?_scm_brst_l2_scb'',''mms?_scm_acb_gse_scb_brst_l2'',Tint);',ic);
+c_eval('Bscm_ts=mms.db_get_ts(''mms?_scm_brst_l2_scb'',''mms?_scm_acb_gse_scb_brst_l2'',tint);',ic);
 
 % c_eval('Epar?_err_ts=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_par_epar_brst_l2'',tint);',ic);
 % c_eval('Epar?_err=irf.ts2mat(Epar?_err_ts);',ic);
@@ -360,7 +363,7 @@ c_eval('Bscm_ts=mms.db_get_ts(''mms?_scm_brst_l2_scb'',''mms?_scm_acb_gse_scb_br
 % Bscm_gse=irf.ts_vec_xyz(t_Bscm.epoch,data_Bscm);
 flag = 1;
 try
-    Bscm1=irf_gse2gsm(Bxyz);
+    Bscm1=irf_gse2gsm(Bscm_ts);
     % Bscm1=irf_gse2gsm(Bscm_ts);
 catch
     Bscm1=irf_gse2gsm(Bscm_ts{1,1});
@@ -379,8 +382,8 @@ end
 %Bscm=irf_gse2gsm(Bscm_gse);
 % Bscm = irf.ts_vec_xyz(irf_time(Bscm_mat(:,1),'epoch>epochtt'),Bscm_mat_gsm(:,2:4));
 % Bscm=Bscm{1};            %Bscm是cell
-% c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',Tint);',ic);
-c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',Tint);',ic);
+% c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',tint);',ic);
+c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',tint);',ic);
 
 % L=-[-0.562 0.719 -0.410];
 % M=-[-0.555 -0.695 -0.458];
@@ -393,7 +396,7 @@ c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensit
 %% Rotate E and B into field-aligned coordinates
 Exyzfac = irf_convert_fac(Exyz,Bxyz,[1 0 0]);
 Bscmfac1 = irf_convert_fac(Bscm1,Bxyz,[1 0 0]);
-lf=0.2;hf = 20;
+lf=0.1;hf = 2;
 if flag == 2
     Bscmfac2 = irf_convert_fac(Bscm2,Bxyz,[1 0 0]);
     dfB2 = 1/median(diff(Bscm2.time.epochUnix));
@@ -423,10 +426,10 @@ Bscmfachf1 = Bscmfac1.filt(lf,hf,dfB1,5);
 Efachf=irf.ts2mat(Exyzfachf);
 Bfachf1=irf.ts2mat(Bscmfachf1);
 %% Wavelet transforms
-nf = 400;
+nf = 100;
 % Ewavelet = irf_wavelet(Exyzfachf,'nf',nf,'f',[lf 1]);
-Ewavelet = irf_wavelet(Exyzfac,'returnpower',1,'cutedge',1,'w',5.36*2,'nf',nf,'f',[lf hf]);
-Bwavelet1 = irf_wavelet(Bscmfachf1,'returnpower',1,'cutedge',1,'w',5.36*2,'nf',nf,'f',[lf hf]);
+Ewavelet = irf_wavelet(Exyzfachf,'returnpower',1,'nf',nf,'f',[lf hf]);
+Bwavelet1 = irf_wavelet(Bscmfachf1,'returnpower',1,'nf',nf,'f',[lf hf]);
 % Bwavelet1 = irf_wavelet(Bscmfachf1,'nf',nf,'f',[lf 1]);
 if flag == 2
 Bwavelet2 = irf_wavelet(Bscmfachf2,'nf',nf,'f',[lf 6000]);
@@ -518,7 +521,7 @@ Fpp = irf.ts_scalar(magB.time,Fpp);
 Fce01=irf.ts_scalar(magB.time,Fce01);
 Fce05=irf.ts_scalar(magB.time,Fce05);
 %% Init figure 2
-n_subplots=8;
+n_subplots=7;
 i_subplot=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
@@ -584,7 +587,7 @@ grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e1 1e2 1e3 1e4]);
 set(gca,'ylim',[lf hf]);
-% caxis(h(4),[-4.5 -3]);
+clim(h(4),[-6 0]);
 ylabel(h(4),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
 poscbar(3)=poscbar(3)*0.5;
@@ -605,7 +608,7 @@ grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e1 1e2 1e3 1e4]);
 set(gca,'ylim',[lf hf]);
-% caxis(h(5),[-4.5 -3]);
+clim(h(5),[-6 0]);
 ylabel(h(5),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
 poscbar(3)=poscbar(3)*0.5;
@@ -647,25 +650,25 @@ set(gca,'yscale','log');
 set(gca,'ytick',[1e-1 1e0 1e1 1e2 1e3 1e4]);
 set(gca,'ylim',[lf hf]);
 set(gca,'XTickLabelRotation',0)
-% caxis(h(7),[-4.5 -3]);
+clim(h(7),[-6 -2]);
 ylabel(h(7),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
 poscbar(3)=poscbar(3)*0.5;
 set(hcb,'pos',poscbar);
 set(hcb,'fontsize',10);
  %% J dot E' plot
-h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)], 'color','k', 'Linewidth',0.75); hold on;",ic)
-% irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
-% irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
-c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
-grid off;
-ylabel('|J\dotE| [pw/m]','fontsize',10);
-% set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
-% set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
-% irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
-% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
-% irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+% % % h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+% % % c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)], 'color','k', 'Linewidth',0.75); hold on;",ic)
+% % % % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% % % % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
+% % % c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
+% % % grid off;
+% % % ylabel('|J\dotE| [pw/m]','fontsize',10);
+% % % % set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
+% % % % set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
+% % % % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
  %% J dot E' integrate plot
 % % % h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 % % % c_eval("irf_plot([JdotEint(:,1) JdotEint(:,2)], 'color','k', 'Linewidth',0.75); hold on;",ic)
@@ -684,7 +687,7 @@ set(gca,"XTickLabelRotation",0)
 colormap(jet);
 
 irf_plot_axis_align(h(1:end));
-irf_zoom(h(1:end),'x',Tint);
+irf_zoom(h(1:end),'x',tint);
 
 % irf_pl_mark(h(1:7),[iso2epoch('2015-10-16T13:04:26Z')],'k');
 % irf_pl_mark(h(1:7),[iso2epoch('2015-12-14T00:59:04Z')],'k');

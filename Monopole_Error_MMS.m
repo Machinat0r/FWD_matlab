@@ -29,10 +29,11 @@ clear;clc;close all
 %                金光速现，覆护真人。急急如律令，bug全去除！
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
-
 global ParentDir 
-ParentDir = '/Volumes/FWD-WorkDisk/MMS/'; 
-TempDir = '/Volumes/FWD-WorkDisk/MMS/temp/';mkdir(TempDir);
+ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
+
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
 TT = '2019-01-16T04:09:55.605Z/2019-01-16T04:09:55.630Z'; %no boundary, 10,78-81
 % TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
@@ -48,39 +49,15 @@ TT = '2019-01-16T04:09:55.605Z/2019-01-16T04:09:55.630Z'; %no boundary, 10,78-81
 
 % TT = '2015-09-19T07:43:28.000Z/2015-09-19T07:43:33.000Z';
 
-
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 ic = 1:4;
-iic = 1:4;
-try
-filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
-% filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); %为了知道坐标
-filenames = filenames1;
+filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
+[filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
 
-expr1 = '_\d+\_v';
-NameTags = regexp(filenames,expr1,'match');
-NameTags = cellfun(@(x)(str2double(x(2:end-2))),unique(cellfun(@cellstr,NameTags)),'UniformOutput',false);
-
-TTlist = strjoin(regexp(TT,'\d+','match'),'');
-i = 1;flag = 0;%若flag=0，说明整段时间都在第i-1个Tag里
-while i<=length(NameTags) && str2double(TTlist(17:30)) > NameTags{i}
-    if str2double(TTlist(1:14)) < NameTags{i}
-        flag=1; break  %若flag=1，说明时间段的开始在第i-1个Tag里，结束在第i个里
-    else,i=i+1;
-    end
-end
-tempTag = num2str(NameTags{i-1});
-filenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag)));
-
-SDCFilesDownload(filenames,TempDir)
-catch
-    disp('Download Files Failed!')
-end
-% SDCFilesDownload(filenames_srvy(1:2:8),TempDir)
-% % % id_flagTime = OverView_download(tint,desmoms,IC,Name,flagTime)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
 %% Poincare Index  
 SDCDataMove(TempDir,ParentDir); mms.db_init('local_file_db',ParentDir);
 
@@ -126,7 +103,7 @@ c_eval(['RR_mean=RR_mean+irf_abs(RR',num2str(ii),'?(2,:)-RR',num2str(ii),'?(1,:)
 end
 RR_mean = RR_mean(4)/6;
 % if PI(i)~=0
-    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('R?','B?',i,i*sign(divB(i,2)),10,1);
+    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('R?','B?',i,i*sign(divB(i,2)),10 ,1);
     id = nchoosek(1:6,2);
 c_eval('tempd? = irf_abs(LocRes{i}(id(?,1),:)-LocRes{i}(id(?,2),:));',1:15)
 tempd = [];

@@ -1,7 +1,8 @@
 %------written by Wending Fu, Nov.2023 in Beijing------------
 clear;clc;close all
 % 18.0969
-file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/PS.APL_V0105S027CB0006_SC.U_DI.A_GP.F18-SSUSI_PA.APL-EDR-AURORA_DD.20190805_SN.027894-00_DF.NC';
+% file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/PS.APL_V0105S027CB0006_SC.U_DI.A_GP.F18-SSUSI_PA.APL-EDR-AURORA_DD.20190805_SN.027894-00_DF.NC';
+file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/PS.APL_V0105S027CB0006_SC.U_DI.A_GP.F18-SSUSI_PA.APL-EDR-AURORA_DD.20190805_SN.027893-00_DF.NC';
 % file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/dmspf18_ssusi_edr-aurora_2019217T153253-2019217T171445-REV27893_vA8.2.0r000.nc';
 info = ncinfo(file_path);
 ncid = netcdf.open(file_path, 'NOWRITE');
@@ -24,8 +25,8 @@ lat_mesh = LATITUDE_GEOMAGNETIC_GRID_MAP.data;
 
 NORTH_DQI = DISK_DQI_NORTH.data;
 SOUTH_DQI = DISK_DQI_SOUTH.data;
-NORTH_DQI(NORTH_DQI ~= 2048 | 4096) = 0; NORTH_DQI(NORTH_DQI == 2048| 4096) = 1;
-SOUTH_DQI(SOUTH_DQI ~= 2048| 4096) = 0; SOUTH_DQI(SOUTH_DQI == 2048| 4096) = 1;
+NORTH_DQI(NORTH_DQI ~= 2048 | 4096) = 0; NORTH_DQI(NORTH_DQI == 2048 | 4096) = 1;
+SOUTH_DQI(SOUTH_DQI ~= 2048 | 4096) = 0; SOUTH_DQI(SOUTH_DQI == 2048 | 4096) = 1;
 
 ARC_NORTH_data = DISK_RADIANCEDATA_INTENSITY_NORTH.data;
 ARC_NORTH_data = ARC_NORTH_data .* NORTH_DQI;
@@ -52,13 +53,17 @@ theta(theta==0)=nan;
 rho = 90 - lat_mesh;
 
 figure;
-polarscatter(theta(:), rho(:), 15, log10(abs(ARC_NORTH_data(:))), 'filled', 'MarkerFaceAlpha', 0.01);
+polarscatter(theta(:), rho(:), 15, log10(abs(ARC_NORTH_data(:))), 'filled');
 
-cm = othercolor('YlGnBu9');
-% cm = othercolor('Greys9');
-cm = flip(cm);
-cm(:,3) = linspace(0.15,0.851, 256);
+aaa = [189,233,238]/255;
+bbb = [23,129,171]/255;
+ccc = [60,70,108]/255; % 
+cm = zeros(256,3);
+cm(:,1) = [linspace(ccc(1),bbb(1),128),linspace(bbb(1),aaa(1),128)];
+cm(:,2) = [linspace(ccc(2),bbb(2),128),linspace(bbb(2),aaa(2),128)];
+cm(:,3) = [linspace(ccc(3),bbb(3),128),linspace(bbb(3),aaa(3),128)];
 colormap(cm)
+colormap('jet')
 c = colorbar;
 c.Label.String = 'SSUSI LBHS Log10(Intensity) [R]';
 clim([2.2 3.5]);

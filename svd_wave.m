@@ -1,10 +1,12 @@
 %% 数据库初始化
 clear;
 clc;
-mms.db_init('local_file_db','D:\MMS\');
+ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
+mms.db_init('local_file_db',ParentDir);
 % mms.db_init('local_file_db','D:\MATLAB\matlab1\work_zhang\Dispersion Relation Solver\20180416_data')
 % Tint = irf.tint('2018-04-16T10:20:00.00Z/2018-04-16T11:00:00.00Z');
-Tint = irf.tint('2021-07-21T13:19:57.000Z/2021-07-21T13:20:01.000Z');
+% % % Tint = irf.tint('2021-07-21T13:19:57.000Z/2021-07-21T13:20:01.000Z');
+Tint = irf.tint('2016-01-07T09:34:27.00Z/2016-01-07T09:34:37.00Z'); % ECH from 10.1029/2023JA031865 [10-4096]
 ic=1;
 
 %R

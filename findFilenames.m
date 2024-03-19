@@ -44,10 +44,11 @@ if Tm1 >= NameTags{end}, i = i+1; end
 %%
 % '/' for MacOs, '\' for Windows
 global ParentDir
+if datamode == 'brst'
 if flag == 0
     tempTag = num2str(NameTags{i});
     filenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag)));
-    desmoms =  [ParentDir,'mms',num2str(ic),'/fpi/brst/l2/des-moms/',tempTag(1:4),'/',tempTag(5:6),'/',...
+    desmoms =  [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag(1:4),'/',tempTag(5:6),'/',...
             tempTag(7:8),'/',filenames{cellfun(@(x)(~isempty(x)),strfind(filenames,'des-moms'))}];
     desmoms1 = desmoms; desmoms2 = desmoms1;
 else
@@ -59,9 +60,31 @@ else
     filenames1 = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag1)));
     filenames2 = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag2)));
     filenames = [filenames1,filenames2];
-    desmoms1 = [ParentDir,'mms',num2str(ic),'/fpi/brst/l2/des-moms/',tempTag1(1:4),'/',tempTag1(5:6),'/',...
+    desmoms1 = [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag1(1:4),'/',tempTag1(5:6),'/',...
             tempTag1(7:8),'/',filenames1{cellfun(@(x)(~isempty(x)),strfind(filenames1,'des-moms'))}];
-    desmoms2 = [ParentDir,'mms',num2str(ic),'/fpi/brst/l2/des-moms/',tempTag2(1:4),'/',tempTag2(5:6),'/',...
+    desmoms2 = [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag2(1:4),'/',tempTag2(5:6),'/',...
             tempTag2(7:8),'/',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
+end
+else
+    if flag == 0
+    tempTag = num2str(NameTags{i});
+    filenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag)));
+    desmoms =  [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag(1:4),'/',tempTag(5:6),'/',...
+            '/',filenames{cellfun(@(x)(~isempty(x)),strfind(filenames,'des-moms'))}];
+    desmoms1 = desmoms; desmoms2 = desmoms1;
+else
+    if i == 1
+        errordlg('时间起始处无brst数据，请检查时间范围,或使用Overview_srvydownload程序')
+    end
+    tempTag1 = num2str(NameTags{i});
+    tempTag2 = num2str(NameTags{i+1});
+    filenames1 = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag1)));
+    filenames2 = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag2)));
+    filenames = [filenames1,filenames2];
+    desmoms1 = [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag1(1:4),'/',tempTag1(5:6),'/',...
+            '/',filenames1{cellfun(@(x)(~isempty(x)),strfind(filenames1,'des-moms'))}];
+    desmoms2 = [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag2(1:4),'/',tempTag2(5:6),'/',...
+            '/',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
+end
 end
 end

@@ -45,7 +45,7 @@ addParameter(parser, 'LineWidth', defaultLineWidth, @isnumeric);
 addParameter(parser, 'TimeAxis', defaultTimeAxis, @isnumeric);
 addParameter(parser, 'FaceColor', defaultFaceColor, @ischar);
 addParameter(parser, 'EdgeColor', defaultEdgeColor, @ischar);
-addParameter(parser, 'EdgeAlpha', defaultEdgeColor);
+addParameter(parser, 'EdgeAlpha', defaultEdgeAlpha);
 
 parse(parser, varargin{:});
 
@@ -65,11 +65,17 @@ case 2
     TimeAxis = 'nodate';
 end
 %% plot
-P = log10(P);
-fn = patch([T(1);T;T(end)], [0;F;0], [nan;P;nan], ...
+if size(F,2) ~= size(P,2), warning('wrong dimension of F and P'); help hht_plot; end
+for imf = 1:size(F,2)
+tempF = F(:,imf);
+tempP = P(:,imf);
+tempP_log10 = log10(tempP);
+fn = patch([T(1);T;T(end)], [0;tempF;0], [nan;tempP_log10;nan], ...
     'EdgeColor',EdgeColor,'EdgeAlpha',EdgeAlpha,...
-    'FaceColor', FaceColor, 'FaceVertexAlphaData',[nan;P;nan],...
+    'FaceColor', FaceColor, 'FaceVertexAlphaData',[nan;tempP;nan],...
     'LineWidth', LineWidth, 'FaceAlpha', 'interp');
+hold on;
+end
 
 xyrange = [0,T(end),FRange(1),FRange(2)];
 axis(xyrange);

@@ -33,8 +33,8 @@ clear;clc;close all
 %% Parameter
 units = irf_units;
 k0 = 1/(4*pi);
-Q1 = 1e5;Q2 = -1e5;
-r1 = [1,0,5];r2 = [-1,0,5];
+Q1 = 1e5;Q2 = 0;
+r1 = [0,0,0];r2 = [-1,0,5];
 % a1 = 10*[0,0,3]; a2 = 10*[-2*sqrt(2)-1,2,-1]; a3 = 10*[sqrt(2)+1,sqrt(6)+1,-2]; a4 = 10*[sqrt(2)-0.5,-sqrt(6)+1,-3];
 a1 = 10*[0,0,3]; a2 = 10*[-2*sqrt(2)-1,2,-1]; a3 = 10*[sqrt(2)+2,sqrt(6)+1,-2]; a4 = 10*[sqrt(2)-1,-sqrt(6)+1,-3];
 
@@ -97,7 +97,7 @@ end
 [j,divB,~,~,~,~] = c_4_j('a?','B?');
 temp=irf_abs(j);
 jmag=temp(:,4);
-err_4C=irf_multiply(1,divB,1,jmag,-1);          %% η
+err_4C=irf_multiply(1,divB,1,jmag,-1);  %% η
 err_4C=abs(err_4C);    
 
 %% solve monopole
@@ -121,11 +121,15 @@ RR_mean = RR_mean(4)/6;
 
 [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('a?','B?',i,i*sign(divB(i)),10,1);
 
+if ~isnan(LocRes{i})
 id = nchoosek(1:6,2);
 c_eval('tempd? = irf_abs(LocRes{i}(id(?,1),:)-LocRes{i}(id(?,2),:));',1:15)
 tempd = [];
 c_eval('tempd = [tempd,tempd?(4)/RR_mean];',1:15);
 dLoc(i,:) = tempd;
+else
+    dLoc(i,:) = 10*ones(1,15);
+end
 % [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('a?','B?',i,i,2);
 % [LocRes{i},~,LocPoint(i,:),~]= CalError('a?','B?',i,i,2);
 % if isnan(LocRes{i})
@@ -144,7 +148,7 @@ for i = 1:length(theta)
 if ~isnan(resQ{i})
     Qerror(i) = 100*std(resQ{i})/Q(i);
 else
-    Qerror(i) = 100;
+    Qerror(i) = 1000;
 end
 
 if ~isnan(LocRes{i})
@@ -161,7 +165,7 @@ else
 end
 Locerror(i) = 100*volume/volume_a;
 else
-Locerror(i) = 100;
+Locerror(i) = 1000;
 end
 end
 
@@ -173,7 +177,8 @@ save dipole_data.mat
 % % % v.FrameRate = 60;
 % % % v.Quality = 100;
 % % % open(v)
-for f = 1:1:361
+% for f = 1:1:361
+f = 361;
 %% Init figure 1
 figure(1)
 n=5;
@@ -333,7 +338,7 @@ set(gcf,'color','w')
 % % % frame = getframe(figure(1));
 % % % writeVideo(v,frame)
 % print(gcf, '-dpdf', [figname '.pdf']);
-end
+% % % end
 % % % close(v)
 
 %% Init figure 2

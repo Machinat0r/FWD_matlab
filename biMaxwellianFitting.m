@@ -3,14 +3,16 @@
 clear; close all; clc
 global ParentDir 
 ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
-TempDir = [ParentDir,'temp/'];mkdir(TempDir);
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 ic=3;
 % tint = irf.tint('2019-07-19T13:47:05.200Z/2019-07-19T13:47:06.500Z');
-TT = '2016-11-21T07:22:21.800Z/2016-11-21T07:22:21.900Z';
+% TT = '2016-11-21T07:22:21.800Z/2016-11-21T07:22:21.900Z';
+TT = '2021-07-22T05:20:55.00Z/2021-07-22T05:20:58.00Z';
 tint = irf.tint(TT);
 
-inpath = '/Users/fwd/Documents/MATLAB/Code/XIE_HS/pdrk/pdrk_master_v181027/pdrk-master/BEW/input/pdrk.in';
+inpath = '/Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/pdrk.in';
 
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
@@ -24,7 +26,7 @@ filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy');
 filenames = [filenames1,filenames2];
 
 [filenames,~,~] = findFilenames(TT,filenames,'brst',ic);
-SDCFilesDownload_NAS(filenames,TempDir)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
 SDCDataMove(TempDir,ParentDir)
 %% Load in data
 units = irf_units;
@@ -224,7 +226,7 @@ units = irf_units;
 V = V/units.c;
 E = 0.5*units.me*V^2/units.e;
 end
-%% biMaxwell function
+%% biMaxwell function for PDRK
 function flux = biMaxwellFunc(E, n, Tpara, Tperp, Vd, idx)
 units = irf_units;
 m=units.me;

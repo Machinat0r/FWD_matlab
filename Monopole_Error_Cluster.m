@@ -30,16 +30,23 @@ close all
 %                金光速现，覆护真人。急急如律令，bug全去除！
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% load data
+% % % global ParentDir 
+% % % ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
+% % % DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+% % % TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % cd /Volumes/FWD-WorkDisk/Cluster
-cd /Users/fwd/Documents/MATLAB/Cluster/
+% cd /Volumes/172.17.190.41/Data/Cluster/
+cd /Users/fwd/Documents/MATLAB/Cluster
 ic=1:4;
 % 
 % Tsta='2002-02-18T08:41:00.00Z';
 % Tend='2002-02-18T08:42:00.00Z';%1,114
 % Tsta='2003-12-30T18:55:00.00Z';
 % Tend='2003-12-30T18:56:00.00Z';%7,268
-Tsta = '2004-01-17T19:31:00.000Z';
-Tend = '2004-01-17T19:32:00.000Z';
+% % % Tsta = '2004-01-17T19:31:00.000Z';
+% % % Tend = '2004-01-17T19:32:00.000Z';
+Tsta = '2004-01-21T08:56:00.000Z';
+Tend = '2004-01-21T08:58:00.000Z';
 
 % % % Tsta = '2000-01-01T00:00:00.000Z';
 % % % Tend = '2020-01-01T00:00:00.000Z';
@@ -71,8 +78,8 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % % % Tend2='2003-12-30T18:55:08.740Z';
 % Tsta2='2003-12-30T18:55:06.800Z';
 % Tend2='2003-12-30T18:55:09.800Z';
-Tsta2 = '2004-01-17T19:31:45.765Z';
-Tend2 = '2004-01-17T19:31:45.925Z';
+% % % Tsta2 = '2004-01-17T19:31:45.765Z';
+% % % Tend2 = '2004-01-17T19:31:45.925Z';
 % Tsta2 = '2004-01-17T19:31:44.900Z';
 % Tend2 = '2004-01-17T19:31:46.500Z';
 % Tsta2='2004-05-03T05:02:28.00Z';
@@ -88,25 +95,25 @@ Tend2 = '2004-01-17T19:31:45.925Z';
 % Tend2='2003-12-29T13:40:26.600Z';
 % Tsta2='2003-12-29T13:40:26.150Z';
 % Tend2='2003-12-29T13:40:26.320Z';
-% % % Tsta2='2004-01-21T08:56:59.275Z';
-% % % Tend2='2004-01-21T08:56:59.435Z';
-% tint2=[iso2epoch(Tsta2) iso2epoch(Tend2)];
+Tsta2='2004-01-21T08:56:59.275Z';
+Tend2='2004-01-21T08:56:59.435Z';
+tint2=[iso2epoch(Tsta2) iso2epoch(Tend2)];
 
-caa_download(tint,'C?_CP_EFW_L3_E3D_INERT');
-caa_download(tint,'C?_CP_EFW_L?_E');
-try
-    c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
-    c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
-%     c_eval("caa_load('C?_CP_FGM_FULL',Tsta,Tend);",ic);
-%     c_eval("caa_load('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
-catch
-    
-    %    Magnetic fields
-c_eval("caa_download(tint,'C?_CP_FGM_FULL')",ic);
-c_eval("caa_download(tint,'C?_CP_AUX_POSGSE_1M')",ic);  % position & velocity for each sc
-    c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
-    c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
-end
+% % % caa_download(tint,'C?_CP_EFW_L3_E3D_INERT');
+% % % caa_download(tint,'C?_CP_EFW_L?_E');
+% % % % % try
+% % % % %     c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
+% % % % %     c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
+% % % % % %     c_eval("caa_load('C?_CP_FGM_FULL',Tsta,Tend);",ic);
+% % % % % %     c_eval("caa_load('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
+% % % % % catch
+% % % % % 
+% % % % %     %    Magnetic fields
+% % % % % c_eval("caa_download(tint,'C?_CP_FGM_FULL')",ic);
+% % % % % c_eval("caa_download(tint,'C?_CP_AUX_POSGSE_1M')",ic);  % position & velocity for each sc
+% % % % %     c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
+% % % % %     c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
+% % % % % end
 % caa_download(tint,'CL_SP_AUX')% position,attitude.. for all sc
 % caa_download(tint,'C2_CP_FGM_FULL');
 % caa_download(tint,'C4_CP_FGM_FULL');

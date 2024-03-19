@@ -52,8 +52,8 @@ a1 = 10*[0,0,3]; a2 = 10*[-2*sqrt(2)-1,2,-1]; a3 = 10*[sqrt(2)+2,sqrt(6)+1,-2]; 
 % c_eval('a? = a? * 2;');
 c_eval('a? = x.*[1,0,0] + ones(length(x),1).*a?;',1:4);
 % delta_H = [0,0,5];
-temp = 1:length(a1);
-c_eval("a? = [temp',a?];")
+temp = 1:length(a1);temp = temp';
+c_eval("a? = [temp,a?];")
 % c_eval('a? = a?+ones(length(x),1).*delta_H;',1:4);
 swap_var(a2,a4);
 %% 
@@ -88,7 +88,7 @@ resQ = cell(length(PI),1);
 Qerror = ones(length(PI),1)*1000;
 Locerror = ones(length(PI),1)*200;
 
-c_eval("Btest? = [temp',B?(:,2:4)];")
+c_eval("Btest? = [temp,B?(:,2:4)];")
 
 PI_id = find(PI~=0)';
 for i = 1:length(B1)
@@ -149,14 +149,15 @@ meand = mean(dLoc,2);
 % c_eval('BErr? = 100*(1-(1-Btheta?).*(1-Blength?));')
 % BErr = mean([BErr1,BErr2,BErr3,BErr4],2);
 %% movie1
-figname = ['C:\Users\fwd\Desktop\Ti~mor~\M\magnetic_monopole\supplementary\illustration\SlideModel(S1)\SlideModel-paras.mp4'];
-v = VideoWriter(figname, 'MPEG-4');
-v.FrameRate = 60;
-v.Quality = 100;
-open(v)
-temp = x;
+% % % figname = ['C:\Users\fwd\Desktop\Ti~mor~\M\magnetic_monopole\supplementary\illustration\SlideModel(S1)\SlideModel-paras.mp4'];
+% % % v = VideoWriter(figname, 'MPEG-4');
+% % % v.FrameRate = 60;
+% % % v.Quality = 100;
+% % % open(v)
+% % % temp = x;
 nn = length(temp);
-for f = 1:1:nn
+% % % for f = 1:1:nn
+f = nn;
 %% plot
 n=5;
 i=1;
@@ -442,13 +443,13 @@ colormap(jet)
 irf_pl_mark(h(1:5),[temp(f)],[0.5,0.5,0.5],'linestyle','-');
 set(gcf,'color','w')
 
-% figname = [OutputDir,'OverviewFig\',NameTags{TDT}(2:end-2)];    
-% print(gcf, '-dpng', [figname '.png']);
-frame = getframe(figure(1));
-writeVideo(v,frame)
-% print(gcf, '-dpdf', [figname '.pdf']);
-end
-close(v)
+% % % % figname = [OutputDir,'OverviewFig\',NameTags{TDT}(2:end-2)];    
+% % % % print(gcf, '-dpng', [figname '.png']);
+% % % frame = getframe(figure(1));
+% % % writeVideo(v,frame)
+% % % % print(gcf, '-dpdf', [figname '.pdf']);
+% % % end
+% % % close(v)
 
 %% Init figure 2
 figname = ['C:\Users\fwd\Desktop\Ti~mor~\M\magnetic_monopole\supplementary\illustration\SlideModel(S1)\SlideModel-configuration.mp4'];
