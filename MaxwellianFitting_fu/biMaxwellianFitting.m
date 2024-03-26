@@ -6,28 +6,29 @@ ParentDir = '/Volumes/172.17.190.41/Data/MMS/';
 DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-ic=3;
-% tint = irf.tint('2019-07-19T13:47:05.200Z/2019-07-19T13:47:06.500Z');
+ic=1;
+TT = '2019-07-19T13:47:05.200Z/2019-07-19T13:47:06.500Z';
 % TT = '2016-11-21T07:22:21.800Z/2016-11-21T07:22:21.900Z';
-TT = '2021-07-22T05:20:55.00Z/2021-07-22T05:20:58.00Z';
+% TT = '2021-07-22T05:20:55.00Z/2021-07-22T05:20:58.00Z';
 tint = irf.tint(TT);
 
-inpath = '/Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/pdrk.in';
+% % % inpath = '/Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/pdrk.in';
+inpath = '/Users/fwd/Documents/MATLAB/Code/XIE_HS/pdrk/pdrk_master_v181027/pdrk-master/ECW/input/yy.in';
 
-Datelist = regexp(TT,'\d+-\d+-\d+','match');
-Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
-Date = [Datelist{1},'/',Datelist{2}];
-iic = 1:4;
-filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
-filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
-filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce,scpot');
-filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
-filenames = [filenames1,filenames2];
-
-[filenames,~,~] = findFilenames(TT,filenames,'brst',ic);
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
-SDCDataMove(TempDir,ParentDir)
+% % % Datelist = regexp(TT,'\d+-\d+-\d+','match');
+% % % Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
+% % % Date = [Datelist{1},'/',Datelist{2}];
+% % % iic = 1:4;
+% % % filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
+% % % filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
+% % % filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
+% % % filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce,scpot');
+% % % filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
+% % % filenames = [filenames1,filenames2];
+% % % 
+% % % [filenames,~,~] = findFilenames(TT,filenames,'brst',ic);
+% % % SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+% % % SDCDataMove(TempDir,ParentDir)
 %% Load in data
 units = irf_units;
 indata = importdata(inpath).data;
@@ -49,12 +50,12 @@ c_eval('diste1 = mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brs
 length_diste1=length(diste1.time.epoch);
 timeUTC1=irf_time(diste1.time,'epochtt>utc');
 %% Produce PAD at all selected time
-% tint1 = irf_time(timeUTC1(1,:),'utc>epochTT');
-tint1 = tint;
+tint1 = irf_time(timeUTC1(1,:),'utc>epochTT');
+% tint1 = tint;
 [paddist10,thetapad1,energypad1,tintpad1] = mms_get_pitchangledist_my_change(diste1,Bxyz1,tint1);
 energypad1 = energypad1(1,:);
 paddist11 = paddist10*1e30;
-paddist11 = mean(paddist11.data,1);
+% paddist11 = mean(paddist11.data,1);
 paddist11 = reshape(paddist11, 32, 30);
 
 psd1=nanmean(paddist11(:,1:30),2);
@@ -129,7 +130,7 @@ yrange=[10^-4 10^6];
 % yrange=[ymin 10^4];
 
 
-plot(h(1),energypad1,psd1,'ko');hold on;
+plot(h(1),energypad1,psd1,'ko','MarkerFaceColor','k');hold on;
 plot(h(1),energypad1,FbiMaxwell1,'k',LineWidth=2); hold on
 % plot(h(1),X1,F1,'-.m','LineWidth',1);hold on;
 % plot(h(1),X2,F2,'-.c','LineWidth',1);hold on;
@@ -141,7 +142,7 @@ set(h(1),'yscale','log');
 set(h(1),'xscale','log');
 
 irf_zoom(h(1),'y',yrange);
-irf_zoom(h(1),'x',[10 1e4]);
+irf_zoom(h(1),'x',[30 1e4]);
 
 % irf_legend(h(1),{'23:22:22.14Z/23:22:22.58Z'},[0.91 0.96],'color','k','Fontsize',10);
 % irf_legend(h(1),{'19:40:30.00-19:40:55.00'},[0.91 0.88],'color','r','Fontsize',10);
@@ -170,7 +171,7 @@ irf_zoom(h(1),'x',[10 1e4]);
 % yrange=[ymin 10^4];
 
 
-plot(h(1),energypad1,psd2,'ro');hold on;
+plot(h(1),energypad1,psd2,'ro','MarkerFaceColor','r');hold on;
 plot(h(1),energypad1,FbiMaxwell2,'r',LineWidth=2);hold on;
 ylabel(h(1),'f_e (s^3 km^{-6})');
 xlabel(h(1),'E (eV)');
@@ -179,7 +180,7 @@ set(h(1),'xscale','log');
 % title(h(1),strcat('F_{anti-para}'));
 
 irf_zoom(h(1),'y',yrange);
-irf_zoom(h(1),'x',[10 1e4]);
+irf_zoom(h(1),'x',[30 1e4]);
 %% figure 3
 % % % fn3=figure(3);
 % % % xSize = 80; ySize = 50; coef=floor(min(800/xSize,800/ySize));
@@ -195,7 +196,7 @@ irf_zoom(h(1),'x',[10 1e4]);
 % yrange=[ymin 10^4];
 
 
-plot(h(1),energypad1,psd3,'bo');hold on;
+plot(h(1),energypad1,psd3,'bo','MarkerFaceColor','b');hold on;
 plot(h(1),energypad1,FbiMaxwell3,'b',LineWidth=2);hold on;
 ylabel(h(1),'f_e (s^3 km^{-6})');
 xlabel(h(1),'E (eV)');
@@ -205,7 +206,7 @@ set(h(1),'xscale','log');
 legend({'','0','','90','','180'})
 
 irf_zoom(h(1),'y',yrange);
-irf_zoom(h(1),'x',[10 1e4]);
+irf_zoom(h(1),'x',[30 1e4]);
 %% Maxwell function
 function MaxwellFun = MaxwellFunc(p, X1, X2, X3, Y1, Y2, Y3, Ne)
 MaxwellFun = [p(1)+p(5)-Ne;...
@@ -240,9 +241,8 @@ case 2
 Vperp  = convertEtoV(E);
 Vpara = 0;
 case 3
-Vpara  = convertEtoV(E);
+Vpara  = -convertEtoV(E);
 Vperp=0;
-Vd = -Vd;
 end
 Vtpara = sqrt(2*Tpara/units.me); % m/s
 Vtperp = sqrt(2*Tperp/units.me); % m/s

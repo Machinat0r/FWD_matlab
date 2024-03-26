@@ -7,17 +7,20 @@ ParentDir = '/Volumes/172.17.190.41/Data/MMS/';
 DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 mms.db_init('local_file_db', ParentDir);
-inpath = '/Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/WHAMP.in';
+inpath = '/Users/fwd/Documents/MATLAB/Code/XIE_HS/pdrk/pdrk_master_v181027/pdrk-master/ECW/input/yy.in';
 ic=1;
 
-Tintr = irf.tint('2021-07-22T05:20:55.00Z/2021-07-22T05:20:58.00Z');
+% Tintr = irf.tint('2021-07-22T05:20:55.00Z/2021-07-22T05:20:58.00Z');
+Tintr = irf.tint('2019-07-19T13:47:05.200Z/2019-07-19T13:47:06.500Z');
 %% Load plasma parameters
 units = irf_units;
 indata = importdata(inpath).data;
-n = indata(:,3)*1e6; % m-3
+n = indata(:,3); % m-3
 T = indata(:,4); % eV
-Q = indata(:,5); % eV
-Vd = indata(:,6); % m/s
+Tps = indata(:,5); % eV
+% Q = indata(:,5); % eV
+Q= T./Tps;
+Vd = indata(:,8) * units.c; % m/s
 %% Load data
 %
 tic;
@@ -59,7 +62,7 @@ Bxyz = irf_gse2gsm(Bxyz);
 
 %% Produce a single PAD at a selected time
 % tint1 = irf_time('2017-06-11T01:59:25.00Z','utc>epochTT');
-tint1=irf.tint('2021-07-22T05:20:56.00Z/2021-07-22T05:20:57.00Z');
+tint1=irf.tint('2019-07-19T13:47:05.200Z/2019-07-19T13:47:06.500Z');
 [paddist01,thetapad,energypad,tintpad1] = mms_get_pitchangledist_my_change(diste,Bxyz,tint1); 
 paddist01 = paddist01*1e30; 
 %
