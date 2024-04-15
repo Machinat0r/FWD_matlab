@@ -1,0 +1,32 @@
+PDS_VERSION_ID          = PDS3
+RECORD_TYPE             = STREAM
+OBJECT                  = TEXT
+  PUBLICATION_DATE        = 2018-10-25
+  NOTE                    = "
+    CATINFO.TXT describes the contents of the CATALOG directory."
+END_OBJECT              = TEXT
+END
+
+This directory contains metadata associated with this volume.  This
+information is divided into a series of separate template files.  These
+include the files MISSION.CAT, describing the Juno mission, INSTHOST.CAT,
+describing the Juno spacecraft, JNO_FGM_INST.CAT, describing the Fluxgate Magnetometer
+instrument, JNO_FGM_J_DS.CAT, describing the Juno mission FGM Jupiter orbital 
+data set, JNO_FGM_PERSON.CAT, listing contact information for personnel 
+associated with the data set, and JNO_FGM_REF.CAT which describes references related 
+to the data sets. 
+
+The following table lists the subject described in each of the catalog
+templates contained in this directory.
+
+file            subject
+
+JNO_FGM_J_DS.CAT     FGM data set (collected in orbit around Jupiter)
+INSTHOST.CAT         Juno Instrument Host (Spacecraft)
+MISSION.CAT          Juno Mission
+JNO_FGM_PERSON.CAT   Personnel associated with Juno FGM data sets
+PROJREF.CAT          References cited in MISSION.CAT
+JNO_FGM_REF.CAT      References associated with Juno FGM data sets
+JNO_FGM_INST.CAT     FGM instrument description
+
+

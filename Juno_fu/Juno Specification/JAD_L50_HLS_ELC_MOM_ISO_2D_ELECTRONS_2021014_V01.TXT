@@ -1,0 +1,677 @@
+PDS_VERSION_ID = PDS3                                                         
+DATA_SET_ID    = "JNO-J-JAD-5-MOMENTS-V1.0"                                   
+                                                                              
+/* Input file  : JAD_L50_HLS_ELC_MOM_ISO_2D_ELECTRONS_2021014_V01.CSV */      
+/* File written: 2023/02/25 02:20:45 local time  */                           
+                                                                              
+STANDARD_DATA_PRODUCT_ID =             "MOM_ISO_2D_ELECTRONS"                 
+PRODUCT_ID               = "JAD_L50_ELC_MOM_ISO_2D_ELECTRONS_2021014"         
+PRODUCT_VERSION_ID       = "01"                                               
+PRODUCT_TYPE             = "DATA"                                             
+PRODUCT_CREATION_TIME    = 2023-056T09:20:45 /* UTC 2023-02-25 */             
+PROCESSING_LEVEL_ID      = "5"                                                
+                                                                              
+RECORD_TYPE  = FIXED_LENGTH                                                   
+RECORD_BYTES = 233                                                            
+FILE_RECORDS = 24                                                             
+                                                                              
+START_TIME                   = 2021-014T00:16:00.890 /* 2021-01-14 */         
+STOP_TIME                    = 2021-014T23:26:01.845 /* 2021-01-14 */         
+SPACECRAFT_CLOCK_START_COUNT = "UNK"                                          
+SPACECRAFT_CLOCK_STOP_COUNT  = "UNK"                                          
+                                                                              
+INSTRUMENT_HOST_NAME = "JUNO"                                                 
+INSTRUMENT_HOST_ID   = "JNO"                                                  
+TARGET_NAME          = {"JUPITER"}                                            
+INSTRUMENT_NAME      = "JOVIAN AURORAL DISTRIBUTIONS EXPERIMENT"              
+INSTRUMENT_ID        = "JAD" /* JADE */                                       
+                                                                              
+DESCRIPTION = "This is the required LBL file to accompany CSV files of the    
+               data product JAD_L50_HLS_ELC_MOM_ISO_2D_ELECTRONS."            
+                                                                              
+MD5_CHECKSUM = "bdfa53b205d5cef62474572efc2f883d"                             
+                                                                              
+NOTE = "See the PDS JADE SIS Document for more details on the formats.        
+-----------------------------------------------------------------------------"
+                                                                              
+                                                                              
+^SPREADSHEET = "JAD_L50_HLS_ELC_MOM_ISO_2D_ELECTRONS_2021014_V01.CSV"         
+OBJECT = SPREADSHEET                                                          
+  ROWS            = 24                                                        
+  ROW_BYTES       = 233                                                       
+  FIELDS          = 23                                                        
+  FIELD_DELIMITER = "COMMA"                                                   
+  DESCRIPTION = "Describes the structure and content of the data file."       
+                                                                              
+/* FMT file contents start here.                                            */
+/* Filename: Version01/JAD_L50_HLS_ELC_MOM_ISO_2D_ELECTRONS_V01.FMT         */
+/* File written: 2023/02/22 12:30:16                                        */
+/* Will code useful Python based letters to describe each object            */
+/* see http://docs.python.org/library/struct.html for codes                 */
+/* formats will comma separated beginning with "RJW," as key then           */
+/* {NAME}, {FORMAT}, {Number of dims}, {Size Dim 1}, {Size Dim 2}, ...      */
+/* where {FORMAT} is the Python code for the type, i.e. I for uint32        */
+/* and there are as many Size Dim's as number of dimensions.                */
+/* Remember to remove the comment markers at either end                     */
+/*                                                                          */
+/* The above (RJW tags) is for binary files, but for CSV files, we use the  */
+/* tag RJWcsv. Now the {FORMAT} code is the what you should convert the     */
+/* text value to. e.g. {FORMAT} of d means a value 5 should be read in as   */
+/* a double. (And BYTES_PER_RECORD really means characters per record.)     */
+                                                                              
+/* RJWcsv, BYTES_PER_RECORD, 233 */                                           
+/* RJWcsv, OBJECTS_PER_RECORD, 23 */                                          
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "UTC"                                                   
+  DATA_TYPE         = DATE  /* ASCII character string */                      
+  FIELD_NUMBER      = 1                                                       
+  BYTES             = 21                                                      
+  VALID_MINIMUM     = 2011-217T00:00:00.001                                   
+                      /* SC Clock 365774402:0, JUNO Launch */                 
+  VALID_MAXIMUM     = 2026-001T00:00:00.000 /* Expect mission end in 2025 */  
+  MISSING_CONSTANT  = 0001-001T00:00:00.000                                   
+  DESCRIPTION       = "UTC timestamp at center (not start) of record.         
+                     Format is yyyy-dddTHH:MM:SS.sss                          
+                       where yyyy = year, ddd = day of year,                  
+                       HH = hour, MM = minute,                                
+                       SS.sss = decimal seconds to millisecond resolution.    
+                     Note: Duration of record can be found in seconds from    
+                     ACCUMULATION_TIME.  This record really covers the        
+                     period starting at UTC - ACCUMULATION_TIME/2 (inclusive) 
+                     and ending at UTC + ACCUMULATION_TIME/2                  
+                     Technically, ACCUMULATION_TIME is in spacecraft clock    
+                     ticks, where 1 tick is approximately 1 second, but is    
+                     so close that, practically, we consider it as seconds."  
+/* RJWcsv, UTC, c, 1, 21 */                                                   
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "SOURCE_JADE_LEVEL5_DEF_VERSION_INPUT"                  
+  FIELD_NUMBER      = 2                                                       
+  BYTES             = 3                                                       
+  FORMAT            = "I3"                                                    
+  DATA_TYPE         = "ASCII_INTEGER"                                         
+  MISSING_CONSTANT  = 255                                                     
+  DESCRIPTION       = "The file version of the Level 5 DEF file used as       
+                       input to calculate these moments. e.g. if file         
+                       JAD_L50_LRS_ELC_ANY_DEF_2017112_V03.DAT was used       
+                       then SOURCE_JADE_LEVEL5_DEF_VERSION_INPUT = 03."       
+/* RJWcsv, SOURCE_JADE_LEVEL5_DEF_VERSION_INPUT, I, 1, 1 */                   
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "INPUT_DATA_SELECTION"                                  
+  FIELD_NUMBER      = 3                                                       
+  BYTES             = 3                                                       
+  FORMAT            = "I3"                                                    
+  DATA_TYPE         = "ASCII_INTEGER"                                         
+  VALID_MINIMUM     =   3                                                     
+  VALID_MAXIMUM     = 345                                                     
+  MISSING_CONSTANT  = 999                                                     
+  DESCRIPTION       = "Input Data Selection: which subset of input data was   
+                       used to generate the moments?                          
+                       This is a simple look up table:                        
+                         3 = ion species 3 only                               
+                         4 = ion species 4 only                               
+                         5 = ion species 5 only                               
+                        34 = ion species 3 and 4 combined                     
+                        45 = ion species 4 and 5 combined                     
+                        60 = JADE-E060 only (electrons)                       
+                       103 = ion species 3 only with TOF correction           
+                       104 = ion species 4 only with TOF correction           
+                       105 = ion species 5 only with TOF correction           
+                       134 = ion species 3 and 4 combined with TOF correction 
+                       145 = ion species 4 and 5 combined with TOF correction 
+                       180 = JADE-E180 only (electrons)                       
+                       240 = JADE-E060 and JADE-E180 combined (electrons)     
+                       345 = ion species 3, 4 and 5 combined                  
+                       999 = MISSING_CONSTANT = Unknown                       
+                                                                              
+                       [Other entries may be added later as new techniques    
+                       are explored/used. If your number is not listed here,  
+                       try looking in the LBL file description of the latest  
+                       file.]                                                 
+                                                                              
+                       The TOF correction would account for false coincidence 
+                       counts falling in other ion species datasets."         
+/* RJWcsv, INPUT_DATA_SELECTION, I, 1, 1 */                                   
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "PACKET_MODE"                                           
+  FIELD_NUMBER      = 4                                                       
+  BYTES             = 3                                                       
+  FORMAT            = "I3"                                                    
+  DATA_TYPE         = "ASCII_INTEGER"                                         
+  VALID_MINIMUM     =   1                                                     
+  VALID_MAXIMUM     =   2                                                     
+  MISSING_CONSTANT  = 127                                                     
+  DESCRIPTION       = "Packet Mode, describes type of data telemetry.         
+                           1 = LRS / Low Rate Science                         
+                           2 = HRS / High Rate Science                        
+                         127 = Unknown"                                       
+/* RJWcsv, PACKET_MODE, I, 1, 1 */                                            
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "ACCUMULATION_TIME"                                     
+  FIELD_NUMBER      = 5                                                       
+  BYTES             = 5                                                       
+  FORMAT            = "I5"                                                    
+  DATA_TYPE         = "ASCII_INTEGER"                                         
+  UNIT              = "SECONDS" /* Not S.I. Seconds, but SCLK ticks */        
+  VALID_MINIMUM     =     1                                                   
+  VALID_MAXIMUM     =  1800                                                   
+  MISSING_CONSTANT  = 65535                                                   
+  DESCRIPTION       = "Accumulation Time.                                     
+                       Number of spacecraft clock ticks (assume seconds)      
+                       over which the data in this product was collected.     
+                       While 1 tick is approximately 1 second, it is not      
+                       identical, but close enough that it is assumed to be." 
+/* RJWcsv, ACCUMULATION_TIME, I, 1, 1 */                                      
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "SOURCE_BACKGROUND"                                     
+  FIELD_NUMBER      = 6                                                       
+  BYTES             = 3                                                       
+  FORMAT            = "I3"                                                    
+  DATA_TYPE         = "ASCII_INTEGER"                                         
+  VALID_MINIMUM     =   0                                                     
+  VALID_MAXIMUM     =   4                                                     
+  MISSING_CONSTANT  = 255                                                     
+  DESCRIPTION       = "Source of Background values                            
+                       that have been removed from the DATA object.           
+                           0 = None: No background has been removed           
+                           1 = Background anode (electron sensors only)       
+                           2 = Background anode (JADE-I only)                 
+                           3 = Derived from Background anode : Method 1:      
+                                Background coefficients are time independent. 
+                               See file in CALIB directory for description.   
+                           4 = Derived from Background anode : Method 2:      
+                                Background coefficients are per orbit.        
+                               See file in CALIB directory for description.   
+ /* As new background removal methods are developed this list will increase */
+                         255 = Unknown."                                      
+/* RJWcsv, SOURCE_BACKGROUND, I, 1, 1 */                                      
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "ISSUES"                                                
+  FIELD_NUMBER      = 7                                                       
+  BYTES             = 10                                                      
+  FORMAT            = "I10"                                                   
+  DATA_TYPE         = "ASCII_INTEGER"                                         
+  VALID_MINIMUM     =          0                                              
+  VALID_MAXIMUM     = 4294967294                                              
+  MISSING_CONSTANT  = 4294967295                                              
+  DESCRIPTION       = "Issues or potential issues in this data record.        
+                      These are issues that can be identified within the JADE 
+                      packet of data itself without any external information. 
+                      e.g. timing issues due to the MAG time stutter, or any  
+                      voltage pulsing, would not be included as there are no  
+                      indicators to them within this JADE packet.             
+                        [For a more comprehensive list of potential issues    
+                      from internal and external sources please see the       
+                      Level 3 data.]                                          
+                                                                              
+                      Level 2 issues of this JADE packet are flagged by       
+                      individual bits, and several may be hit.  If no issues  
+                      are flagged then this 4-byte unsigned integer is zero.  
+                      A value of 4294967295 is the MISSING_CONSTANT and means 
+                      that the issue status is currently unknown.             
+                                                                              
+                      All bits at 0 implies all is okay as seen by this       
+                      packet.  If a bit is set to 1 then that bit is flagged, 
+                      otherwise it is set to zero and unflagged.              
+                                                                              
+                      The bits are set as followed, grouped in to seriousness:
+                                                                              
+                       Not very serious issues for doing science:             
+                       Bit  0 = UTC time is predicted, yet to be finalized.   
+                       Bit  1 = Position/Orientation values predicted, yet to 
+                                be finalized.  Level 3 (and above) data only. 
+                       Bit  2 = TABLES_VERSION object was altered on the      
+                                ground to accurately reflect a 'commanded     
+                                parameter update' outside the initial         
+                                per-orbit commands JADE is returning.         
+                                 [If changed, the original downlinked         
+                                 TABLES_VERSION value can be found by cross-  
+                                 referencing the PARAM_TABLE_VER object in the
+                                 JAD_L20_HSK_ALL_SHK files.  Note here the    
+                                 PARAM_TABLE_VER value is given as a unsigned 
+                                 integer of Hex Major-Middle-Minor, such that 
+                                 a value of 770 decimal is in hex 0x302,      
+                                 meaning Table Version 3.02 ]                 
+                       Bit  3 = FSW_VERSION 4.00 LRS/CAL Ion Species bug      
+                                fixed on the ground by adjusting              
+                                TIMESTAMP_WHOLE, TIMESTAMP_SUB, and           
+                                ACCUMULATION_TIME based on cross-referencing  
+                                JADE commanding.                              
+                       Bit  4 = LRS/CAL Ion Species record with unobserved    
+                                look directions (views) populated using views 
+                                from neighboring record. See Bit 12 for       
+                                uncorrected/unpopulated description.          
+                                (Only possible if ACCUMULATION_TIME = 30.)    
+                       Bit  5 = TIMESTAMP_WHOLE/SUB adjusted on the ground    
+                                to mitigate any Juno time stutter effects.    
+                                [Other TIMESTAMPs are susceptible to the      
+                                onboard time stutter too, but only the JADE   
+                                packet TIMESTAMP_WHOLE/SUB is tracked here.]  
+                       Bit  6 =       Currently unused.                       
+                       Bit  7 = Warning, a leap second occurs during the      
+                                accumulation period.                          
+                                                                              
+                       Data slightly different than expected, but can be used 
+                       for science with a little extra coding:                
+                       Bit  8 = ACCUM_TRUNCATION object flagged.              
+                       Bit  9 = Electron (HRS/LRS/CAL) MAG objects are not    
+                                tracked, are either zeros or MISSING_CONSTANT.
+                                  [LRS and CAL did not have MAG objects prior 
+                                   to FSW_VERSION 4.10, therefore those MAG   
+                                   objects here are set to MISSING_CONSTANT   
+                                   when FSW_VERSION < 4.10.]                  
+                       Bit 10 = TIMESTAMP_WHOLE/SUB affected by a Juno        
+                                onboard time stutter, JADE reported timestamp 
+                                is likely 1 whole tick too large.             
+                                [Other TIMESTAMPs are susceptible to the      
+                                onboard time stutter too, but only the JADE   
+                                packet TIMESTAMP_WHOLE/SUB is tracked here.]  
+                       Bit 11 =       Currently unused.                       
+                       Bit 12 = LRS/CAL Ion Species record potentially has    
+                                unobserved look directions (spin phase sectors
+                                or views) present in the data, meaning the    
+                                record may not contain data for a full 4pi    
+                                steradians field-of-view.                     
+                                Unobserved look directions have zero counts   
+                                per view (or counts per second) in the data,  
+                                although an observed look direction may also  
+                                have zero counts if no ions were measured.    
+                                Therefore there is a potential confusion over 
+                                zero measured counts or simply unmeasured.    
+                                e.g. if the spin period is 30.7 seconds, then 
+                                not all of the 78 spin phase sectors will be  
+                                sampled in 30 seconds. (Unobserved views are  
+                                only possible if ACCUMULATION_TIME <= 30.)    
+                                See the JADE SIS for more information.        
+                       Bit 13 = At least one anode is blanked.                
+                                See SIS document for further information.     
+                       Bit 14 = FSW_VERSION 4.00 LRS/CAL Ion Species bug      
+                                warning:                                      
+                                  Not fixed as yet - when fixed it will       
+                                become bit 3 of ISSUES instead.               
+                                  Level 2 data only when FSW_VERSION = 4.00,  
+                                ACCUMULTION_TIME object is MISSING_CONSTANT.  
+                                Also, TIMESTAMP_WHOLE:TIMESTAMP_SUB is the end
+                                of the packet rather than the usual start,    
+                                see TIMESTAMP_WHOLE object for more details.  
+                                [Only affects data from 2015-089 to 2015-115.]
+                       Bit 15 = Electron Anodes Reversed.                     
+                                  Level 2 data only when FSW_VERSION < 4.10   
+                                and only electron packets. Electron anodes    
+                                are reversed in order and need to be          
+                                remapped, however electron Spin Phase data    
+                                (LRS data) cannot be remapped. See the SIS    
+                                document for more information about this.     
+                                [Affects all electron data 2011 to 2015-115.] 
+                                                                              
+                       Data very different than expected, may not be suitable 
+                       for science - use with extreme caution.                
+                       Bit 16 = Data is not from flight instrument on Juno,   
+                                  see FLIGHT_OR_STL object.                   
+                       Bit 17 = MCP_NOT_AT_COMMANDED object flagged.          
+                                  Electron HRS/CAL/HVE packets use all three  
+                                electron sensors and therefore have three     
+                                MCP_NOT_AT_COMMANDED values per packet.       
+                                Setting this flag means at least one of those 
+                                three mcps is not at its commanded value.     
+                       Bit 18 = Data includes some JADE-E300 sensor data.     
+                                (Only flagged for HRS, LRS, CAL and HVE data.)
+                                  E300 has a high voltage power supply issue  
+                                and reported energy steps may be incorrect.   
+                                If E300 is off but still reported in the data 
+                                product, it may be zeros of fill values.      
+                       Bit 19 = Ion packet abruptly truncated.                
+                                  This packet should not be used.  It had an  
+                                ACCUMULATION_TIME = 1, ACCUM_TRUNCATION = 1   
+                                and the DATA object is all zeros, with a      
+                                timestamp that matches an earlier valid packet
+                                that was not truncated and has non-zero DATA. 
+                                e.g. TOF and LOG example in level 2 data at   
+                                TIMESTAMP_WHOLE of 495879710 (UTC 2015-261).  
+                       Bit 20 = MCP Dipping Triggered, in one or more sensors.
+                                  If the sensor measures excessive counts, it 
+                                temporarily lowers the MCP voltage to reduce  
+                                the number of counts and protect the sensor.  
+                                The MCP_NOT_AT_COMMANDED object is also       
+                                flagged (Bit 17 in ISSUES) since the MCP is   
+                                no longer at the commanded voltage.           
+                                  For HRS/CAL/HVE electrons (datasets where   
+                                multiple sensors are on) it is possible that  
+                                one sensor has been dipped, but the others    
+                                are not and still providing good data.        
+                                (First MCP dip was HRS electrons, 2017-350.)  
+                       Bit 21 = MCP Dipped sensor's DATA set to fill values.  
+                                  If MCP dipping has triggered (Bit 20 of     
+                                ISSUES) then:  DATA and BACKGROUND objects    
+                                (and their *_SIGMAs) have been replaced with  
+                                MISSING_CONSTANT values.                      
+                                  (Never used for Level 2 data, which has the 
+                                counts as measured in the dipped state.)      
+                                   In addition, Bit 17 of the ISSUES object   
+                                (i.e. MCP_NOT_AT_COMMANDED object = 1) is set 
+                                to zero, and, if it exists, the               
+                                MCP_NOT_AT_COMMANDED object itself is changed 
+                                (from 1) to be 0 for the offending sensor(s). 
+                                  If the DATA object contains data from       
+                                multiple sensors (HRS/CAL/HVE electrons) then 
+                                only the elements of the DATA object for the  
+                                dipped sensor are set to MISSING_CONSTANT (as 
+                                identified by the MCP_NOT_AT_COMMANDED value  
+                                for each sensor (prior to setting them to 0)).
+                                  [See Bit 22 for a similar flag.]            
+                       Bit 22 = 1 or more ELC sensor DATA set to fill values. 
+                                 Affects only electron HRS/CAL/HVE products   
+                                 (i.e. products that use multiple sensors),   
+                                 and generally only when starting that mode.  
+                                When switching to HRS/CAL/HVE from LRS, one   
+                                JADE-E sensor is already on, and the other(s) 
+                                have to turn on, then it takes some time for  
+                                that sensor to reach the commanded voltage.   
+                                For a given record, MCP_NOT_AT_COMMANDED = 0  
+                                for one sensor but is still = 1 for others.   
+                                That is one sensor is taking valid science    
+                                but the other(s) are not there yet and for    
+                                those sensors:  DATA and BACKGROUND objects   
+                                (and their *_SIGMAs) have been replaced       
+                                with MISSING_CONSTANT values.                 
+                                  (Never used for Level 2 data, which has the 
+                                counts as measured in the dipped state.)      
+                                   In addition, Bit 17 of the ISSUES object   
+                                (i.e. MCP_NOT_AT_COMMANDED object = 1) is set 
+                                to zero, and, if it exists, the               
+                                MCP_NOT_AT_COMMANDED object itself is changed 
+                                (from 1) to be 0 for the offending sensor(s). 
+                                  Only the elements of the DATA object for the
+                                original MCP_NOT_AT_COMMANDED = 1 sensor(s)   
+                                (prior to setting them to 0) are set to       
+                                MISSING_CONSTANT.                             
+                                  [Bits 21 and 22 are essentially the same    
+                                feature caused by an mcp voltage not being at 
+                                the commanded value, but the reason why this  
+                                is the case is different.  The treatment is   
+                                identical for both Bit 21 and Bit 22.]        
+                       Bit 23 =       Currently unused.                       
+                                                                              
+                       Bit 24 =       Currently unused.                       
+                       Bit 25 =       Currently unused.                       
+                       Bit 26 =       Currently unused.                       
+                       Bit 27 =       Currently unused.                       
+                       Bit 28 =       Currently unused.                       
+                       Bit 29 =       Currently unused.                       
+                       Bit 30 =       Currently unused.                       
+                       Bit 31 = Reserved for MISSING_CONSTANT use.            
+                                                                              
+                       Each bit has a decimal value of 2^{bit number}, and the
+                       Issues flag is the sum of 2^{flagged bit numbers}.     
+                       For instance, if this ISSUES flag = 131329, then in    
+                       binary that value is 00000000000000100000000100000001  
+                       showing bits 17, 8 and 0 are flagged.                  
+                                                                              
+                       [If a currently unused bit is set, please check the    
+                       latest LBL file for this product that you can find to  
+                       see if it now has a definition.]"                      
+/* RJWcsv, ISSUES, I, 1, 1 */                                                 
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "EV_PER_Q_RANGE"                                        
+  FIELD_NUMBER      = 8                                                       
+  BYTES             = 22                                                      
+  ITEMS             = 2                                                       
+  ITEM_BYTES        = 10                                                      
+  FORMAT            = "F10.3"                                                 
+  DATA_TYPE         = "ASCII_REAL"                                            
+  VALID_MINIMUM     =      0.000                                              
+  VALID_MAXIMUM     = 100000.000                                              
+  MISSING_CONSTANT  = -99999.000                                              
+  UNIT              = "eV/q"                                                  
+  DESCRIPTION       = "Energy Range of sensor(s) (eV/q) [lower, upper].       
+                       Each JADE sensor has its own energy range, and these   
+                       do vary over time, with occasional significant         
+                       changes of energy tables. This object is to give       
+                       context to the moments, in particular, what energy     
+                       range were moments calculated over.                    
+                       If two sensors data were combined, then this would     
+                       reflect the merged energy table limits rather than     
+                       of one particular sensor."                             
+/* RJWcsv, EV_PER_Q_RANGE, d, 1, 2 */                                         
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "SC_POS_R"                                              
+  FIELD_NUMBER      = 9                                                       
+  BYTES             = 9                                                       
+  FORMAT            = "F9.3"                                                  
+  DATA_TYPE         = "ASCII_REAL"                                            
+  VALID_MINIMUM     =     0.000                                               
+  VALID_MAXIMUM     =   130.000 /* Excluding Cruise to Jupiter */             
+  MISSING_CONSTANT  = 65535.000                                               
+  UNIT              = "Jupiter Radii"                                         
+  DESCRIPTION       = "Juno radial distance at time UTC, from                 
+                       Jupiter, in units of Jupiter Radii (Rj).               
+                       (1 Rj = 71492.0 km)                                    
+                       [Values may be greater than VALID_MAXIMUM              
+                       during cruise to Jupiter before primary mission.]"     
+/* RJWcsv, SC_POS_R, d, 1, 1 */                                               
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "SC_POS_LAT"                                            
+  FIELD_NUMBER      = 10                                                      
+  BYTES             = 9                                                       
+  FORMAT            = "F9.3"                                                  
+  DATA_TYPE         = "ASCII_REAL"                                            
+  VALID_MINIMUM     =   -90.000                                               
+  VALID_MAXIMUM     =    90.000                                               
+  MISSING_CONSTANT  = 65535.000                                               
+  UNIT              = "Degrees"                                               
+  DESCRIPTION       = "Juno Latitude at time UTC, in both the                 
+                       IAU_JUPITER and JUNO_JSS frames, in units of degrees.  
+                       (0 = Equatorial)                                       
+                       (JUNO_JSS is a despun version of IAU_JUPITER, hence    
+                       they have identical latitudes.)"                       
+/* RJWcsv, SC_POS_LAT, d, 1, 1 */                                             
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "SC_POS_LOCAL_TIME"                                     
+  FIELD_NUMBER      = 11                                                      
+  BYTES             = 9                                                       
+  FORMAT            = "F9.3"                                                  
+  DATA_TYPE         = "ASCII_REAL"                                            
+  VALID_MINIMUM     =     0.000                                               
+  VALID_MAXIMUM     =    24.000                                               
+  MISSING_CONSTANT  = 65535.000                                               
+  UNIT              = "Hours"                                                 
+  DESCRIPTION       = "Juno's (jovian) Local Time at time UTC,                
+                       in units of hours.                                     
+                         00 = Midnight                                        
+                         06 = Dawn                                            
+                         12 = Noon                                            
+                         18 = Dusk"                                           
+/* RJWcsv, SC_POS_LOCAL_TIME, d, 1, 1 */                                      
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "SC_POS_SYSIII_ELONG"                                   
+  FIELD_NUMBER      = 12                                                      
+  BYTES             = 9                                                       
+  FORMAT            = "F9.3"                                                  
+  DATA_TYPE         = "ASCII_REAL"                                            
+  VALID_MINIMUM     =     0.000                                               
+  VALID_MAXIMUM     =   360.000                                               
+  MISSING_CONSTANT  = 65535.000                                               
+  UNIT              = "Degrees"                                               
+  DESCRIPTION       = "Juno's (jovian) SYSIII (East) Longitude at time UTC,   
+                       in units of degrees."                                  
+/* RJWcsv, SC_POS_SYSIII_ELONG, d, 1, 1 */                                    
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "DIMENSIONS"                                            
+  FIELD_NUMBER      = 13                                                      
+  BYTES             = 1                                                       
+  FORMAT            = "I1"                                                    
+  DATA_TYPE         = "ASCII_INTEGER"                                         
+  VALID_MINIMUM     = 1                                                       
+  VALID_MAXIMUM     = 3                                                       
+  MISSING_CONSTANT  = 0                                                       
+  DESCRIPTION       = "Dimensionality of moments: are these calculated        
+                       in 1D (=1), 2D (=2) or 3D (=3)."                       
+/* RJWcsv, DIMENSIONS, I, 1, 1 */                                             
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "M"                                                     
+  FIELD_NUMBER      = 14                                                      
+  BYTES             = 9                                                       
+  FORMAT            = "E9.3"                                                  
+  DATA_TYPE         = "ASCII_REAL"                                            
+  VALID_MINIMUM     =  5.486E-04 /* i.e. electron mass */                     
+  VALID_MAXIMUM     =  6.400E+01 /* i.e. 64 (S+) */                           
+  UNIT              = "amu"                                                   
+  DESCRIPTION       = "Mass of particle used for moments calculations in      
+                       units of amu (atomic mass units).                      
+                       Valid minimum is 5.486E-04 amu, which is the mass of   
+                       an electron (and why the E9.3 format was chosen),      
+                       but the electron moment code actually used more        
+                       precision with M_e of 0.00054857990907 amu."           
+/* RJWcsv, M, d, 1, 1 */                                                      
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "Q"                                                     
+  FIELD_NUMBER      = 15                                                      
+  BYTES             = 5                                                       
+  FORMAT            = "F5.2"                                                  
+  DATA_TYPE         = "ASCII_REAL"                                            
+  VALID_MINIMUM     =  -1.00                                                  
+  VALID_MAXIMUM     =   4.00                                                  
+  UNIT              = "e"                                                     
+  DESCRIPTION       = "Charge of particle used for moments calculations in    
+                       units of e (elementary charge).                        
+                       i.e. an electron has a charge of -1, and a proton +1.  
+                       e.g. For ions that are a mix of O+ and S++, we may use 
+                       M = 24 and Q = 1.5, so that M/Q = 16."                 
+/* RJWcsv, Q, d, 1, 1 */                                                      
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "NUM_LOOK_DIRS"                                         
+  FIELD_NUMBER      = 16                                                      
+  BYTES             = 3                                                       
+  FORMAT            = "I3"                                                    
+  DATA_TYPE         = "ASCII_INTEGER"                                         
+  VALID_MINIMUM     =   1                                                     
+  VALID_MAXIMUM     = 120                                                     
+  MISSING_CONSTANT  = 255                                                     
+  DESCRIPTION       = "Number of Look Directions used in moments              
+                      calculations. i.e. Low rate science ion species has 78  
+                      look directions, while 1D electron moments would only   
+                      have 1 look direction."                                 
+/* RJWcsv, NUM_LOOK_DIRS, I, 1, 1 */                                          
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "N_CC"                                                  
+  FIELD_NUMBER      = 17                                                      
+  BYTES             = 10                                                      
+  FORMAT            = "E10.3"                                                 
+  DATA_TYPE         = "ASCII_REAL"                                            
+  MISSING_CONSTANT  = -9.999E+09                                              
+  UNIT              = "1/(cm^3)"                                              
+  DESCRIPTION       = "Number Density in units of 1/cm^3."                    
+/* RJWcsv, N_CC, d, 1, 1 */                                                   
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "N_SIGMA_CC"                                            
+  FIELD_NUMBER      = 18                                                      
+  BYTES             = 10                                                      
+  FORMAT            = "E10.3"                                                 
+  DATA_TYPE         = "ASCII_REAL"                                            
+  MISSING_CONSTANT  = -9.999E+09                                              
+  UNIT              = "1/(cm^3)"                                              
+  DESCRIPTION       = "Number Density Uncertainty in units of 1/cm^3."        
+/* RJWcsv, N_SIGMA_CC, d, 1, 1 */                                             
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "PRESSURE_PA"                                           
+  FIELD_NUMBER      = 19                                                      
+  BYTES             = 10                                                      
+  FORMAT            = "E10.3"                                                 
+  DATA_TYPE         = "ASCII_REAL"                                            
+  MISSING_CONSTANT  = -9.999E+09                                              
+  UNIT              = "Pa"                                                    
+  DESCRIPTION       = "Isotropic pressure in units of Pascals."               
+/* RJWcsv, PRESSURE_PA, d, 1, 1 */                                            
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "PRESSURE_SIGMA_PA"                                     
+  FIELD_NUMBER      = 20                                                      
+  BYTES             = 10                                                      
+  FORMAT            = "E10.3"                                                 
+  DATA_TYPE         = "ASCII_REAL"                                            
+  MISSING_CONSTANT  = -9.999E+09                                              
+  DESCRIPTION       = "Isotropic pressure uncertainty in units of Pascals."   
+/* RJWcsv, PRESSURE_SIGMA_PA, d, 1, 1 */                                      
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "TEMP_EV"                                               
+  FIELD_NUMBER      = 21                                                      
+  BYTES             = 10                                                      
+  FORMAT            = "E10.3"                                                 
+  DATA_TYPE         = "ASCII_REAL"                                            
+  MISSING_CONSTANT  = -9.999E+09                                              
+  UNIT              = "eV"                                                    
+  DESCRIPTION       = "Isotropic temperature in units of eV."                 
+/* RJWcsv, TEMP_EV, d, 1, 1 */                                                
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "TEMP_SIGMA_EV"                                         
+  FIELD_NUMBER      = 22                                                      
+  BYTES             = 10                                                      
+  FORMAT            = "E10.3"                                                 
+  DATA_TYPE         = "ASCII_REAL"                                            
+  MISSING_CONSTANT  = -9.999E+09                                              
+  UNIT              = "eV"                                                    
+  DESCRIPTION       = "Isotropic temperature uncertainty in units of eV."     
+/* RJWcsv, TEMP_SIGMA_EV, d, 1, 1 */                                          
+END_OBJECT          = FIELD                                                   
+                                                                              
+OBJECT              = FIELD                                                   
+  NAME              = "QUALITY_FLAG"                                          
+  FIELD_NUMBER      = 23                                                      
+  BYTES             = 3                                                       
+  FORMAT            = "I3"                                                    
+  DATA_TYPE         = "ASCII_INTEGER"                                         
+  VALID_MINIMUM     =   0                                                     
+  VALID_MAXIMUM     = 254                                                     
+  MISSING_CONSTANT  = 255                                                     
+  DESCRIPTION       = "Moments Quality Flag.                                  
+                       To be determined for future versions:                  
+                       255 = Unknown = MISSING_CONSTANT                       
+                       Currently this object is all values of 255."           
+/* RJWcsv, QUALITY_FLAG, I, 1, 1 */                                           
+END_OBJECT          = FIELD                                                   
+/* FMT file contents end here.                                              */
+                                                                              
+END_OBJECT = SPREADSHEET                                                      
+END                                                                           
+                                                                              

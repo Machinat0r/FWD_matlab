@@ -1,0 +1,150 @@
+PDS_VERSION_ID               = PDS3                                           
+LABEL_REVISION_NOTE          = "                                              
+         2016-05-06 JNO:lawton V01;                                           
+         2016-05-06 PDS:mafi;                                                 
+         2016-08-18 JNO:lawton;                                               
+         2016-11-07 JNO:lawton"                                               
+                                                                              
+RECORD_TYPE                       = STREAM                                    
+                                                                              
+OBJECT                         = INSTRUMENT                                   
+  INSTRUMENT_HOST_ID             = "JNO"                                      
+  INSTRUMENT_ID                  = "FGM"                                      
+                                                                              
+  OBJECT                         = INSTRUMENT_INFORMATION                     
+    INSTRUMENT_NAME                = "MAGNETOMETER"                           
+    INSTRUMENT_TYPE                = "MAGNETOMETER"                           
+    INSTRUMENT_DESC                = "                                        
+                                                                              
+    The Juno Magnetometer (MAG) Investigation is a principal science          
+    investigation on the Juno New Frontier Mission to Jupiter. MAG will       
+    conduct the first global magnetic mapping of Jupiter and contribute       
+    to studies of Jupiter's polar magnetosphere.  The Juno MAG investigation  
+    is designed to acquire highly accurate measurements of the magnetic       
+    field in Jupiter's environment, mapping the planetary magnetic field      
+    with extraordinary accuracy and spatial resolution (orders of magnitude   
+    better than current knowledge).                                           
+                                                                              
+    The MAG Instrument Suite consists of two boom mounted observing           
+    platforms (MAG Optical Bench, or MOB) each supporting a vector Fluxgate   
+    Magnetometer (FGM) and two non-magnetic Advanced Stellar Compass (ASC)    
+    Camera Head Units (CHUs).  The FGM uses two miniature ring-core fluxgate  
+    sensors to measure the magnetic field in three components of the vector   
+    field.  The ASC determines the attitude of the MOB in inertial space      
+    and relative to the JUNO spacecraft's Stellar Reference Units (SRU). The  
+    FGM was built at the Goddard Space Flight Center (GSFC); the ASC was      
+    built at the Technical University of Denmark (DTU).                       
+                                                                              
+    The Juno FGM is fully redundant, with two identical power converters      
+    providing power to one of two identical field programmable gate array     
+    (FPGA)-based digital systems. Only one set (power converter and digital   
+    system) is powered at a time; the other is a cold back-up. Either set     
+    receives commands from, and transmits data to, either side of the         
+    spacecraft command and data handling (C&DH) unit through redundant        
+    interfaces. Two identical sets of analog electronics, both continuously   
+    powered by either power converter, drive the outboard (OB) and inboard    
+    (IB) sensors, via separate cables connecting the remote FGM sensors and   
+    electronics box, and both are controlled by and communicate with either   
+    of the digital systems. No single point failure can result in loss of     
+    data from both OB and IB FGM sensors.                                     
+
+    Each FGM sensor block uses two miniature ring-core fluxgate sensors       
+    to measure the magnetic field in three components of the vector field.    
+    Each of the two ring-core sensors measures the field in two orthogonal    
+    directions in the plane of the ring core. With two such sensors,          
+    oriented in planes intersecting at 90 degrees, all three components       
+    of the vector field are measured (one component measured, redundantly,    
+    by both). The sensor electronics uses negative feedback to null the       
+    magnetic field in each core, providing linearity over the full dynamic    
+    range of the instrument. The field in each ring core is both sensed and   
+    nulled by a pair of nested coils within which the ring core resides.      
+    Each coil nulls the field in one of the two perpendicular axes that       
+    define the plane of the ring core sensing element. All elements are       
+    maintained in precise alignment by a sensor block assembly constructed    
+    of a machinable glass ceramic with low thermal expansion (MACOR) and      
+    excellent mechanical stability. The FGM sensor block attaches to the      
+    optical bench via a three point kinematic mount to maintain accurate      
+    alignment over the range or environments experienced. The FGM sensor      
+    block is designed to operate at about 0 degrees C, whereas the optical    
+    bench and CHUs are designed to operate at about -58 degrees C to          
+    minimize noise and radiation effects. The FGM sensor block is thermally   
+    isolated from the optical bench via the three point kinematic mount and   
+    individual thermal blanketing. The FGM sensor itself is impervious to     
+    radiation effects.                                                        
+
+    The two FGM sensors are separated by 2 meters on the MAG boom, one        
+    sensor (inboard, or 'IB' sensor) is located 2 m radially outward from     
+    the end of the solar array and the other sensor (outboard, or 'OB'        
+    sensor) is located at the outer end of the MAG boom. This arrangement     
+    ('dual magnetometer') provides the capability to monitor spacecraft-      
+    generated magnetic fields in flight. The MAG boom is located on the       
+    outermost end of one (+x panel) of three solar panels and is designed     
+    to mimic the outermost solar array panel (of the other two solar array    
+    structures) in mass and mechanical deployment. The OB and IB sensor       
+    packages are identical. The CHUs measure the attitude of the sensor       
+    assembly continuously in flight to 20 arcsec and are used to establish,   
+    and continuously monitor, the attitude of the sensor assembly with        
+    respect to the spacecraft SRUs through cruise, orbit insertion at         
+    Jupiter, and initial science orbits. In addition to the extraordinarily   
+    accurate attitude reference provided by the MAG investigation's multiple  
+    ASC CHUs, the spacecraft provides (reconstructed) knowledge of the FGM    
+    sensor assembly attitude to an accuracy of 200 arcsec throughout the      
+    mission, using sensors on the body of the spacecraft and knowledge of     
+    the attitude transfer between the ASC camera heads and spacecraft SRUs.   
+    This provides a redundant attitude determination capability that could    
+    be used if ASC attitude solutions are interrupted for any reason (e.g.,   
+    blinding by a sunlit Jupiter obscuring the field of view for certain      
+    geometries, radiation effects). If this redundant capability is required  
+    at any time, the stability of the mechanical system (MAG boom, solar      
+    array hinges, structure, and articulation strut) linking the body of      
+    the spacecraft (SRU reference) to the FGM sensors (and CHUs) is an        
+    important element in satisfying the spacecraft requirement.               
+
+    The Juno MAG sensors are remotely mounted (at approximately 10 m and      
+    12 m) along a dedicated MAG boom that extends along the spacecraft +x     
+    axis, attached to the outer end of one of the spacecraft's three solar    
+    array structures. This design provides the maximum practical separation   
+    between MAG sensors and spacecraft to mitigate spacecraft-generated       
+    magnetic fields which would otherwise contaminate the measurements.       
+    A comprehensive magnetic control program is in place to ensure that       
+    the spacecraft magnetic field at the MAG sensors does not exceed 2 nT     
+    static or 0.5 nT variable. The separated, dual FGM sensors provide        
+    capability to monitor spacecraft-generated magnetic fields in flight.     
+
+    The JUNO sensor design covers the wide dynamic range with six instrument  
+    ranges (see below) increasing by factors of four the dynamic range in     
+    successive steps. The analog signals are digitized with a 16 bit analog   
+    to digital (A/D) converter, which yields a resolution of +/- 32768 steps  
+    for each dynamic range. In the table below, resolution, equal to half     
+    the quantization step size for each range, is listed in parentheses.      
+                                                                              
+       FGM Characteristics        Dual Tri-Axial Ring Core Fluxgate           
+                                                                              
+       Dynamic range (resolution)       16.3840 G (+/-25.0 nT)                
+                                         4.0960 G (+/-6.25 nT)                
+                                         1.0240 G (+/-1.56 nT)                
+                                         0.2560 G (+/-0.391 nT)               
+               (1 G = 100,000 nT)         6400 nT (+/-0.10 nT)                
+                                          1600 nT (+/-0.02 nT)                
+       Measurement accuracy:         0.01% absolute vector accuracy           
+       Intrinsic noise level         <<1 nT (range dependent)                 
+       Zero level stability           <1 nT (calibrated)                      
+       Intrinsic sample rate          64 vector samples/s                     
+                                                                              
+    The data from each sensor can be in one of eight data formats. The        
+    instrument intrinsic sample rate of 64 samples/second is supported        
+    in data formats 0 and 1; averages over 2 to the n power samples           
+    (n = 1,2,3,4,5,6) are supported in telemetry modes 2 through 7.           
+                                                                              
+    The MAG instrument suite is described in full detail in                   
+    [CONNERNEYETAL2016]."                                                     
+                                                                              
+                                                                              
+  END_OBJECT                     = INSTRUMENT_INFORMATION                     
+                                                                              
+  OBJECT                         = INSTRUMENT_REFERENCE_INFO                  
+    REFERENCE_KEY_ID               =  "CONNERNEYETAL2016"                     
+  END_OBJECT                     = INSTRUMENT_REFERENCE_INFO                  
+                                                                              
+END_OBJECT                     = INSTRUMENT                                   
+END                                                                           

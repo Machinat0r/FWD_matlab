@@ -1,0 +1,330 @@
+PDS_VERSION_ID                    = PDS3                                      
+LABEL_REVISION_NOTE               = "                                         
+         2016-05-15 JNO:lawton V01;                                           
+         2016-08-18 JNO:lawton;                                               
+         2016-11-08 JNO:lawton;                                               
+         2017-06-28 PPI:mafi;                                                 
+         2017-09-15 PPI:mafi;                                                 
+         2017-12-19 PPI:mafi, perijoves 6-5 update;                           
+         2018-03-27 PPI:mafi, perijoves 7-8 update;                           
+         2018-06-25 PPI:mafi, perijoves 9-10 update;                          
+         2018-10-25 PPI:mafi, perijoves 11-12 update;                         
+         2019-02-05 PPI:mafi, perijoves 13-14 update;                         
+         2019-05-20 PPI:mafi, perijoves 15-16 update;                         
+         2019-09-11 PPI:mafi, perijoves 17-18 update;                         
+         2019-12-04 PPI:mafi, perijoves 19-20 update;                         
+         2020-03-11 PPI:mafi, perijoves 21-22 update;                         
+         2020-07-14 PPI:mafi, orbits 16-18 perijove delivery, added           
+                              references;                                     
+         2020-07-20 PPI:mafi, perijoves 23-24 update;                         
+         2020-11-06 PPI:mafi, perijoves 25-26 update;                         
+         2021-02-19 PPI:kazden, perijoves 27-28 update;                       
+         2021-06-04 PPI:kazden, perijoves 29-30 update;                       
+         2021-09-20 PPI:kazden, perijoves 31-32 update;                       
+         2022-01-03 PPI:kazden, perijoves 33-34 update;                       
+         2022-03-24 PPI:kazden, perijoves 35-36 update;                       
+         2022-06-21 PPI:kazden, perijoves 37-38 update;                       
+         2022-09-16 PPI:kazden, perijoves 39-40 update;                       
+         2022-12-13 PPI:kazden, perijoves 41-42 update;                       
+         2023-03-08 PPI:kazden, perijoves 43-44 update;                       
+         2023-06-30 PPI:kazden, perijoves 45-47 update;                       
+         2023-10-10 PPI:kazden, updated for Ganymede and Europa delivery;     
+         2023-10-27 PPI:kazden, perijoves 48-50 update;                       
+         2024-02-02 PPI:kazden, perijoves 51-53 update;                       
+         2024-03-12 PPI: added Ganymede and Europa to this file TARGET_NAME;  
+              "                                                               
+                                                                              
+RECORD_TYPE                       = STREAM                                    
+                                                                              
+OBJECT                            = DATA_SET                                  
+                                                                              
+                                                                              
+ DATA_SET_ID                      = "JNO-J-3-FGM-CAL-V1.0"                    
+                                                                              
+ OBJECT                           = DATA_SET_INFORMATION                      
+   DATA_SET_NAME                  = "JUNO J FLUXGATE MAGNETOMETER             
+CALIBRATED DATA V1.0"                                                         
+                                                                              
+   DATA_SET_COLLECTION_MEMBER_FLG = "N"                                       
+   DATA_OBJECT_TYPE               = TABLE                                     
+   START_TIME                     = 2016-07-08T00:00:00.198                   
+   STOP_TIME                      = 2023-08-02T00:00:00.871                   
+   DATA_SET_RELEASE_DATE          = 2024-02-02                                
+   PRODUCER_FULL_NAME             = "JOHN CONNERNEY"                          
+   DETAILED_CATALOG_FLAG          = "N"                                       
+   CITATION_DESC                  = "J.E.P. Connerney (GSFC), Juno MAG        
+     CALIBRATED DATA J V1.0, JNO-J-3-FGM-CAL-V1.0, NASA Planetary Data        
+     System, 2024. https://doi.org/10.17189/1519711"                          
+                                                                              
+                                                                              
+   DATA_SET_TERSE_DESC            = "The Juno Fluxgate Magnetomer (FGM)       
+     calibrated observations consist of time and position tagged magnetic     
+     field samples in physical units and coordinate systems collected by the  
+     FGM instrument during orbit about Jupiter."                              
+                                                                              
+   ABSTRACT_DESC                  = "                                         
+                                                                              
+   Abstract                                                                   
+   ========                                                                   
+     This data set consists of the Juno FGM calibrated orbital observations.  
+     The FGM sensor block uses two miniature ring-core fluxgate sensors to    
+     measure the magnetic field in three components of the vector field.      
+     There are multiple FGM data products to accomodate different             
+     coordinate systems."                                                     
+                                                                              
+                                                                              
+   DATA_SET_DESC                  = "                                         
+                                                                              
+   Data Set Overview                                                          
+   =================                                                          
+     The data set consists of calibrated observations.  The MAG measures      
+     the vector magnetic field.                                               
+                                                                              
+     There are three principal coordinate systems used to represent the data  
+     in this archive - the payload (pl) coordinate system, the Sun-state (ss) 
+     coordinate system, and the planetocentric (pc) coordinate system.        
+     Cartesian representations are used for all four coordinate systems. The  
+     pc and ss coordinate systems are specified relative to a 'target body'   
+     which may be any solar system object.  Primarily the 'target body' is    
+     Jupiter.  In what follows we will reference Jupiter as the target body,  
+     but, for example, if observations near a satellite (such as Io) are      
+     desired in Io-centric coordinates, the satellite Io may be specified as  
+     the target body.                                                         
+                                                                              
+     The ss coordinate system is defined using the instantaneous Jupiter-Sun  
+     vector as the primary reference vector (x direction).  The X-axis lies   
+     along this vector and is taken to be positive toward the Sun.  The       
+     Jupiter orbital velocity vector is the second vector used to define      
+     the coordinate system; the y axis lies in the plane determined by the    
+     Jupiter-Sun vector and the velocity vector and is orthogonal to the x    
+     axis (very nearly the negative of the velocity vector). The vector       
+     cross product of x and y yields a vector z parallel to the northward     
+     (upward) normal of the orbit plane of Jupiter. This system is sometimes  
+     called a sun-state (ss) coordinate system since its principal vectors    
+     are the Sun vector and the Jupiter state vector.                         
+                                                                              
+     The planetocentric (pc) coordinate system is body-fixed and rotates      
+     with the body as it spins on its axis. The body rotation axis is the     
+     primary vector used to define this coordinate system. Z is taken to      
+     lie along the rotation axis and be positive in the direction of          
+     positive angular momentum. The X-axis is defined to lie in the           
+     equatorial plane of the body, perpendicular to Z, and in the direction   
+     of the prime meridian as defined by the IAU. The Y axis completes the    
+     right-handed set.                                                        
+                                                                              
+     Data in the vicinity of the moons of Jupiter (Io, Callisto) may be       
+     provided in separate files in moon centered coordinate systems, if it    
+     turns out that the mission plan affords an opportunity                   
+     to acquire data in the immediate vicinity of either of those bodies. Data
+     in the vicinity of Ganymede and Europa has been provided in              
+     planetocentric coordinates.  The planetocentric and SS data follows the  
+     definitions above with the reference body being the moon or target       
+     specified via option in the command line All of the archived data files  
+     are simple and readable ASCII files with attached documentation in a     
+     header that precedes the columns of data. Files using a coordinate system
+     centered on a target body other than Jupiter are identified via the      
+     target body listed on the command line which appears in the header along 
+     with an audit trail of supplementary engineering (kernel) files.         
+                                                                              
+     The output from the processing program is in Standard Time Series (STS)  
+     format. The Object Description Language (odl) header is included in the  
+     STS file.  There will also be a detached PDS label file describing the   
+     contents of the STS file.                                                
+                                                                              
+     Each data file contains the observations collected on a given UTC day.   
+                                                                              
+   Instrument Overview                                                        
+   ===================                                                        
+     Please see JNO_FGM_INST.CAT.                                             
+                                                                              
+   Parameters                                                                 
+   ==========                                                                 
+     The FGM powers up in operational mode and returns telemetry              
+     immediately every clock tic (2 seconds). The FGM may be operated         
+     in autoranging mode, or manual range commands may be sent to fix         
+     the instrument in any of its dynamic ranges. Likewise any telemetry      
+     mode may be selected, depending on telemetry resource allocation. In     
+     addition, packets of engineering telemetry (in addition to science       
+     telemetry packets) are telemetered at a variable rate, from one per      
+     2 seconds to one per 512 seconds, per commanded state.                   
+                                                                              
+   Calibration Overview                                                       
+   ====================                                                       
+     The FGMs were calibrated in the Planetary Magnetospheres Laboratory      
+     and the GSFC Mario H. Acuna (MHA) Magnetic Test Facility (MTF), a        
+     remote facility located near the GSFC campus. These facilities are       
+     sufficient to calibrate the FGMs to 100 parts per million (ppm)          
+     absolute vector accuracy. An independent measurement of the magnetic     
+     field strength in the 0.25, 1, and 4 Gauss ranges was provided by        
+     Overhausen Proton Precession magnetometers placed near the FGM. Scale    
+     factor calibration is extended to 16 Gauss using a specialized high      
+     field coil and measurement techniques (see JUNO Magnetic Field           
+     Investigation instrument paper: (Connerney et al., Space Science         
+     Reviews, 2017, doi: 10.1007/s11214-017-0334-z)). A nuclear magnetic      
+     resonance magnetometer (Virginia Scientific Instruments) provided the    
+     absolute field strength measurements in the 16 Gauss range when it was   
+     working.                                                                 
+                                                                              
+     Two independent methods are used to calibrate the magnetometers. The     
+     vector fluxgates are calibrated in the 22' facility using a method       
+     ('MAGSAT method') developed by Mario Acuna and others. This technique    
+     uses precise 90 degree rotations of the sensing element and a sequence   
+     of applied fields to simultaneously determine the magnetometer           
+     instrument model response parameters (the 'A matrix') as well as a       
+     similar set of parameters (the 'B matrix') that describe the facility    
+     coil orthogonality [instrument paper reference]. The second calibration  
+     method (called the 'thin shell' and 'thick shell') uses a large set of   
+     rotations in a known field (magnitude) to obtain the same instrument     
+     parameters, subject to an arbitrary rotation [Merayo 2000 & 2001]. In    
+     the 'thin shell' method, the sensor is articulated through all           
+     orientations in a fixed, or known field magnitude. This can be done in   
+     a facility like the GSFC 22 foot coil system, wherein any fixed field    
+     up to about 1.2 Gauss may be utilized, or it may be done in the Earth's  
+     field using the ambient field in a gradient-free region and a system     
+     to compensate for variations in the ambient field (normally corrected    
+     via a secondary reference magnetometer coupled with a Proton Precession  
+     total field instrument). Application of this method in a coil facility   
+     (with closed loop control for ambient field variations) allows for the   
+     'thin shell' to be performed at many field magnitudes ('thick shell').   
+                                                                              
+     The MAGSAT calibration method provides the instrument calibration        
+     parameters referenced to the optical cube mounted on the sensor          
+     (or MOB) which defines the instrument coordinate system. These           
+     parameters include the instrument scale factors, 3 by 3 instrument       
+     response matrix (or 'A' matrix), and zero offsets for each instrument    
+     dynamic range. The 'thin shell' method provides the same parameters,     
+     but since the method conveys no attitude information, only the           
+     symmetric part of the instrument response matrix is determined via       
+     'thin shell'. Nevertheless, it provides a useful independent verification
+     of the MAGSAT calibration.                                               
+                                                                              
+     Inflight calibration activities are designed to monitor instrument       
+     parameters, primarily zero offsets, and to monitor the relative          
+     alignment of the magnetic field sensor platforms (the MOBs) and the      
+     spacecraft attitude reference (Stellar Reference Units, or SRUs).        
+     Spacecraft generated magnetic fields will be monitored using the dual    
+     magnetometer technique and a series of magnetic compatibility tests      
+     designed to identify the source of any magnetic signals (if any)         
+     associated with spacecraft payloads. Since Juno is a spinning            
+     spacecraft, spinning at 1 or 2 rpm nominally, any field fixed in the     
+     frame of reference of the spacecraft (e.g., fixed spacecraft-generated   
+     magnetic fields, sensor offsets, etc.) is easily identified. In practice 
+     we apply an algorithm developed independently by several groups (Acuna,  
+     Reviews of Scientific Instruments, 2002) to estimate bias offsets using  
+     differences in the measured field. This method handily corrects for      
+     biases in the spacecraft x and y axes, but since the spacecraft spins    
+     about the z axis, biases in z must be estimated using different methods. 
+     One technique utilizes the Alfvenic nature of fluctuations in the solar  
+     wind, that is, the magnitude preserving nature of variations in the      
+     field. Of course, not all fluctuations are Alfvenic (preserving          
+     magnitude) so some care is taken in application of this method to select 
+     appropriate events.                                                      
+                                                                              
+     The process used to correct for the contribution of eddy currents is     
+     described in Kotsiaros, et al. 2020.                                     
+                                                                              
+   Coordinate Systems                                                         
+   ==================                                                         
+     The MAG data are represented in the following coordinate systems:        
+                                                                              
+     - spacecraft-solar equatorial                                            
+     - spacecraft payload                                                     
+     - planetocentric                                                         
+     - sun-state                                                              
+                                                                              
+     all described above.                                                     
+                                                                              
+   Data                                                                       
+   ====                                                                       
+     Data products contain the observations collected on a given              
+     UTC day.  Each coordinate system in a separate file.                     
+                                                                              
+     Through 2017 DOY 174, magnetometer observations in weak field            
+     environments (sensor range 0, +/- 1600 nT nominal dynamic range) are     
+     sourced from the outboard sensor.  Subsequent to 2017 DOY 174,           
+     magnetometer observations in weak field environments (sensor range 0,    
+     +/- 1600 nT nominal dynamic range) are sourced from the inboard sensor   
+     to alleviate minor sporatic interference appearing in the z axis of the  
+     outboard sensor.  This substitution is noted in the STS header that      
+     identifies the content of each record.  The STS header should be         
+     consulted for file content each time a file is read, in the event that   
+     file content changes (this was the design purpose of the STS header).    
+     We anticipate further file format changes (in upper dynamic ranges) as   
+     additional corrections are introduced."                                  
+                                                                              
+    CONFIDENCE_LEVEL_NOTE           = "                                       
+                                                                              
+                                                                              
+   Confidence Level Overview                                                  
+   =========================                                                  
+   Not applicable.                                                            
+                                                                              
+   Review                                                                     
+   ======                                                                     
+     The FGM data set was reviewed internally by the MAG team prior to        
+     release to the PDS. PDS also performed an external review of the MAG     
+     data.                                                                    
+                                                                              
+                                                                              
+   Limitations                                                                
+   ===========                                                                
+     The Juno magnetic field investigation was designed to measure fields     
+     to 16 Gauss per axis over 6 dynamic ranges of the instrument, the most   
+     sensitive of which is +/- 1600 nT with a quantization step size of       
+     0.05 nT (16 bit A/D). Moreover, the spacecraft magnetic requirement was  
+     not to exceed 2 nT static and 0.5 nT variable spacecraft-generated       
+     magnetic field. In very weak field environments, such as encountered in  
+     outer cruise, accuracy may be expected to be limited by sensor offset    
+     and spacecraft magnetic field variations. The combined (static)          
+     spacecraft-generated magnetic field and sensor offset may be             
+     continuously monitored in flight in the spacecraft x and y axis, since   
+     the spacecraft spins (nominally at 1 or 2 RPM) about an axis closely     
+     aligned with the spacecraft payload z axis. However, offsets in the z    
+     axis need be estimated using the Alfvenic properties in the solar wind   
+     (Connerney et al., Space Science Reviews, 2017,                          
+     doi: 10.1007/s11214-017-0334-z). Statistical in nature, estimates of z   
+     axis zeros are not continuously available and are less accurate than the 
+     x and y zeros. Also, variations in spacecraft field over a time span     
+     comparable to a spin period will also lead to larger errors."            
+                                                                              
+ END_OBJECT                       = DATA_SET_INFORMATION                      
+                                                                              
+  OBJECT                           = DATA_SET_MISSION                         
+    MISSION_NAME                   = "JUNO"                                   
+  END_OBJECT                       = DATA_SET_MISSION                         
+                                                                              
+ OBJECT                           = DATA_SET_TARGET                           
+  TARGET_NAME                     = {"SOLAR SYSTEM",                          
+                                     "EARTH",                                 
+                                     "JUPITER",                               
+                                     "EUROPA",                                
+                                     "GANYMEDE"}                              
+ END_OBJECT                       = DATA_SET_TARGET                           
+                                                                              
+ OBJECT                           = DATA_SET_HOST                             
+  INSTRUMENT_HOST_ID              = JNO                                       
+  INSTRUMENT_ID                   = "FGM"                                     
+ END_OBJECT                       = DATA_SET_HOST                             
+                                                                              
+ OBJECT                           = DATA_SET_REFERENCE_INFORMATION            
+  REFERENCE_KEY_ID                =  "ACUNA2002"                              
+ END_OBJECT                       = DATA_SET_REFERENCE_INFORMATION            
+                                                                              
+ OBJECT                           = DATA_SET_REFERENCE_INFORMATION            
+  REFERENCE_KEY_ID                =  "CONNERNEYETAL2017"                      
+ END_OBJECT                       = DATA_SET_REFERENCE_INFORMATION            
+                                                                              
+ OBJECT                           = DATA_SET_REFERENCE_INFORMATION            
+  REFERENCE_KEY_ID                =  "KOTSIAROSETAL2020"                      
+ END_OBJECT                       = DATA_SET_REFERENCE_INFORMATION            
+                                                                              
+ OBJECT                           = DATA_SET_REFERENCE_INFORMATION            
+  REFERENCE_KEY_ID                =  "MERAYOETAL2000"                         
+ END_OBJECT                       = DATA_SET_REFERENCE_INFORMATION            
+                                                                              
+ OBJECT                           = DATA_SET_REFERENCE_INFORMATION            
+  REFERENCE_KEY_ID                =  "MERAYOETAL2001"                         
+ END_OBJECT                       = DATA_SET_REFERENCE_INFORMATION            
+                                                                              
+END_OBJECT                        = DATA_SET                                  
+END                                                                           
