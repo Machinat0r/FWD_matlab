@@ -34,33 +34,36 @@ clear;clc;close all
 units = irf_units;
 k0 = 1/(4*pi);
 Q1 = 1e5;Q2 = 0;
-r1 = [-1,-1,-1];r2 = [-1,0,5];
+r1 = [1,0.5,-0.5];r2 = [-1,0,5];
 % a1 = 10*[0,0,sqrt(3)]; a2 = 10*[1, sqrt(2), 0]; a3 = 10*[0, -sqrt(2), -1]; a4 = 10*[-1, sqrt(2), 0];
-a1 = 10*[0,0,3]; a2 = 10*[-2*sqrt(2)-1,2,-1]; a3 = 10*[sqrt(2)+2,sqrt(6)+1,-2]; a4 = 10*[sqrt(2)-1,-sqrt(6)+1,-3];
-
+a1 = 10*[1,-1,3]; a2 = 10*[-2*sqrt(2)-1,2,-1]; a3 = 10*[sqrt(2)+2,sqrt(6)+1,-2]; a4 = 10*[sqrt(2)-1,-sqrt(6)+1,-3];
+a5 = -a1;
 %% Calculate B
-c_eval('d1? = sqrt((a?(:,1)-r1(1)).^2+(a?(:,2)-r1(2)).^2+(a?(:,3)-r1(3)).^2);',1:4);
-c_eval('d2? = sqrt((a?(:,1)-r2(1)).^2+(a?(:,2)-r2(2)).^2+(a?(:,3)-r2(3)).^2);',1:4);
-c_eval("Bt1? = transpose(k0*Q1./(d1?'.^2));",1:4);
-c_eval("Bt2? = transpose(k0*Q2./(d2?'.^2));",1:4);
-c_eval('Bt1?(d1?<=0,1)=0;',1:4);c_eval('Bt2?(d2?<=0,1)=0;',1:4);
-c_eval('B?(:,1) = Bt1?.*((a?(:,1)-r1(1))./d1?) + Bt2?.*((a?(:,1)-r2(1))./d2?);',1:4);
-c_eval('B?(:,2) = Bt1?.*((a?(:,2)-r1(2))./d1?) + Bt2?.*((a?(:,2)-r2(2))./d2?);',1:4);
-c_eval('B?(:,3) = Bt1?.*((a?(:,3)-r1(3))./d1?) + Bt2?.*((a?(:,3)-r2(3))./d2?);',1:4);
-c_eval('Bt? = irf_abs(B?);',1:4);
-c_eval('Bt? = Bt?(:,4);',1:4);
+c_eval('d1? = sqrt((a?(:,1)-r1(1)).^2+(a?(:,2)-r1(2)).^2+(a?(:,3)-r1(3)).^2);',1:5);
+c_eval('d2? = sqrt((a?(:,1)-r2(1)).^2+(a?(:,2)-r2(2)).^2+(a?(:,3)-r2(3)).^2);',1:5);
+c_eval("Bt1? = transpose(k0*Q1./(d1?'.^2));",1:5);
+c_eval("Bt2? = transpose(k0*Q2./(d2?'.^2));",1:5);
+c_eval('Bt1?(d1?<=0,1)=0;',1:5);c_eval('Bt2?(d2?<=0,1)=0;',1:5);
+c_eval('B?(:,1) = Bt1?.*((a?(:,1)-r1(1))./d1?) + Bt2?.*((a?(:,1)-r2(1))./d2?);',1:5);
+c_eval('B?(:,2) = Bt1?.*((a?(:,2)-r1(2))./d1?) + Bt2?.*((a?(:,2)-r2(2))./d2?);',1:5);
+c_eval('B?(:,3) = Bt1?.*((a?(:,3)-r1(3))./d1?) + Bt2?.*((a?(:,3)-r2(3))./d2?);',1:5);
+c_eval('Bt? = irf_abs(B?);',1:5);
+c_eval('Bt? = Bt?(:,4);',1:5);
 %% Rot B
 theta = transpose([-180:1:180]);
-phi = 135;
-B1 = zeros(length(theta),3);
-c_eval('B? = repmat(B?,length(theta),1);',2:4);
-c_eval('a? = repmat(a?,length(theta),1);');
-% n = a2(1,:)/30;n = [-n(3),0,n(1)];
+% B1 = zeros(length(theta),3);
+c_eval('B? = repmat(B?,length(theta),1);',1:5);
+c_eval('a? = repmat(a?,length(theta),1);',1:5);
+% n = a1(1,:)/30;n = [-n(3),0,n(1)];
+n = a1(1,:) ./ norm(a1(1,:));
+K = [-n(3),0,n(1)];K = K./norm(K);
+phi = 90;
+n = n*cosd(phi)+cross(n,K)*sind(phi)+dot(n,K)*K*(1-cosd(phi));
 for i = 1:length(theta)
-    B1(i,:) = [Bt1*sind(theta(i))*sind(phi),Bt1*sind(theta(i))*cosd(phi),Bt1*cosd(theta(i))];
-    %向量v绕向量u旋转θ，v'=vcosθ + (u×v)sinθ + (u·v)u(1-cosθ) 
-    % tempB2 = B2(i,:)/Bt2;
-    % B2(i,:) = Bt2*(tempB2*cosd(theta(i))+cross(tempB2,n)*sind(theta(i))+dot(n,tempB2)*n*(1-cosd(theta(i))));
+    % B1(i,:) = [Bt1*sind(theta(i))*sind(phi),Bt1*sind(theta(i))*cosd(phi),Bt1*cosd(theta(i))];
+    % % 向量v绕向量u旋转θ，v'=vcosθ + (u×v)sinθ + (u·v)u(1-cosθ) 
+    tempB1 = B1(i,:)/Bt1;
+    B1(i,:) = Bt1*(tempB1*cosd(theta(i))+cross(tempB1,n)*sind(theta(i))+dot(n,tempB1)*n*(1-cosd(theta(i))));
 end
 
 %% Poincare Index
@@ -101,28 +104,60 @@ err_4C=irf_multiply(1,divB,1,jmag,-1);  %% η
 err_4C=abs(err_4C);    
 
 %% solve monopole
-c_eval('a? = [transpose(1:size(a?,1)),a?];',1:4);
-c_eval('B? = [transpose(1:size(B?,1)),B?];',1:4);
-[coeff, res] = VSH_Expand('a?', 'B?', 2);
+c_eval('a? = [transpose(1:size(a?,1)),a?];',1:5);
+c_eval('B? = [transpose(1:size(B?,1)),B?];',1:5);
 
-% % % c_eval('a?(:,2:4) = a?(:,2:4)-r1;',1:4);
-% % % [coeff, res] = VSH_Expand('a?', 'B?', [0,0,0], 1);
+% % % [coeff, res] = VSH_Expand_multiSC('a?', 'B?', 3);
+% % % coef0 = coeff(:,[1,10,19]);
+% % % coef1 = coeff(:,[2:4,11:13,20:22]);
+% % % coef2 = coeff(:,[5:9,14:18,23:27]);
 
+% % % [coeff, res] = VSH_Expand_multiSC('a?', 'B?', 2);
+
+c_eval('a?(:,2:4) = a?(:,2:4)-r1;',1:4);
+[coeff, res] = VSH_Expand_multiSC('a?', 'B?', [0,0,0], 1);
 coef00 = coeff(:,[1,5,9]);
 coef12 = coeff(:,[2,6,10]);
 coef10 = coeff(:,[3,7,11]);
 coef11 = coeff(:,[4,8,12]);
+
+alpha_00 = coeff(:,1); beta_00 = coeff(:,5); gamma_00 = coeff(:,9);
+alpha_12 = coeff(:,2); beta_12 = coeff(:,6); gamma_12 = coeff(:,10);
+alpha_10 = coeff(:,3); beta_10 = coeff(:,7); gamma_10 = coeff(:,11);
+alpha_11 = coeff(:,4); beta_11 = coeff(:,8); gamma_11 = coeff(:,12);
+R0 = coeff(:,13:15);
+c_eval('a0? = a?;',1:4);
+c_eval('a?(:,2:4) = a?(:,2:4) - R0;',1:4);
+c_eval('[r?, theta?, phi?] = Coor_Trans(a?(:,2:4));', 1:4);
+[r1, r2, r3, r4, ~] = Normal_R(r1, r2, r3, r4);
+for temp_ic = 1:4
+temp_ic = num2str(temp_ic);
+eval(['Br0',temp_ic,' = Cal_Br0(r',temp_ic,', theta',temp_ic,', alpha_00);']);
+eval(['Br1',temp_ic,' = Cal_Br1(r',temp_ic,', theta',temp_ic,', phi',temp_ic,', alpha_12, alpha_10, alpha_11);']);
+eval(['Bt1',temp_ic,' = Cal_Bt1(r',temp_ic,', theta',temp_ic,', phi',temp_ic,', beta_12, beta_10, beta_11, gamma_12, gamma_11);']);
+eval(['Bp1',temp_ic,' = Cal_Bp1(r',temp_ic,', theta',temp_ic,', phi',temp_ic,', beta_12, beta_11, gamma_12, gamma_10, gamma_11);']);
+end
+c_eval('[~, B?_sph] = Coor_Trans(a?(:,2:4), B?(:,2:4));', 1:4);
+c_eval('B0? = irf_abs([B?(:,1), Br0?, zeros(size(Br0?)), zeros(size(Br0?))]);', 1:4);
+c_eval('B1? = irf_abs([B?(:,1), Br1?, Bt1?, Bp1?]);', 1:4);
+c_eval('B2? = irf_abs([B?(:,1), B?_sph(:,1) - Br0? - Br1?, B?_sph(:,2) - Bt1?, B?_sph(:,3) - Bp1?]);', 1:4);
+c_eval('rate1? = B1?(:,5)./B0?(:,5);', 1:4);
+c_eval('rate2? = B2?(:,5)./B0?(:,5);', 1:4);
+
+rate1 = 0.25*(rate11+rate12+rate13+rate14);
+rate2 = 0.25*(rate21+rate22+rate23+rate24);
+
 %% movie1
-% % % figname = ['/Users/fwd/Documents/Ti~mor~/M/Monopole/VSH/VSH_test2_para.mp4'];
-% % % v = VideoWriter(figname, 'MPEG-4');
-% % % v.FrameRate = 60;
-% % % v.Quality = 100;
-% % % open(v)
-% % % for f = 1:1:361
-f = 361;
+figname = ['/Users/fwd/Documents/Ti~mor~/M/Monopole/VSH/VSH_Ratio_test.mp4'];
+v = VideoWriter(figname, 'MPEG-4');
+v.FrameRate = 60;
+v.Quality = 100;
+open(v)
+for f = 1:1:361
+% % % f = 361;
 %% Init figure 1
 figure(1)
-n=5;
+n=7;
 i=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
@@ -204,7 +239,7 @@ irf_plot([theta(1:f) 0*B1(1:f,2)],'k--', 'Linewidth',0.75); hold off;
 grid off;
 % % % set(gca,'Ylim',[min([min(coef00(:,1)) min(coef00(:,2)) min(coef00(:,3))])-2 ...
 % % %     max([max(coef00(:,1)) max(coef00(:,2)) max(coef00(:,3))])+2]);
-set(gca,'Ylim',[min(coeff,[],'all')-2 , max(coeff,[],'all')+2]);
+set(gca,'Ylim',[min(coef00,[],'all')-2 , max(coef00,[],'all')+2]);
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0]]);
 irf_legend(gca,{'\alpha','\beta','\gamma'},[0.97 0.92]);
 irf_legend(gca,{'c'},[0.03 0.92],'color','k');
@@ -227,7 +262,7 @@ irf_plot([theta(1:f) 0*B1(1:f,2)],'k--', 'Linewidth',0.75); hold off;
 grid off;
 % % % set(gca,'Ylim',[min([min(coef12(:,1)) min(coef12(:,2)) min(coef12(:,3))])-2 ...
 % % %     max([max(coef12(:,1)) max(coef12(:,2)) max(coef12(:,3))])+2]);
-set(gca,'Ylim',[min(coeff,[],'all')-2 , max(coeff,[],'all')+2]);
+set(gca,'Ylim',[min(coef12,[],'all')-0.2 , max(coef12,[],'all')+0.2]);
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0]]);
 irf_legend(gca,{'\alpha','\beta','\gamma'},[0.97 0.92]);
 irf_legend(gca,{'d'},[0.03 0.92],'color','k');
@@ -250,7 +285,7 @@ irf_plot([theta(1:f) 0*B1(1:f,2)],'k--', 'Linewidth',0.75); hold off;
 grid off;
 % % % set(gca,'Ylim',[min([min(coef10(:,1)) min(coef10(:,2)) min(coef10(:,3))])-2 ...
 % % %     max([max(coef10(:,1)) max(coef10(:,2)) max(coef10(:,3))])+2]);
-set(gca,'Ylim',[min(coeff,[],'all')-2 , max(coeff,[],'all')+2]);
+set(gca,'Ylim',[min(coef10,[],'all')-0.2 , max(coef10,[],'all')+0.2]);
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0]]);
 irf_legend(gca,{'\alpha','\beta','\gamma'},[0.97 0.92]);
 irf_legend(gca,{'e'},[0.03 0.92],'color','k');
@@ -273,12 +308,48 @@ irf_plot([theta(1:f) 0*B1(1:f,2)],'k--', 'Linewidth',0.75); hold off;
 grid off;
 % % % set(gca,'Ylim',[min([min(coef11(:,1)) min(coef11(:,2)) min(coef11(:,3))])-2 ...
 % % %     max([max(coef11(:,1)) max(coef11(:,2)) max(coef11(:,3))])+2]);
-set(gca,'Ylim',[min(coeff,[],'all')-2 , max(coeff,[],'all')+2]);
+set(gca,'Ylim',[min(coef11,[],'all')-0.2 , max(coef11,[],'all')+0.2]);
 % set(gca,'Ylim',[-40 60], 'ytick',[-40:20:60],'fontsize',9);
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0]]);
 irf_legend(gca,{'\alpha','\beta','\gamma'},[0.97 0.92]);
 irf_legend(gca,{'f'},[0.03 0.92],'color','k');
 ylabel('[l,m]=[1,1]','fontsize',12);
+i=i+1;
+%% Rate 1
+h(i)=irf_subplot(n,1,-i);
+cor = {'k','r','g','b'};
+c_eval('irf_plot([theta(1:f) rate1?(1:f)], ''color'',cor{?}, ''Linewidth'',0.75); hold on;');
+if f ~= 361
+c_eval('irf_plot([theta(f) rate1?(f)], ''ow'',''MarkerFaceColor'',cor{?}); hold on;')
+% irf_plot([theta(f) B1(f,5)], 'ow','MarkerFaceColor','k'); hold on;
+end
+%irf_plot([B1(:,1) B1], 'color','k', 'Linewidth',0.75); hold on;
+% irf_plot([theta(1:f) 0*B1(1:f,2)],'k--', 'Linewidth',0.75); hold off;
+grid off;
+% set(gca,'Ylim',[min(coef11,[],'all')-0.2 , max(coef11,[],'all')+0.2]);
+set(gca,'Ylim',[0,max(rate11)], 'fontsize',9);
+set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
+irf_legend(gca,{'SC: 1','2','3','4'},[0.97 0.92]);
+irf_legend(gca,{'g'},[0.03 0.92],'color','k');
+ylabel('\Re1','fontsize',12);
+i=i+1;
+%% Rate 2
+h(i)=irf_subplot(n,1,-i);
+cor = {'k','r','g','b'};
+c_eval('irf_plot([theta(1:f) rate2?(1:f)], ''color'',cor{?}, ''Linewidth'',0.75); hold on;');
+if f ~= 361
+c_eval('irf_plot([theta(f) rate2?(f)], ''ow'',''MarkerFaceColor'',cor{?}); hold on;')
+% irf_plot([theta(f) B1(f,5)], 'ow','MarkerFaceColor','k'); hold on;
+end
+%irf_plot([B1(:,1) B1], 'color','k', 'Linewidth',0.75); hold on;
+% irf_plot([theta(1:f) 0*B1(1:f,2)],'k--', 'Linewidth',0.75); hold off;
+grid off;
+% set(gca,'Ylim',[min(coef11,[],'all')-0.2 , max(coef11,[],'all')+0.2]);
+set(gca,'Ylim',[0,max(rate23)],'fontsize',9);
+set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
+irf_legend(gca,{'SC: 1','2','3','4'},[0.97 0.92]);
+irf_legend(gca,{'h'},[0.03 0.92],'color','k');
+ylabel('\Re2','fontsize',12);
 i=i+1;
 %% Adjust the position
 irf_zoom(h(1:end),'x',[theta(1),theta(end)]);
@@ -291,21 +362,21 @@ set(gcf,'color','w')
 
 % figname = [OutputDir,'OverviewFig\',NameTags{TDT}(2:end-2)];    
 % print(gcf, '-dpng', [figname '.png']);
-% % % frame = getframe(figure(1));
-% % % writeVideo(v,frame)
-% % % % % % print(gcf, '-dpdf', [figname '.pdf']);
-% % % end
-% % % close(v)
+frame = getframe(figure(1));
+writeVideo(v,frame)
+% % % print(gcf, '-dpdf', [figname '.pdf']);
+end
+close(v)
 
 %% Init figure 2
-% % % figname = ['/Users/fwd/Documents/Ti~mor~/M/Monopole/VSH/VSH_test2_configuration.mp4'];
-% % % v = VideoWriter(figname, 'MPEG-4');
-% % % v.FrameRate = 60; % 默认 30
-% % % v.Quality = 100; % 默认 75
-% % % open(v)
+figname = ['/Users/fwd/Documents/Ti~mor~/M/Monopole/VSH/VSH_Ratio_test_configuration.mp4'];
+v = VideoWriter(figname, 'MPEG-4');
+v.FrameRate = 60; % 默认 30
+v.Quality = 100; % 默认 75
+open(v)
 
-% % % for i = 1:1:361
-i = 181;
+for i = 1:1:361
+% % % i = 181;
 cla(figure(2))
 figure(2)
 set(gcf,'PaperUnits','centimeters')
@@ -314,6 +385,8 @@ xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
 set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
 set(gcf,'Position',[10 10 xSize*coef ySize*coef])
 %% S/C configuration
+c_eval('a? = a0?;',1:4);
+
 cor = {'k','r','g','b'};
 c_eval("plot3(a?(i,2),a?(i,3),a?(i,4),'s' ,'color',cor{?},'linewidth',5); hold on;");
 
@@ -343,8 +416,12 @@ Bt5 = max([Bt1,Bt2,Bt3,Bt4]);
 c_eval('Rmean = Rmean+ a?(i,2:4);');Rmean = Rmean/4;
 % for i = 1:10:359
 c_eval("quiver3(a?(i,2),a?(i,3),a?(i,4),RR_mean*B?(i,2)/Bt5"+...
-",RR_mean*B?(i,3)/Bt5,RR_mean*B?(i,4)/Bt5,0.3 ,'color',cor{?},'linewidth',3,'MaxHeadSize',1.5); hold on;")
+",RR_mean*B?(i,3)/Bt5,RR_mean*B?(i,4)/Bt5,0.3 ,'color',cor{?},'linewidth',3,'MaxHeadSize',1.5); hold on;",1:4)
 % end
+
+% % % for i = 1:15:361
+% % %     quiver3(a1(i,2),a1(i,3),a1(i,4),RR_mean*B1(i,2)/Bt5,RR_mean*B1(i,3)/Bt5,RR_mean*B1(i,4)/Bt5,0.3 ,'color',cor{1},'linewidth',1,'MaxHeadSize',1.5); hold on;
+% % % end
 %% Loc res
 % try
 % plotPolyhedron(LocRes{i}(:,1),LocRes{i}(:,2),LocRes{i}(:,3),'#FFB8CE',0.3);
@@ -372,10 +449,80 @@ set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
 set(gcf,'color','w')
 
-% % % frame = getframe(figure(2));
-% % % writeVideo(v,frame)
-% % % % print(gcf, '-dpdf', [figname '.pdf']);
-% % % end
-% % % close(v);
+frame = getframe(figure(2));
+writeVideo(v,frame)
+% print(gcf, '-dpdf', [figname '.pdf']);
+end
+close(v);
 
 % print(gcf, '-dpng', [figname '.png']);
+
+%% two-step component function
+function Br0 = Cal_Br0(r, theta, alpha_00)
+Br0 = r.^-2 .* alpha_00 .* Cal_SPH(0, 0, theta)';
+end
+
+function Bt0 = Cal_Bt0(r, theta, beta_00)
+Bt0 = r.^-1 .* beta_00 .* Cal_dPlm(0, 0, theta)';
+end
+
+function Bp0 = Cal_Bp0(r, theta, gamma_00)
+Bp0 = r.^-1 .* gamma_00 .* Cal_dPlm(0, 0, theta)';
+end
+
+function Br1 = Cal_Br1(r, theta, phi, alpha_12, alpha_10, alpha_11)
+Br1 = r.^-3 .* (alpha_12 .* cos(-phi) .* Cal_SPH(1, -1, theta)'...
+    + alpha_10 .* Cal_SPH(1, 0, theta)' + ...
+    alpha_11 .* cos(phi) .* Cal_SPH(1, 1, theta)');
+end
+
+function Bt1 = Cal_Bt1(r, theta, phi, beta_12, beta_10, beta_11, gamma_12, gamma_11)
+Bt1 = r.^-2 .* (gamma_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
+    beta_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' + ...
+    beta_10 ./ 2 .* Cal_dPlm(1, 0, theta)' + ...
+    gamma_11 .* -sin(phi) ./ (2*sin(theta)) .* Cal_SPH(1, 1, theta)' + ...
+    beta_11 .* cos(phi) ./ 2 .* Cal_dPlm(1, 1, theta)');
+end
+
+function Bp1 = Cal_Bp1(r, theta, phi, beta_12, beta_11, gamma_12, gamma_10, gamma_11)
+Bp1 = r.^-2 .* (gamma_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' -...
+    beta_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
+    gamma_10 ./ 2 .* Cal_dPlm(1, 0, theta)' + ...
+    gamma_11 .* cos(phi) ./ 2 .* Cal_dPlm(1, 1, theta)' -...
+    beta_11 .* -sin(phi) ./ (2*sin(theta)) .* Cal_SPH(1, 1, theta)');
+end
+
+%% Calculate Spherical Harmonic
+function Ylm = Cal_SPH(l, m, theta)
+% theta, phi should be rad
+% without exp(i*m*phi), it is placed in the magnetic field calculation
+
+if abs(m) > l, Ylm = 0; return; end
+
+% unnormal legendre funciton
+Plm = legendre(l, cos(theta));
+if m < 0, Plm = Plm(-m + 1,:); else, Plm = Plm(m + 1,:); end
+
+% orthonormalized coefficient 
+a = (2*l+1)*factorial(l-m);
+b = 4*pi*factorial(l+m);
+C = sqrt(a/b);
+
+Ylm = sqrt(2) .* C .* Plm;
+end
+
+%% Calculate Difference of Legendre Function
+function dPlm = Cal_dPlm(l, m, theta)
+Clm1 = 0.5 * sqrt((l + m) * (l - m + 1));
+Clm2 = 0.5 * sqrt((l + m + 1) * (l - m));
+Plm1 = Cal_SPH(l, m-1, theta);
+Plm2 = Cal_SPH(l, m+1, theta);
+
+dPlm = Clm1 .* Plm1 - Clm2 .* Plm2;
+end
+%% R normalization
+function [R1, R2, R3, R4, maxR] = Normal_R(R1, R2, R3, R4)
+maxR = 0;
+c_eval('maxR = max(maxR,R?(:,1));',1:4);
+c_eval('R? = R?./maxR;',1:4);
+end

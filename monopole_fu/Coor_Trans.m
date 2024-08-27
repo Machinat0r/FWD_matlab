@@ -20,7 +20,7 @@ varargout{3} = phi;
 elseif flag == 'BR'
 Br = B(:,1).* sin(theta).* cos(phi) + B(:,2).* sin(theta).* sin(phi) + B(:,3).* cos(theta);
 Bt = B(:,1).* cos(theta).* cos(phi) + B(:,2).* cos(theta).* sin(phi) - B(:,3).* sin(theta);
-Bp = -B(:,1).* sin(phi) + B(:,3).* cos(phi);
+Bp = -B(:,1).* sin(phi) + B(:,2).* cos(phi);
 B = [Br, Bt, Bp];
 varargout{1} = R;
 varargout{2} = B;

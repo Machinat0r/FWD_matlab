@@ -90,7 +90,7 @@ while i <= length(filenames)
         if Threads == 0
             websave(output_filename,file_url,options) ; 
         else
-            command = sprintf('python3 /Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/download_files.py "%s" "%s" "%s" "%s"',...
+            command = sprintf('python3 /Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/MMS_fu/download_files.py "%s" "%s" "%s" "%s"',...
                 file_url, output_filename, filenames{i}, num2str(Threads)); % 若电脑发生卡顿，可以下调线程数（最后一个变量）
             system(command);
         end   
@@ -126,15 +126,29 @@ Identification(mfilename('fullpath'));
 end
 %%
 function [file_url, varargout] = FileContentLength(filename)
+if contains(filename,'mms')
 file_url = ['https://lasp.colorado.edu/mms/sdc/public/files/api/v1/download/science?', ...
     'file=',filename]; 
+elseif contains(filename,'mvn')
+file_url = ['https://lasp.colorado.edu/maven/sdc/public/files/api/v1/search/science/fn_metadata/download_zip?', ...
+    'file=',filename]; 
+end
 
 try
-info = py.requests.get(file_url, stream=true);
-ContentLength = str2double(char(info.headers{'Content-Length'}));
-varargout{1} = ContentLength;
+command = sprintf('python3 /Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/MMS_fu/content_length.py "%s"', file_url);
+[status, cmdout] = system(command);
+
+if status == 0
+ContentLength = regexp(cmdout,'\d+','match');
+ContentLength = str2double(ContentLength{end-1});
+else
+ContentLength = nan;
+end
+
 catch
+    ContentLength = nan;
     warning('Get content length failed! Please check the Python version.')
     warning('This may cause the file download imcompleted!')
 end
+varargout{1} = ContentLength;
 end

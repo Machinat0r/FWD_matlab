@@ -31,7 +31,7 @@ clear;clc;close all
 %%
 global ParentDir 
 
-ParentDir = '/Volumes/100.95.115.159/Data/MMS/'; 
+ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
 DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
@@ -210,21 +210,21 @@ plot3(RR34(:,1),RR34(:,2),RR34(:,3),'--k');hold on;  plot3(RR24(:,1),RR24(:,2),R
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
 irf_legend(gca,{'MMS: 1','2','3','4'},[0.97 0.92]);
 irf_legend(gca,{['Separation Distance:',num2str(roundn(RR_mean,-1)),'km']},[0.05 0.92])
-xlabel('e_1 [km]','fontsize',12);
-ylabel('e_2 [km]','fontsize',12);
-zlabel('e_3 [km]','fontsize',12);
+xlabel('x [km]','fontsize',12);
+ylabel('y [km]','fontsize',12);
+zlabel('z [km]','fontsize',12);
 
 %% Quiver
 c_eval('B?_gse = irf_abs(B?_gse);');
 maxB = max([B1_gse(tempidx_B1,5),B2_gse(tempidx_B1,5),B3_gse(tempidx_B1,5),B4_gse(tempidx_B1,5)]);
-c_eval("quiver3(R?(tempidx_R,2),R?(tempidx_R,3),R?(tempidx_R,4),RR_mean*B?_gse(tempidx_B1,2)/maxB,RR_mean*B?_gse(tempidx_B1,3)/maxB,RR_mean*B?_gse(tempidx_B1,4)/maxB,'color',cor(?));hold on;")
+% c_eval("quiver3(R?(tempidx_R,2),R?(tempidx_R,3),R?(tempidx_R,4),RR_mean*B?_gse(tempidx_B1,2)/maxB,RR_mean*B?_gse(tempidx_B1,3)/maxB,RR_mean*B?_gse(tempidx_B1,4)/maxB,'color',cor(?));hold on;")
 % c_eval("quiver3(R?(tempidx_R,2),R?(tempidx_R,3),R?(tempidx_R,4),RR_mean*Bm?(tempidx_B1,2)/maxB,RR_mean*Bm?(tempidx_B1,3)/maxB,RR_mean*Bm?(tempidx_B1,4)/maxB,'linewidth',1.5,'color',cor(?));hold on;")
 %% Loc res
-plotPolyhedron(LocRes{tempidx_B1}(:,1),LocRes{tempidx_B1}(:,2),LocRes{tempidx_B1}(:,3),'#4DBEEE',0.1);
+% % % plotPolyhedron(LocRes{tempidx_B1}(:,1),LocRes{tempidx_B1}(:,2),LocRes{tempidx_B1}(:,3),'#4DBEEE',0.1);
 % idx = [166:198];
 % plot3(LocPoint(idx,1),LocPoint(idx,2),LocPoint(idx,3),'*','color','#FFBAF1');
 % line(LocPoint(173:195,1),LocPoint(173:195,2),LocPoint(173:195,3),'color','#FFBAF1');
-plot3(LocPoint(tempidx_B1,1),LocPoint(tempidx_B1,2),LocPoint(tempidx_B1,3),'o','linewidth',5,'color','#0072BD');hold on;
+% % % plot3(LocPoint(tempidx_B1,1),LocPoint(tempidx_B1,2),LocPoint(tempidx_B1,3),'o','linewidth',5,'color','#0072BD');hold on;
 % plot3(LocRes{tempidx_B1}(:,1),LocRes{tempidx_B1}(:,2),LocRes{tempidx_B1}(:,3),'*','color','#FFB8CE');
 % plot3(LocRes{tempidx_B1}([1;4;5],1),LocRes{tempidx_B1}([1;4;5],2),LocRes{tempidx_B1}([1;4;5],3),'*','linewidth',1,'color','k')
 % text(LocRes{tempidx_B1}([1;4;5],1),LocRes{tempidx_B1}([1;4;5],2),LocRes{tempidx_B1}([1;4;5],3),{'(1,2)','(1,3)','(1,4)'})
@@ -235,26 +235,28 @@ plot3(LocPoint(tempidx_B1,1),LocPoint(tempidx_B1,2),LocPoint(tempidx_B1,3),'o','
 rate1_grid = mean([rate11_grid(tempidx_B1,:);rate12_grid(tempidx_B1,:);rate13_grid(tempidx_B1,:);rate14_grid(tempidx_B1,:)]);
 rate2_grid = mean([rate21_grid(tempidx_B1,:);rate22_grid(tempidx_B1,:);rate23_grid(tempidx_B1,:);rate24_grid(tempidx_B1,:)]);
 
-cmp = othercolor('OrRd5');cmp = flip(cmp);
+cmp = othercolor('BuOr_10');cmp = flip(cmp);
 colormap(cmp)
-scatter3(points1(:,1), points1(:,2), points1(:,3), 50*ones(size(points1,1),1),rate2_grid, 'filled','MarkerFaceAlpha',0.6); hold on;
-clim([0,1])
-view(72,71)
+s = scatter3(points1(:,1), points1(:,2), points1(:,3), 50*ones(size(points1,1),1),rate1_grid*100, 'filled'); hold on;
+clim([80,90])
+alpha(s,1./rate1_grid)
+view(32.964,71.6556)
 box off
-colorbar
+c = colorbar;
+c.Label.String = '\Re_1 [%]';
+set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
-
 %% two-step component function
 function Br0 = Cal_Br0(r, theta, alpha_00)
 Br0 = r.^-2 .* alpha_00 .* Cal_SPH(0, 0, theta)';
 end
 
 function Bt0 = Cal_Bt0(r, theta, beta_00)
-Bt0 = r.^-2 .* beta_00 .* Cal_dPlm(0, 0, theta)';
+Bt0 = r.^-1 .* beta_00 .* Cal_dPlm(0, 0, theta)';
 end
 
 function Bp0 = Cal_Bp0(r, theta, gamma_00)
-Bp0 = r.^-2 .* gamma_00 .* Cal_dPlm(0, 0, theta)';
+Bp0 = r.^-1 .* gamma_00 .* Cal_dPlm(0, 0, theta)';
 end
 
 function Br1 = Cal_Br1(r, theta, phi, alpha_12, alpha_10, alpha_11)
@@ -264,7 +266,7 @@ Br1 = r.^-3 .* (alpha_12 .* cos(-phi) .* Cal_SPH(1, -1, theta)'...
 end
 
 function Bt1 = Cal_Bt1(r, theta, phi, beta_12, beta_10, beta_11, gamma_12, gamma_11)
-Bt1 = r.^-3 .* (gamma_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
+Bt1 = r.^-2 .* (gamma_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
     beta_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' + ...
     beta_10 ./ 2 .* Cal_dPlm(1, 0, theta)' + ...
     gamma_11 .* -sin(phi) ./ (2*sin(theta)) .* Cal_SPH(1, 1, theta)' + ...
@@ -272,7 +274,7 @@ Bt1 = r.^-3 .* (gamma_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)'
 end
 
 function Bp1 = Cal_Bp1(r, theta, phi, beta_12, beta_11, gamma_12, gamma_10, gamma_11)
-Bp1 = r.^-3 .* (gamma_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' -...
+Bp1 = r.^-2 .* (gamma_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' -...
     beta_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
     gamma_10 ./ 2 .* Cal_dPlm(1, 0, theta)' + ...
     gamma_11 .* cos(phi) ./ 2 .* Cal_dPlm(1, 1, theta)' -...

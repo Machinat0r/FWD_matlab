@@ -42,10 +42,10 @@ ic=1:4;
 % Tend='2002-02-18T08:42:00.00Z';%1,114
 % Tsta='2003-12-30T18:55:00.00Z';
 % Tend='2003-12-30T18:56:00.00Z';%7,268
-% % % Tsta = '2004-01-17T19:31:00.000Z';
-% % % Tend = '2004-01-17T19:32:00.000Z';
-Tsta = '2004-01-21T08:56:00.000Z';
-Tend = '2004-01-21T08:58:00.000Z';
+Tsta = '2004-01-17T19:31:00.000Z';
+Tend = '2004-01-17T19:32:00.000Z';
+% % % Tsta = '2004-01-21T08:56:00.000Z';
+% % % Tend = '2004-01-21T08:58:00.000Z';
 
 % % % Tsta = '2000-01-01T00:00:00.000Z';
 % % % Tend = '2020-01-01T00:00:00.000Z';
@@ -77,8 +77,8 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % % % Tend2='2003-12-30T18:55:08.740Z';
 % Tsta2='2003-12-30T18:55:06.800Z';
 % Tend2='2003-12-30T18:55:09.800Z';
-% % % Tsta2 = '2004-01-17T19:31:45.765Z';
-% % % Tend2 = '2004-01-17T19:31:45.925Z';
+Tsta2 = '2004-01-17T19:31:45.765Z';
+Tend2 = '2004-01-17T19:31:45.925Z';
 % Tsta2 = '2004-01-17T19:31:44.900Z';
 % Tend2 = '2004-01-17T19:31:46.500Z';
 % Tsta2='2004-05-03T05:02:28.00Z';
@@ -94,8 +94,8 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % Tend2='2003-12-29T13:40:26.600Z';
 % Tsta2='2003-12-29T13:40:26.150Z';
 % Tend2='2003-12-29T13:40:26.320Z';
-Tsta2='2004-01-21T08:56:59.275Z';
-Tend2='2004-01-21T08:56:59.435Z';
+% % % Tsta2='2004-01-21T08:56:59.275Z';
+% % % Tend2='2004-01-21T08:56:59.435Z';
 tint2=[iso2epoch(Tsta2) iso2epoch(Tend2)];
 
 % % % caa_download(tint,'C?_CP_EFW_L3_E3D_INERT');
@@ -208,27 +208,11 @@ Locerror(i) = 100*volume/volume_a;
 end
 meand = mean(dLoc,2);
 %% Coordinate
-% % % c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
-maxR = nan*zeros(1,3); minR = nan*zeros(1,3);
-c_eval('maxR = max(maxR,max(R?(:,2:4),[],1));',1:4);
-c_eval('minR = min(minR,min(R?(:,2:4),[],1));',1:4);
-GridX = linspace(minR(1),maxR(1),20);
-GridY = linspace(minR(2),maxR(2),20);
-GridZ = linspace(minR(3),maxR(3),20);
-[MGX, MGY, MGZ] = meshgrid(GridX, GridY, GridZ);
-X = MGX(:);Y = MGY(:);Z = MGZ(:);
-points = [X, Y, Z];
-
-c_eval('V? = [R1(?,2:4); R2(?,2:4); R3(?,2:4); R4(?,2:4)];',1:size(B1,1));
-c_eval('Tri? = delaunayTriangulation(V?);',1:size(B1,1));
-c_eval('points? = points(pointLocation(Tri?,points) == 1,:);',1:size(B1,1));
-points = zeros([size(points1),size(B1,1)]);
-c_eval('points(:,:,?) = points?;',1:size(B1,1));
-
+c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
 for i = 1:length(PI)
     LocRes{i} = LocRes{i}-LocPoint(i,:);
 end
-% % % LocPoint = LocPoint - LocPoint;
+LocPoint = LocPoint - LocPoint;
 
 %% cal B
 for i = 1:length(R1)
@@ -255,17 +239,11 @@ Blength = 0.25*(Blength1+Blength2+Blength3+Blength4);
 c_eval('BErr? = 100*(1-(1-Btheta?).*(1-Blength?));')
 BErr = mean([BErr1,BErr2,BErr3,BErr4],2);
 %% VSH
-c_eval('R?_grid = cell(size(points,1));', 1:4);
-coeff_grid = cell(size(points,1)); res_grid = cell(size(points,1));
-c_eval('rate1?_grid = zeros(size(B?,1),size(points,1));', 1:4);
-c_eval('rate2?_grid = zeros(size(B?,1),size(points,1));', 1:4);
-for i_grid = 1:size(points,1)
-c_eval('R?_grid{i_grid} = [R?(:,1), R?(:,2:4) - transpose(reshape(points(i_grid,:,:),[3,4]))];',1:4);
-[coeff, res] = VSH_Expand('R?_grid{i_grid}', 'B?(:,1:4)', [0,0,0], 1);
-coeff_grid{i_grid} = coeff; res_grid{i_grid} = res;
 
-% % % [coeff, res] = VSH_Expand('R?', 'B?(:,1:4)', [0,0,0], 1);
+[coeff, res] = VSH_Expand('R?', 'B?(:,1:4)', [0,0,0], 1);
 
+% % % R5 = R1;B5 = B1;
+% % % [coeff, res] = VSH_Expand_multiSC('R?', 'B?(:,1:4)', 2);
 % % % coeff0 = coeff([1,5,9,13,14,15]);
 % % % coeff1 = coeff([2,3,4,6,7,8,10,11,12]);
 alpha_00 = coeff(:,1); beta_00 = coeff(:,5); gamma_00 = coeff(:,9);
@@ -285,12 +263,8 @@ c_eval('[~, B?_sph] = Coor_Trans(R?(:,2:4), B?(:,2:4));', 1:4);
 c_eval('B0? = irf_abs([B?(:,1), Br0?, zeros(size(Br0?)), zeros(size(Br0?))]);', 1:4);
 c_eval('B1? = irf_abs([B?(:,1), Br1?, Bt1?, Bp1?]);', 1:4);
 c_eval('B2? = irf_abs([B?(:,1), B?_sph(:,1) - Br0? - Br1?, B?_sph(:,2) - Bt1?, B?_sph(:,3) - Bp1?]);', 1:4);
-c_eval('rate1? = B0?(:,5)./B1?(:,5);', 1:4);
-c_eval('rate2? = B0?(:,5)./B2?(:,5);', 1:4);
-
-c_eval('rate1?_grid(:,i_grid) = rate1?;',1:4);
-c_eval('rate2?_grid(:,i_grid) = rate2?;',1:4);
-end
+c_eval('rate1? = B1?(:,5)./B0?(:,5);', 1:4);
+c_eval('rate2? = B2?(:,5)./B0?(:,5);', 1:4);
 
 %% Init figure 3
 h = figure(3);
@@ -464,8 +438,8 @@ grid off;
 
 ylabel('\Re_1','fontsize',12);
 ax = gca;
-ax.YScale = 'log';
-ax.YLim = [1e0,1e2];
+% ax.YScale = 'log';
+ax.YLim = [0,1];
 ax.XTickLabel = '';
 % ax.YTick = [1, 5, 10];
 box('on')
@@ -488,8 +462,8 @@ grid off;
 % irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.97 0.92]);
 ylabel('\Re_2','fontsize',12);
 ax = gca;
-ax.YScale = 'log';
-ax.YLim = [1e0,1e2];
+% ax.YScale = 'log';
+ax.YLim = [0,1];
 % ax.YTick = [1, 10, 100];
 box('on')
 irf_timeaxis(ax,'date')
@@ -509,11 +483,11 @@ Br0 = r.^-2 .* alpha_00 .* Cal_SPH(0, 0, theta)';
 end
 
 function Bt0 = Cal_Bt0(r, theta, beta_00)
-Bt0 = r.^-2 .* beta_00 .* Cal_dPlm(0, 0, theta)';
+Bt0 = r.^-1 .* beta_00 .* Cal_dPlm(0, 0, theta)';
 end
 
 function Bp0 = Cal_Bp0(r, theta, gamma_00)
-Bp0 = r.^-2 .* gamma_00 .* Cal_dPlm(0, 0, theta)';
+Bp0 = r.^-1 .* gamma_00 .* Cal_dPlm(0, 0, theta)';
 end
 
 function Br1 = Cal_Br1(r, theta, phi, alpha_12, alpha_10, alpha_11)
@@ -523,7 +497,7 @@ Br1 = r.^-3 .* (alpha_12 .* cos(-phi) .* Cal_SPH(1, -1, theta)'...
 end
 
 function Bt1 = Cal_Bt1(r, theta, phi, beta_12, beta_10, beta_11, gamma_12, gamma_11)
-Bt1 = r.^-3 .* (gamma_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
+Bt1 = r.^-2 .* (gamma_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
     beta_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' + ...
     beta_10 ./ 2 .* Cal_dPlm(1, 0, theta)' + ...
     gamma_11 .* -sin(phi) ./ (2*sin(theta)) .* Cal_SPH(1, 1, theta)' + ...
@@ -531,7 +505,7 @@ Bt1 = r.^-3 .* (gamma_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)'
 end
 
 function Bp1 = Cal_Bp1(r, theta, phi, beta_12, beta_11, gamma_12, gamma_10, gamma_11)
-Bp1 = r.^-3 .* (gamma_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' -...
+Bp1 = r.^-2 .* (gamma_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' -...
     beta_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
     gamma_10 ./ 2 .* Cal_dPlm(1, 0, theta)' + ...
     gamma_11 .* cos(phi) ./ 2 .* Cal_dPlm(1, 1, theta)' -...

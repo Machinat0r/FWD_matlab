@@ -9,7 +9,7 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2021-08-15T03:35:15.00Z/2021-08-15T03:35:30.00Z';
 % TT = '2021-08-22T06:39:30.00Z/2021-08-22T06:43:00.00Z';
 % TT = '2018-02-06T13:29:00.00Z/2018-02-06T13:30:30.00Z';
-% % % TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
 % TT = '2015-11-04T04:34:00.00Z/2015-11-04T04:37:00.00Z';
 % TT = '2018-07-03T15:50:10.00Z/2018-07-03T15:50:25.00Z';
 % TT = '2018-08-19T18:24:30.00Z/2018-08-19T18:26:20.00Z';
@@ -26,7 +26,8 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2020-08-02T16:56:10.00Z/2020-08-02T16:56:25.00Z';
 % TT = '2017-06-25T05:06:58.00Z/2017-06-25T05:07:02.00Z';
 % % TT = '2017-06-11T17:50:00.000Z/2017-06-11T18:00:00.000Z';
-TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57:43.000Z';
+% % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57:43.000Z';
+% % % TT = '2016-04-07T11:55:00.000Z/2023-07-27T12:05:00.000Z';
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
@@ -69,7 +70,7 @@ c_eval(['Bbf?=irf.ts2mat(Bbf?);'],iic);
 % c_eval('Bbff? = B?_ts.filt(0,0.8,dfB?,3);',ic);
 % c_eval(['Bbff?=irf.ts2mat(Bbff?);'],ic);
 
-%         c_eval('Blmn?=irf_newxyz(Bbf1,L,M,N);',ic);
+% c_eval('Blmn?=irf_newxyz(Bbf1,L,M,N);',ic);
 
 % load E
 c_eval(['E?_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],ic);
@@ -1326,17 +1327,19 @@ set(h(i),'yscale','log');
 set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
 ylabel('Ei(ev)','fontsize',8)
 set(gca,'Ylim',[1e1 3e4]);
-caxis(gca,[5 6])
+clim(gca,[5 6])
+
 
 % irf_legend(gca,'f',[0.99 0.98],'colo6.4r','k','fontsize',12);
 poscbar7=get(hcb7,'pos');
 poscbar7(3)=poscbar7(3)*0.5;
 set(hcb7,'pos',poscbar7);
-cm = othercolor('PuBu8');
-% cm = othercolor('Greys9');
-cm = flip(cm);
-% cm(:,3) = linspace(0.15,0.851, 256);
-colormap(cm)
+load('/Users/fwd/Documents/MATLAB/Code/zwz/color_rwb.mat');
+% % % cm = othercolor('PuBu8');
+% % % % cm = othercolor('Greys9');
+% % % cm = flip(cm);
+% % % % cm(:,3) = linspace(0.15,0.851, 256);
+colormap(color_rwb)
 i=i+1;
 %% plot e energy spectrom
 % h(i)=irf_subplot(n,1,-i);
@@ -1554,7 +1557,7 @@ irf_plot_axis_align(h)
 %  irf_zoom(tintlmn,'x',h(4:7))
 
 %%  出图保存部分
-colormap(jet)
+% colormap(jet)
 set(gca,"XTickLabelRotation",0)
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')

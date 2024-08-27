@@ -31,28 +31,30 @@ close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 global ParentDir 
-ParentDir = 'C:\THEMIS\'; 
-TempDir = 'C:\THEMIS\temp\'; 
-if ~isfolder(TempDir)
-    mkdir(TempDir);
-end
+ParentDir = '/Volumes/172.17.190.41/Data/THEMIS/'; 
+DownloadDir = '/Users/fwd/Documents/MATLAB/THEMIS/';
+TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
+
 % TempDir = 'D:\THEMIS\tha\';mkdir(TempDir);
 % TT = '2009-03-16T07:00:00Z\2009-03-16T09:00:00Z';
 % TT = '2009-03-01T06:00:00Z\2009-03-01T08:00:00Z';
 % TT = '2009-02-23T08:00:00Z\2009-02-23T010:00:00Z';
 % TT = '2010-02-18T04:20:00Z\2010-02-18T05:40:00Z';
-TT = '2018-01-31T00:00:00Z\2018-01-31T23:59:59Z';
+% TT = '2018-01-31T00:00:00Z\2018-01-31T23:59:59Z';
+TT = '2024-05-10T00:00:00Z\2024-05-11T00:00:00Z';
 
 Tsta = strsplit(TT,'\');
 Tend = Tsta{2};Tsta = Tsta{1};
 %% load data
 tint = [iso2epoch(Tsta),iso2epoch(Tend)];
-ic = {'b'};
+ic = {'a'};
+c_eval("THEMISDownload(strrep(TT(1:10),'-',''),'th?','scm',TempDir)",ic);
 c_eval("THEMISDownload(strrep(TT(1:10),'-',''),'th?','fgm',TempDir)",ic);
 c_eval("THEMISDownload(strrep(TT(1:10),'-',''),'th?','efi',TempDir)",ic);
 c_eval("THEMISDownload(strrep(TT(1:10),'-',''),'th?','esa',TempDir)",ic);
 THEMISDataMove(TempDir,ParentDir)
 
+mms.db_init('local_file_db',TempDir);
 c_eval("B_? = th_read_l2_change_by_fwd('th?_fgl_gsm',tint);",ic);
 c_eval("Vi_? = th_read_l2_change_by_fwd('th?_peir_velocity_gsm',tint);",ic);
 c_eval("Ti_? = th_read_l2_change_by_fwd('th?_peir_t3',tint);",ic);
@@ -65,8 +67,8 @@ c_eval("E_? = th_read_l2_change_by_fwd('th?_eff_dot0_gsm',tint);",ic);
 
 c_eval("Bres_? = irf_resamp(B_?,Vi_?);",ic);
 c_eval("Eres_? = irf_resamp(E_?,Vi_?);",ic);
-c_eval("Evxb_? = Eres_? + irf_cross(Vi_?,Bres_?)/1000;",ic);
-c_eval("Evxb_?(:,1) = Eres_?(:,1);",ic);
+% c_eval("Evxb_? = Eres_? + irf_cross(Vi_?,Bres_?)/1000;",ic);
+% c_eval("Evxb_?(:,1) = Eres_?(:,1);",ic);
 %% lmn
 % irf_minvar_gui(B_e);
 % L=[-0.31 0.18 0.94];%最大变化方向
@@ -78,7 +80,7 @@ c_eval("Evxb_?(:,1) = Eres_?(:,1);",ic);
 % c_eval('Vi_?=irf_newxyz(Vi_?,L,M,N);',ic);
 %% Init figure
 ic = 'b';
-n=6;
+n=5;
 i=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
@@ -216,23 +218,23 @@ irf_legend(gca,{'Vi_z'},[0.97 0.92]);
 ylabel('Vi [km/s]','fontsize',12);
 i=i+1;
 %% E+vxb plot
-h(i)=irf_subplot(n,1,-i);
-c_eval("irf_plot([Evxb_?(:,1) Evxb_?(:,2)], 'color','b', 'Linewidth',0.75);",ic);hold on;
-c_eval("irf_plot([Evxb_?(:,1) Evxb_?(:,3)], 'color','g', 'Linewidth',0.75);",ic);hold on;
-c_eval("irf_plot([Evxb_?(:,1) Evxb_?(:,4)], 'color','r', 'Linewidth',0.75);",ic);hold on;
-c_eval("irf_plot([Evxb_?(:,1) Evxb_?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
-grid off;
-% set(gca,'Ylim',[-100 100], 'ytick',[-100 -50 0 50 100],'fontsize',9);
-% irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
-c_eval("set(gca,'Ylim',[min([min(Evxb_?(:,2)) min(Evxb_?(:,3)) min(Evxb_?(:,4))])-2 max([max(Evxb_?(:,2)) max(Evxb_?(:,3)) max(Evxb_?(:,4))])+2]);",ic);
-set(gca,'Ylim',[-4 4], 'ytick',[-4:2:4],'fontsize',9);
-set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
-irf_legend(gca,{'E+VixB_x','E+VixB_y','E+VixB_z'},[0.97 0.92]);
-pos3=get(gca,'pos');
-set(gca,'ColorOrder',[[0 1 0]]);
-%irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
-ylabel('E [mV/m]','fontsize',12)
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % c_eval("irf_plot([Evxb_?(:,1) Evxb_?(:,2)], 'color','b', 'Linewidth',0.75);",ic);hold on;
+% % % c_eval("irf_plot([Evxb_?(:,1) Evxb_?(:,3)], 'color','g', 'Linewidth',0.75);",ic);hold on;
+% % % c_eval("irf_plot([Evxb_?(:,1) Evxb_?(:,4)], 'color','r', 'Linewidth',0.75);",ic);hold on;
+% % % c_eval("irf_plot([Evxb_?(:,1) Evxb_?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % % set(gca,'Ylim',[-100 100], 'ytick',[-100 -50 0 50 100],'fontsize',9);
+% % % % irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
+% % % c_eval("set(gca,'Ylim',[min([min(Evxb_?(:,2)) min(Evxb_?(:,3)) min(Evxb_?(:,4))])-2 max([max(Evxb_?(:,2)) max(Evxb_?(:,3)) max(Evxb_?(:,4))])+2]);",ic);
+% % % set(gca,'Ylim',[-4 4], 'ytick',[-4:2:4],'fontsize',9);
+% % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+% % % irf_legend(gca,{'E+VixB_x','E+VixB_y','E+VixB_z'},[0.97 0.92]);
+% % % pos3=get(gca,'pos');
+% % % set(gca,'ColorOrder',[[0 1 0]]);
+% % % %irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
+% % % ylabel('E [mV/m]','fontsize',12)
+% % % i=i+1;
 %%  出图保存部分
 
 irf_zoom(tint,'x',h(1:n));

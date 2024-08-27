@@ -1,6 +1,10 @@
+%------written by Wending Fu, Nov.2023 in Beijing------------
 clear;clc;close all
 % 18.0969
-file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/PS.APL_V0105S027CB0006_SC.U_DI.A_GP.F18-SSUSI_PA.APL-EDR-AURORA_DD.20190805_SN.027894-00_DF.NC';
+% file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/PS.APL_V0105S027CB0006_SC.U_DI.A_GP.F18-SSUSI_PA.APL-EDR-AURORA_DD.20190805_SN.027894-00_DF.NC';
+% file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/PS.APL_V0105S027CB0006_SC.U_DI.A_GP.F18-SSUSI_PA.APL-EDR-AURORA_DD.20190805_SN.027893-00_DF.NC';
+% file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/dmspf17_ssusi_edr-aurora_2019217T150651-2019217T164842-REV65793_vA8.2.0r000.nc';
+file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/dmspf18_ssusi_edr-aurora_2019217T153253-2019217T171445-REV27893_vA8.2.0r000.nc';
 info = ncinfo(file_path);
 ncid = netcdf.open(file_path, 'NOWRITE');
 
@@ -10,7 +14,8 @@ variable_name = info.Variables(i).Name;
 eval([variable_name,'.data = ncread(file_path,variable_name);'])
 
 % dimensions = netcdf.inqVar(ncid, variable_data);
-% eval([variable_name, '.dimensions = ncreadatt(file_path, variable_name, ''_FillValue'');']);
+% eval([variable_name, '.dimensions = ncreadatt(file_path, variable_name,
+% ''_FillValue'');']);i
 eval([variable_name, '.attributes = ncinfo(file_path, variable_name);']);
 end
 netcdf.close(ncid);
@@ -19,10 +24,19 @@ lon_NORTH_mesh = LONGITUDE_GEOMAGNETIC_NORTH_GRID_MAP.data;
 lon_SOUTH_mesh = LONGITUDE_GEOMAGNETIC_SOUTH_GRID_MAP.data;
 lat_mesh = LATITUDE_GEOMAGNETIC_GRID_MAP.data;
 
-ARC_NORTH_data = AUR_ARC_RADIANCE_NORTH.data;
-ARC_SOUTH_data = AUR_ARC_RADIANCE_SOUTH.data;
+NORTH_DQI = DISK_DQI_NORTH.data;
+SOUTH_DQI = DISK_DQI_SOUTH.data;
+NORTH_DQI(NORTH_DQI ~= 2048 | 4096) = 0; NORTH_DQI(NORTH_DQI == 2048 | 4096) = 1;
+SOUTH_DQI(SOUTH_DQI ~= 2048 | 4096) = 0; SOUTH_DQI(SOUTH_DQI == 2048 | 4096) = 1;
 
-% ARC_NORTH_data = AUR_ARC_GROUP_MAP_NORTH.data;
+ARC_NORTH_data = DISK_RADIANCEDATA_INTENSITY_NORTH.data;
+ARC_NORTH_data = ARC_NORTH_data .* NORTH_DQI;
+ARC_NORTH_data = ARC_NORTH_data(:,:,5);
+
+ARC_SOUTH_data = DISK_RADIANCEDATA_INTENSITY_SOUTH.data;
+ARC_SOUTH_data = ARC_SOUTH_data .* SOUTH_DQI;
+ARC_SOUTH_data = ARC_SOUTH_data(:,:,5);
+% ARC_NORTH_data = sum(ARC_NORTH_data,3);
 
 % lon_NORTH_mesh = mod(lon_NORTH_mesh, 360);
 % lon_SOUTH_mesh = mod(lon_SOUTH_mesh, 360);
@@ -33,24 +47,50 @@ ARC_SOUTH_data = AUR_ARC_RADIANCE_SOUTH.data;
 % ARC_NORTH_data = ARC_NORTH_data(:, lon_index);
 % ARC_SOUTH_data = ARC_SOUTH_data(:, lon_index);
 % lat_mesh = lat_mesh(:, lon_index);
+
+Energy_flux_south_data = ENERGY_FLUX_SOUTH_MAP.data;
+Mean_energy_south_data = ELECTRON_MEAN_NORTH_ENERGY_MAP.data;
+Mean_energy_south_data(Energy_flux_south_data<80) = nan;
 %% plot
-theta = deg2rad(lon_NORTH_mesh);
-theta(theta==0)=nan;
-% theta = theta+pi/2;
-rho = 90 - lat_mesh;
+tt = UT_S.data;
+tt(tt==0) = nan;
+tt_0 = ones(size(tt));
+tt = datetime(tt_0*2017,tt_0*7,tt_0*16,floor(tt),floor(100*(tt-floor(tt))),floor(100*(100*tt-floor(100*tt))));
+lon_SOUTH_mesh(lon_SOUTH_mesh==0) = nan;
+mlt = nan*zeros(size(tt));
+for row = 1:size(tt,1)
+    for pan = 1:size(tt,2)
+        [mlt(row,pan),~,~] = magneticLocalTime(tt(row,pan),lon_SOUTH_mesh(row,pan));
+    end
+end
+
+theta = mlt*15/180*pi;
+rho = 90-lat_mesh;
 
 figure;
-polarscatter(theta(:), rho(:), 15, log10(ARC_NORTH_data(:)), 'filled');
+polarscatter(theta(:), rho(:), 15, log10(abs(ARC_SOUTH_data(:))), 'filled'); hold on;
+% polarscatter(theta(:), rho(:), 15, abs(Mean_energy_south_data(:)), 'filled');
+% polarscatter(theta(:), rho(:), 15, abs(Energy_flux_south_data(:)), 'filled');
+polarscatter(40.33,90-74.21,100,'m','pentagram','filled')
+ax=gca;
+% ax.ThetaDir = 'clockwise';
+ax.ThetaZeroLocation = 'bottom';
+hold on;
 
-cm = othercolor('YlGnBu9');
-% cm = othercolor('Greys9');
-cm = flip(cm);
-cm(:,3) = linspace(0.2451,0.851, 256);
+
+aaa = [189,233,238]/255;
+bbb = [23,129,171]/255;
+ccc = [60,70,108]/255; % 
+cm = zeros(256,3);
+cm(:,1) = [linspace(ccc(1),bbb(1),128),linspace(bbb(1),aaa(1),128)];
+cm(:,2) = [linspace(ccc(2),bbb(2),128),linspace(bbb(2),aaa(2),128)];
+cm(:,3) = [linspace(ccc(3),bbb(3),128),linspace(bbb(3),aaa(3),128)];
 colormap(cm)
+colormap('jet')
 c = colorbar;
 c.Label.String = 'SSUSI LBHS Log10(Intensity) [R]';
-clim([2 3.5]);
-rlim([0 25]);
+clim([2.5 4]);
+rlim([0 30]);
 rticks = {''};
 
 title('Aurora Intensity in Polar Coordinates');

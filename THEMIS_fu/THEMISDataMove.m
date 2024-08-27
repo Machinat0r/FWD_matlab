@@ -17,11 +17,11 @@ for ii=1:length(filenames0)
         if ~isfolder([destDir,filename1(1:3)])
             mkdir(destDir,filename1(1:3))
         end
-        destDir1 = [destDir,filename1(1:3),'\'];
+        destDir1 = [destDir,filename1(1:3),'/'];
         
         % classify data level
         if ismember(filename1(num(1)+1:num(2)-1), {'l1';'l2';'or'})
-            destDir2 = [destDir1,filename1(num(1)+1:num(2)-1),'\'];
+            destDir2 = [destDir1,filename1(num(1)+1:num(2)-1),'/'];
             if ~isfolder(destDir2)
                 mkdir(destDir2)
             end
@@ -31,8 +31,8 @@ for ii=1:length(filenames0)
         end
                                    
         % classify instruments
-        if ismember(filename1(num(2)+1:num(3)-1), {'ssc'; 'efi'; 'esa'; 'fgm'; 'mom'; 'eff'})
-            destDir3 = [destDir2,filename1(num(2)+1:num(3)-1),'\'];
+        if ismember(filename1(num(2)+1:num(3)-1), {'ssc'; 'efi'; 'esa'; 'fgm'; 'mom'; 'eff';'scm'})
+            destDir3 = [destDir2,filename1(num(2)+1:num(3)-1),'/'];
             if ~isfolder(destDir3)
                 mkdir(destDir3)
             end
@@ -42,7 +42,7 @@ for ii=1:length(filenames0)
         end
         
         % classify year
-        destDir_THEMIS = [destDir3,filename1(num(3)+1:num(3)+4),'\'];
+        destDir_THEMIS = [destDir3,filename1(num(3)+1:num(3)+4),'/'];
         if ~isfolder(destDir_THEMIS)
             mkdir(destDir_THEMIS)
         end

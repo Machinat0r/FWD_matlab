@@ -52,7 +52,8 @@ timeUTC1=irf_time(diste1.time,'epochtt>utc');
 %% Produce PAD at all selected time
 tint1 = irf_time(timeUTC1(1,:),'utc>epochTT');
 % tint1 = tint;
-[paddist10,thetapad1,energypad1,tintpad1] = mms_get_pitchangledist_my_change(diste1,Bxyz1,tint1);
+% [paddist10,thetapad1,energypad1,tintpad1] = mms_get_pitchangledist_my_change(diste1,Bxyz1,tint1);
+[paddist10,thetapad1,energypad1,tintpad1] = mms.get_pitchangledist(diste1,Bxyz1,tint1);
 energypad1 = energypad1(1,:);
 paddist11 = paddist10*1e30;
 % paddist11 = mean(paddist11.data,1);

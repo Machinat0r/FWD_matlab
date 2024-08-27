@@ -140,14 +140,18 @@ end
 end  
 %% Coordinate
 c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
+
 for i = 1:length(PI)
     LocRes{i} = LocRes{i}-LocPoint(i,:);
 end
 LocPoint = LocPoint - LocPoint;
 %% VSH
-[coeff, res] = VSH_Expand('R?', 'B?(:,1:4)', [0,0,0], 1);
-% % % coeff0 = coeff([1,5,9,13,14,15]);
-% % % coeff1 = coeff([2,3,4,6,7,8,10,11,12]);
+% % % [coeff, res] = VSH_Expand('R?', 'B?(:,1:4)', [0,0,0], 1);
+
+R5 = R1;B5 = B1;
+[coeff, res] = VSH_Expand_multiSC('R?', 'B?(:,1:4)', 2);
+% coeff0 = coeff([1,5,9,13,14,15]);
+% coeff1 = coeff([2,3,4,6,7,8,10,11,12]);
 alpha_00 = coeff(:,1); beta_00 = coeff(:,5); gamma_00 = coeff(:,9);
 alpha_12 = coeff(:,2); beta_12 = coeff(:,6); gamma_12 = coeff(:,10);
 alpha_10 = coeff(:,3); beta_10 = coeff(:,7); gamma_10 = coeff(:,11);
@@ -165,8 +169,9 @@ c_eval('[~, B?_sph] = Coor_Trans(R?(:,2:4), B?(:,2:4));', 1:4);
 c_eval('B0? = irf_abs([B?(:,1), Br0?, zeros(size(Br0?)), zeros(size(Br0?))]);', 1:4);
 c_eval('B1? = irf_abs([B?(:,1), Br1?, Bt1?, Bp1?]);', 1:4);
 c_eval('B2? = irf_abs([B?(:,1), B?_sph(:,1) - Br0? - Br1?, B?_sph(:,2) - Bt1?, B?_sph(:,3) - Bp1?]);', 1:4);
-c_eval('rate1? = B0?(:,5)./B1?(:,5);', 1:4);
-c_eval('rate2? = B0?(:,5)./B2?(:,5);', 1:4);
+c_eval('rate1? = B1?(:,5)./B0?(:,5);', 1:4);
+c_eval('rate2? = B2?(:,5)./B0?(:,5);', 1:4);
+
 %% cal B
 for i = 1:length(PI)
 c_eval('[tempBx?,tempBy?,tempBz?,tempBt?]=calculateB(R?(i,2),R?(i,3),R?(i,4),Q(i),LocPoint(i,:));')
@@ -366,9 +371,9 @@ grid off;
 ylabel('\Re_1','fontsize',12);
 ax = gca;
 % ax.YScale = 'log';
-ax.YLim = [1e-1,1e1];
+ax.YLim = [0,1];
 ax.XTickLabel = '';
-ax.YTick = [0.1, 5, 10];
+% ax.YTick = [0.1, 5, 10];
 box('on')
 % irf_timeaxis(ax,'date')
 %% SPH rate 2: l0/l2
@@ -387,13 +392,13 @@ grid off;
 
 % set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
 % irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.97 0.92]);
-ylabel('\Re_','fontsize',12);
+ylabel('\Re_2','fontsize',12);
 ax = gca;
 % ax.YScale = 'log';
-ax.YLim = [1e-1,1e1];
-ax.YTick = [0.1, 5, 10];
+ax.YLim = [0,1];
+% ax.YTick = [0.1, 5, 10];
 box('on')
-% irf_timeaxis(ax,'date')
+irf_timeaxis(ax,'date')
 set(ax,'XTickLabelRotation',0);
 %% Adjust the position
 set(gcf,'render','painters');

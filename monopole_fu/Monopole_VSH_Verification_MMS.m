@@ -139,38 +139,17 @@ Locerror(i) = 200;
 end
 end  
 %% Coordinate
-% % % c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
-
-maxR = nan*zeros(1,3); minR = nan*zeros(1,3);
-c_eval('maxR = max(maxR,max(R?(:,2:4),[],1));',1:4);
-c_eval('minR = min(minR,min(R?(:,2:4),[],1));',1:4);
-GridX = linspace(minR(1),maxR(1),20);
-GridY = linspace(minR(2),maxR(2),20);
-GridZ = linspace(minR(3),maxR(3),20);
-[MGX, MGY, MGZ] = meshgrid(GridX, GridY, GridZ);
-X = MGX(:);Y = MGY(:);Z = MGZ(:);
-points = [X, Y, Z];
-
-c_eval('V? = [R1(?,2:4); R2(?,2:4); R3(?,2:4); R4(?,2:4)];',1:size(B1,1));
-c_eval('Tri? = delaunayTriangulation(V?);',1:size(B1,1));
-c_eval('points? = points(pointLocation(Tri?,points) == 1,:);',1:size(B1,1));
+c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
 
 for i = 1:length(PI)
     LocRes{i} = LocRes{i}-LocPoint(i,:);
 end
-% % % LocPoint = LocPoint - LocPoint;
+LocPoint = LocPoint - LocPoint;
 %% VSH
-c_eval('R?_grid = cell(size(points1,1));', 1:4);
-coeff_grid = cell(size(points1,1)); res_grid = cell(size(points1,1));
-c_eval('rate1?_grid = zeros(size(B?,1),size(points1,1));', 1:4);
-c_eval('rate2?_grid = zeros(size(B?,1),size(points1,1));', 1:4);
-for i_grid = 1:size(points1,1)
-c_eval('R?_grid{i_grid} = [R?(:,1), R?(:,2:4) - points1(i_grid,:)];',1:4);
-[coeff, res] = VSH_Expand('R?_grid{i_grid}', 'B?(:,1:4)', [0,0,0], 1);
-coeff_grid{i_grid} = coeff; res_grid{i_grid} = res;
+[coeff, res] = VSH_Expand('R?', 'B?(:,1:4)', [0,0,0], 1);
 
-
-% % % [coeff, res] = VSH_Expand('R?', 'B?(:,1:4)', [0,0,0], 1);
+% % % R5 = R1;B5 = B1;
+% % % [coeff, res] = VSH_Expand_multiSC('R?', 'B?(:,1:4)', 2);
 % coeff0 = coeff([1,5,9,13,14,15]);
 % coeff1 = coeff([2,3,4,6,7,8,10,11,12]);
 alpha_00 = coeff(:,1); beta_00 = coeff(:,5); gamma_00 = coeff(:,9);
@@ -190,12 +169,9 @@ c_eval('[~, B?_sph] = Coor_Trans(R?(:,2:4), B?(:,2:4));', 1:4);
 c_eval('B0? = irf_abs([B?(:,1), Br0?, zeros(size(Br0?)), zeros(size(Br0?))]);', 1:4);
 c_eval('B1? = irf_abs([B?(:,1), Br1?, Bt1?, Bp1?]);', 1:4);
 c_eval('B2? = irf_abs([B?(:,1), B?_sph(:,1) - Br0? - Br1?, B?_sph(:,2) - Bt1?, B?_sph(:,3) - Bp1?]);', 1:4);
-c_eval('rate1? = B0?(:,5)./B1?(:,5);', 1:4);
-c_eval('rate2? = B0?(:,5)./B2?(:,5);', 1:4);
+c_eval('rate1? = B1?(:,5)./B0?(:,5);', 1:4);
+c_eval('rate2? = B2?(:,5)./B0?(:,5);', 1:4);
 
-c_eval('rate1?_grid(:,i_grid) = rate1?;',1:4);
-c_eval('rate2?_grid(:,i_grid) = rate2?;',1:4);
-end
 %% cal B
 for i = 1:length(PI)
 c_eval('[tempBx?,tempBy?,tempBz?,tempBt?]=calculateB(R?(i,2),R?(i,3),R?(i,4),Q(i),LocPoint(i,:));')
@@ -394,8 +370,8 @@ grid off;
 
 ylabel('\Re_1','fontsize',12);
 ax = gca;
-ax.YScale = 'log';
-ax.YLim = [1e0,1e2];
+% ax.YScale = 'log';
+ax.YLim = [0,1];
 ax.XTickLabel = '';
 % ax.YTick = [0.1, 5, 10];
 box('on')
@@ -418,8 +394,8 @@ grid off;
 % irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.97 0.92]);
 ylabel('\Re_2','fontsize',12);
 ax = gca;
-ax.YScale = 'log';
-ax.YLim = [1e0,1e2];
+% ax.YScale = 'log';
+ax.YLim = [0,1];
 % ax.YTick = [0.1, 5, 10];
 box('on')
 irf_timeaxis(ax,'date')
@@ -439,11 +415,11 @@ Br0 = r.^-2 .* alpha_00 .* Cal_SPH(0, 0, theta)';
 end
 
 function Bt0 = Cal_Bt0(r, theta, beta_00)
-Bt0 = r.^-2 .* beta_00 .* Cal_dPlm(0, 0, theta)';
+Bt0 = r.^-1 .* beta_00 .* Cal_dPlm(0, 0, theta)';
 end
 
 function Bp0 = Cal_Bp0(r, theta, gamma_00)
-Bp0 = r.^-2 .* gamma_00 .* Cal_dPlm(0, 0, theta)';
+Bp0 = r.^-1 .* gamma_00 .* Cal_dPlm(0, 0, theta)';
 end
 
 function Br1 = Cal_Br1(r, theta, phi, alpha_12, alpha_10, alpha_11)
@@ -453,7 +429,7 @@ Br1 = r.^-3 .* (alpha_12 .* cos(-phi) .* Cal_SPH(1, -1, theta)'...
 end
 
 function Bt1 = Cal_Bt1(r, theta, phi, beta_12, beta_10, beta_11, gamma_12, gamma_11)
-Bt1 = r.^-3 .* (gamma_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
+Bt1 = r.^-2 .* (gamma_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
     beta_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' + ...
     beta_10 ./ 2 .* Cal_dPlm(1, 0, theta)' + ...
     gamma_11 .* -sin(phi) ./ (2*sin(theta)) .* Cal_SPH(1, 1, theta)' + ...
@@ -461,7 +437,7 @@ Bt1 = r.^-3 .* (gamma_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)'
 end
 
 function Bp1 = Cal_Bp1(r, theta, phi, beta_12, beta_11, gamma_12, gamma_10, gamma_11)
-Bp1 = r.^-3 .* (gamma_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' -...
+Bp1 = r.^-2 .* (gamma_12 .* sin(phi) ./ 2 .* Cal_dPlm(1, -1, theta)' -...
     beta_12 .* cos(phi) ./ (2*sin(theta)) .* Cal_SPH(1, -1, theta)' + ...
     gamma_10 ./ 2 .* Cal_dPlm(1, 0, theta)' + ...
     gamma_11 .* cos(phi) ./ 2 .* Cal_dPlm(1, 1, theta)' -...
