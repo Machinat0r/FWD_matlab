@@ -57,7 +57,7 @@ mms.db_init('local_file_db',ParentDir);
 
 % load B
 units = irf_units;
-c_eval(['B?_ts=mms.get_data(''B_gsm_brst'',tint,?);'],iic);
+c_eval(['B?_ts=mms.get_data(''B_gsm_srvy'',tint,?);'],iic);
 c_eval(['Bt?_ts=B?_ts.abs;'],iic); 
 c_eval(['B?=irf.ts2mat(B?_ts);'],iic);
 %  c_eval(['B?_gsm=irf_gse2gsm(B?,-1);'],ic);

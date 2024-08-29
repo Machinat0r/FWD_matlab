@@ -1,10 +1,10 @@
 %------written by Wending Fu, Nov.2023 in Beijing------------
 clear;clc;close all
 % 18.0969
-% file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/PS.APL_V0105S027CB0006_SC.U_DI.A_GP.F18-SSUSI_PA.APL-EDR-AURORA_DD.20190805_SN.027894-00_DF.NC';%1808
+file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/PS.APL_V0105S027CB0006_SC.U_DI.A_GP.F18-SSUSI_PA.APL-EDR-AURORA_DD.20190805_SN.027894-00_DF.NC';%1808
 % file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/PS.APL_V0105S027CB0006_SC.U_DI.A_GP.F18-SSUSI_PA.APL-EDR-AURORA_DD.20190805_SN.027893-00_DF.NC';
 % file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/dmspf17_ssusi_edr-aurora_2019217T150651-2019217T164842-REV65793_vA8.2.0r000.nc';%%1600
-file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/dmspf18_ssusi_edr-aurora_2019217T153253-2019217T171445-REV27893_vA8.2.0r000.nc'; %%1624
+% file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/dmspf18_ssusi_edr-aurora_2019217T153253-2019217T171445-REV27893_vA8.2.0r000.nc'; %%1624
 % file_path = '/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/aurora/dmspf17_ssusi_edr-aurora_2019217T164847-2019217T182424-REV65794_vA8.2.0r000.nc';%%1800
 info = ncinfo(file_path);
 ncid = netcdf.open(file_path, 'NOWRITE');
@@ -37,7 +37,7 @@ ARC_NORTH_data = ARC_NORTH_data(:,:,5);
 ARC_SOUTH_data = DISK_RADIANCEDATA_INTENSITY_SOUTH.data;
 ARC_SOUTH_data = ARC_SOUTH_data .* SOUTH_DQI;
 ARC_SOUTH_data = ARC_SOUTH_data(:,:,5);
-% ARC_NORTH_data = sum(ARC_NORTH_data,3);
+% ARC_SOUTH_data = mean(ARC_SOUTH_data,3);
 
 % lon_NORTH_mesh = mod(lon_NORTH_mesh, 360);
 % lon_SOUTH_mesh = mod(lon_SOUTH_mesh, 360);
