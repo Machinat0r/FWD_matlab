@@ -11,9 +11,13 @@ phiGrid = mean(diff(phi,1,1), 'all');
 thetaGrid = mean(diff(theta,1,2), 'all');
 rGrid = mean(diff(r,1,3), 'all');
 %%
-[~, dAr_dtheta, dAr_dphi] = gradient(Ar, rGrid, thetaGrid, phiGrid);
-[dAtheta_dr, ~, dAtheta_dphi] = gradient(Atheta, rGrid, thetaGrid, phiGrid);
-[dAphi_dr, dAphi_dtheta, ~] = gradient(Aphi, rGrid, thetaGrid, phiGrid);
+% % % [~, dAr_dtheta, dAr_dphi] = gradient(Ar, rGrid, thetaGrid, phiGrid);
+% % % [dAtheta_dr, ~, dAtheta_dphi] = gradient(Atheta, rGrid, thetaGrid, phiGrid);
+% % % [dAphi_dr, dAphi_dtheta, ~] = gradient(Aphi, rGrid, thetaGrid, phiGrid);
+
+[dAr_dphi, dAr_dtheta, ~] = gradient(Ar,phiGrid, thetaGrid, rGrid);
+[dAtheta_dphi, ~, dAtheta_dr] = gradient(Atheta, phiGrid, thetaGrid, rGrid);
+[~, dAphi_dtheta, dAphi_dr] = gradient(Aphi, phiGrid, thetaGrid, rGrid);
 
 curlAr = (1 ./ (r .* cos(theta))) .* ...
          (dAphi_dtheta .* cos(theta) - sin(theta) .* Aphi - dAtheta_dphi);

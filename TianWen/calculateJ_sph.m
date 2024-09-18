@@ -108,6 +108,7 @@ Bt = sqrt(BaGrid(:,:,slide).^2 + BeGrid(:,:,slide).^2 + BhGrid(:,:,slide).^2);
 % pcolor(aGrid(:,:,slide),eGrid(:,:,slide),Jt);
 pcolor(aGrid(:,:,slide),eGrid(:,:,slide),Je(:,:,slide));
 shading interp
+clim([-800,800]);
 colormap('jet'); 
 c = colorbar;
 c.Label.String = 'J_{elevation} [nA/m^2]';
@@ -136,6 +137,7 @@ s = surf(aGrid(:,:,slide),eGrid(:,:,slide),hGrid(:,:,slide),Jh(:,:,slide));hold 
 s.EdgeColor = 'none';
 shading interp
 colormap('jet'); 
+clim([-800,800]);
 c = colorbar;
 c.Label.String = 'J_{elevation} [nA/m^2]';
 xlabel('Lon [\circ]'); ylabel('Lat [\circ]'); zlabel('Alt [km]')
