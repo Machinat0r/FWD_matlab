@@ -15,7 +15,13 @@ elseif  ~ischar(filename)
 end
 %% temp folder distinguis
 temp_folder_flag = 1;
+try
 dir_list = regexp(ls(destDir), '\s+', 'split');
+catch
+dir_list = ls(destDir);
+dir_list = cellstr(dir_list(3:end,:));
+end
+
 for file_i = 1:length(dir_list)
 if ~isempty(dir_list{file_i})
 if isfolder([destDir, dir_list{file_i}])

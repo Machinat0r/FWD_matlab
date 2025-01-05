@@ -1,4 +1,7 @@
 function [filenames,desmoms1,desmoms2] =  findFilenames(TT,filenames,datamode,ic)
+%------modified by Wending Fu, Nov.2024 in Beijing------------
+% Add a new mode to download multiple files at once.
+% In this mode, the output of desmoms1 & desmoms2 is meaningless.
 %------written by Wending Fu, Nov.2023 in Beijing------------
 % This is the function to find the filenames which include the time
 % interval, and need to be used with the SDCFilenames.m
@@ -29,18 +32,14 @@ else
     return
 end
 %% 
-flag = 0;%若flag=0，说明整段时间都在第i-1个Tag里
-if length(NameTags) == 1
-    i = 0;
-else
-for i = 1:length(NameTags)-1
-    if Tm1 >= NameTags{i} && Tm1 < NameTags{i+1}
-        if Tm2 >= NameTags{i+1}, flag = 1; end
-        break
-    end
+NameTags_mat = cell2mat(NameTags);
+NameTags_idx = NameTags_mat(Tm1<=NameTags_mat & NameTags_mat<=Tm2);
+switch length(NameTags_idx)
+    case 0, errordlg('当天无数据，请检查所选时间')
+    case {1,2}, flag = length(NameTags_idx) - 1; i = find(NameTags_mat == NameTags_idx(1));
+    otherwise, flag = 2; i = find(NameTags_mat == NameTags_idx);
 end
-end
-if Tm1 >= NameTags{end}, i = i+1; end
+
 %%
 % '/' for MacOs, '\' for Windows
 global ParentDir
@@ -51,7 +50,7 @@ if flag == 0
     desmoms =  [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag(1:4),'/',tempTag(5:6),'/',...
             tempTag(7:8),'/',filenames{cellfun(@(x)(~isempty(x)),strfind(filenames,'des-moms'))}];
     desmoms1 = desmoms; desmoms2 = desmoms1;
-else
+elseif flag == 1
     if i == 1
         errordlg('时间起始处无brst数据，请检查时间范围,或使用Overview_srvydownload程序')
     end
@@ -64,6 +63,14 @@ else
             tempTag1(7:8),'/',filenames1{cellfun(@(x)(~isempty(x)),strfind(filenames1,'des-moms'))}];
     desmoms2 = [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag2(1:4),'/',tempTag2(5:6),'/',...
             tempTag2(7:8),'/',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
+else
+    filenames = [];
+    for ii = 1:length(i)
+    tempTag = num2str(NameTags{i});
+    tempfilenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag)));
+    filenames = [filenames, tempfilenames];
+    end
+    desmoms1 = nan; desmoms2 = desmoms1;
 end
 else
     if flag == 0
@@ -72,7 +79,7 @@ else
     desmoms =  [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag(1:4),'/',tempTag(5:6),'/',...
             '/',filenames{cellfun(@(x)(~isempty(x)),strfind(filenames,'des-moms'))}];
     desmoms1 = desmoms; desmoms2 = desmoms1;
-else
+    elseif flag == 1
     if i == 1
         errordlg('时间起始处无brst数据，请检查时间范围,或使用Overview_srvydownload程序')
     end
@@ -85,6 +92,14 @@ else
             '/',filenames1{cellfun(@(x)(~isempty(x)),strfind(filenames1,'des-moms'))}];
     desmoms2 = [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag2(1:4),'/',tempTag2(5:6),'/',...
             '/',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
-end
+    else
+    filenames = [];
+    for ii = 1:length(i)
+    tempTag = num2str(NameTags{i});
+    tempfilenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag)));
+    filenames = [filenames, tempfilenames];
+    end 
+    desmoms1 = nan; desmoms2 = desmoms1;
+    end
 end
 end

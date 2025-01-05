@@ -33,7 +33,11 @@ if isfolder(OutputFiles_dir) == 0
     mkdir(OutputFiles_dir);
 end
 
-global ParentDir
+global ParentDir func_path func_dir
+
+func_path = mfilename("fullpath");
+func_dir = strfind(func_path,'fwd_matlab_patch') - 1;
+
 % '/' for MacOs, '\' for Windows
 disp(['□□□□□□□□□□','开始下载✧(≖ ◡ ≖✿)'])
 i = 1;
@@ -90,7 +94,7 @@ while i <= length(filenames)
         if Threads == 0
             websave(output_filename,file_url,options) ; 
         else
-            command = sprintf('python3 /Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/MMS_fu/download_files.py "%s" "%s" "%s" "%s"',...
+            command = sprintf(['python3 ' func_path(1:func_dir) 'fwd_matlab_patch/MMS_fu/download_files.py "%s" "%s" "%s" "%s"'],...
                 file_url, output_filename, filenames{i}, num2str(Threads)); % 若电脑发生卡顿，可以下调线程数（最后一个变量）
             system(command);
         end   
@@ -126,6 +130,7 @@ Identification(mfilename('fullpath'));
 end
 %%
 function [file_url, varargout] = FileContentLength(filename)
+global func_path func_dir
 if contains(filename,'mms')
 file_url = ['https://lasp.colorado.edu/mms/sdc/public/files/api/v1/download/science?', ...
     'file=',filename]; 
@@ -135,7 +140,7 @@ file_url = ['https://lasp.colorado.edu/maven/sdc/public/files/api/v1/search/scie
 end
 
 try
-command = sprintf('python3 /Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/MMS_fu/content_length.py "%s"', file_url);
+command = sprintf(['python3 ' func_path(1:func_dir) 'fwd_matlab_patch/MMS_fu/content_length.py "%s"'], file_url);
 [status, cmdout] = system(command);
 
 if status == 0

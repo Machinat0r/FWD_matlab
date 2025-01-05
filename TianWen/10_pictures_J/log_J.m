@@ -1,0 +1,29 @@
+clear; clc; close all;
+
+gridNuma = 360; gridNume = 180; gridNumh = 5; 
+
+load(['E:\Martian\programs\2_Maven_Download\10_pictures_J\J\Ja' ...
+    , num2str(gridNuma), 'e', num2str(gridNume), 'h', num2str(gridNumh), '.mat']);
+load(['E:\Martian\programs\2_Maven_Download\10_pictures_J\J\Ja' ...
+    , num2str(gridNuma), 'e', num2str(gridNume), 'h', num2str(gridNumh), '_day', '.mat']);
+load(['E:\Martian\programs\2_Maven_Download\10_pictures_J\J\Ja' ...
+    , num2str(gridNuma), 'e', num2str(gridNume), 'h', num2str(gridNumh), '_nig', '.mat']);
+
+%% log
+loga = log10(abs(Ja)); loga_day = log10(abs(Ja_day)); loga_nig = log10(abs(Ja_nig));
+loge = log10(abs(Je)); loge_day = log10(abs(Je_day)); loge_nig = log10(abs(Je_nig));
+logh = log10(abs(Jh)); logh_day = log10(abs(Jh_day)); logh_nig = log10(abs(Jh_nig));
+
+logJa = sign(Ja).*loga; logJa_day = sign(Ja_day).*loga_day; logJa_nig = sign(Ja_nig).*loga_nig;
+logJe = sign(Je).*loge; logJe_day = sign(Je_day).*loge_day; logJe_nig = sign(Je_nig).*loge_nig;
+logJh = sign(Jh).*logh; logJh_day = sign(Jh_day).*logh_day; logJh_nig = sign(Jh_nig).*logh_nig;
+
+save(['E:\Martian\programs\2_Maven_Download\10_pictures_J\J_log\Ja' ...
+   , num2str(gridNuma), 'e', num2str(gridNume), 'h', num2str(gridNumh), '.mat'], ...
+   "logJa", "logJe", "logJh");
+save(['E:\Martian\programs\2_Maven_Download\10_pictures_J\J_log\Ja' ...
+   , num2str(gridNuma), 'e', num2str(gridNume), 'h', num2str(gridNumh), '_day', '.mat'], ...
+   "logJa_day", "logJe_day", "logJh_day");
+save(['E:\Martian\programs\2_Maven_Download\10_pictures_J\J_log\Ja' ...
+   , num2str(gridNuma), 'e', num2str(gridNume), 'h', num2str(gridNumh), '_nig', '.mat'], ...
+   "logJa_nig", "logJe_nig", "logJh_nig");

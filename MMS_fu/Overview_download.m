@@ -6,50 +6,38 @@ ParentDir = '/Volumes/172.17.190.41/Data/MMS/';
 DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-% TT = '2021-08-15T03:35:15.00Z/2021-08-15T03:35:30.00Z';
-% TT = '2021-08-22T06:39:30.00Z/2021-08-22T06:43:00.00Z';
-% TT = '2018-02-06T13:29:00.00Z/2018-02-06T13:30:30.00Z';
 % % % TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
-% TT = '2015-11-04T04:34:00.00Z/2015-11-04T04:37:00.00Z';
-% TT = '2018-07-03T15:50:10.00Z/2018-07-03T15:50:25.00Z';
-% TT = '2018-08-19T18:24:30.00Z/2018-08-19T18:26:20.00Z';
-% TT = '2019-08-16T01:03:33.00Z/2019-08-16T01:05:13.00Z';
-% % TT='2017-08-23T15:38:30.00Z/2017-08-23T15:39:15.00Z';
-% TT = '2021-07-10T12:41:23.00Z/2021-07-10T12:42:23.00Z';
-% TT = '2018-07-03T15:50:00.00Z/2018-07-03T15:51:00.00Z';
-% TT = '2017-08-20T02:01:30.00Z/2017-08-20T02:03:00.00Z';
-% TT = '2017-08-07T16:01:00.00Z/2017-08-07T16:02:00.00Z';
-% TT = '2021-07-21T12:46:20.00Z/2021-07-21T12:46:40.00Z';
-% TT = '2017-05-05T20:06:30.00Z/2017-05-05T20:07:10.00Z';
-% TT = '2022-08-18T23:53:00.00Z/2022-08-18T23:54:00.00Z';
-% TT = '2022-08-19T01:13:40.00Z/2022-08-19T01:14:40.00Z';
-% TT = '2020-08-02T16:56:10.00Z/2020-08-02T16:56:25.00Z';
-% TT = '2017-06-25T05:06:58.00Z/2017-06-25T05:07:02.00Z';
 % % TT = '2017-06-11T17:50:00.000Z/2017-06-11T18:00:00.000Z';
 % % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57:43.000Z';
-% % % TT = '2019-08-16T09:31:45.000Z/2019-08-16T09:32:15.000Z';
-TT = '2015-10-16T08:00:00.000Z/2015-10-16T14:00:00.000Z';
+TT = '2019-08-16T09:31:45.000Z/2019-08-16T09:32:15.000Z';
+% % % TT = '2017-05-22T10:42:12.000Z/2017-05-22T10:42:14.000Z';
+% TT = '2017-07-18T13:04:50.000Z/2017-07-18T13:05:00.000Z';
+% TT = '2018-07-05T20:39:27.000Z/2018-07-05T20:39:30.000Z';
+% TT = '2019-03-29T13:22:50.00Z/2019-03-29T13:23:30.00Z';
+% TT = '2017-07-18T13:04:50.00Z/2017-07-18T13:05:00.00Z';
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 1;
+ic = 3;
 iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
 filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
 filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce,scpot');
-filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
-filenames_fast = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms');
+% % filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
+% % filenames_fast = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms');
 filenames = [filenames1,filenames2,filenames3,filenames4];
 
 [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
-[fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
-[filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
+% % [fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
+% % [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
 
-% % % SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
-SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 32, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+% SDCFilesDownload(filenames,TempDir)
+
+% % % SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 32, 'CheckSize', 0)
 % % % SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 32, 'CheckSize', 0)
 % % % id_flagTime = OverView_download(tint,desmoms,IC,Name,flagTime)
 %% load data
@@ -163,10 +151,15 @@ c_eval(['Vit?=irf.ts2mat(Vit?_ts);'],ic);
 c_eval(['Bt?_resVi=irf_resamp(Bt?,Vi?);'],ic);
 c_eval(['Vifac?=irf_convert_fac(Vi?,B?,[1,0,0]);'],ic);
 
-%VxB
+%VixB
 c_eval('gsmVi?_res = irf_resamp(gsmVi?,B?);',ic);
-c_eval('Evxb? = 1e3*cross(1000*gsmVi?_res(:,2:4),1e-9*B?(:,2:4));',ic); %mV/m
-c_eval('Evxb? = Evxb? + E?_resamp(:,2:4);',ic);
+c_eval('Evixb? = 1e3*cross(1000*gsmVi?_res(:,2:4),1e-9*B?(:,2:4));',ic); %mV/m
+c_eval('Evixb? = Evixb? + E?_resamp(:,2:4);',ic);
+
+%VexB
+c_eval('gsmVe?_res = irf_resamp(gsmVe?,B?);',ic);
+c_eval('Evexb? = 1e3*cross(1000*gsmVe?_res(:,2:4),1e-9*B?(:,2:4));',ic); %mV/m
+c_eval('Evexb? = Evexb? + E?_resamp(:,2:4);',ic);
 
 
 % merge data/time from 2 cdf files
@@ -175,10 +168,16 @@ c_eval('energy_mid?=mms.db_get_variable(''mms?_fpi_brst_l2_des-moms'',''mms?_des
 c_eval('energy_high?=mms.db_get_variable(''mms?_fpi_brst_l2_des-moms'',''mms?_des_pitchangdist_highen_brst'',tint);',ic)
 c_eval('energy_e?=mms.db_get_variable(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energyspectr_omni_brst'',tint);',ic)
 c_eval('energy_i?=mms.db_get_variable(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_energyspectr_omni_brst'',tint);',ic)
+%% R
+units = irf_units;
+Pos = mms.get_data('R_gsm',tint);
+c_eval('R? = Pos.gsmR?;')
+c_eval('R? = [Pos.time.epochUnix R?(:,1:3)];')
+c_eval('R? = irf_resamp(R?,Bt?);')
 %% pressure & entropy (old)
 %Pressure
 %Pm
-units = irf_units;
+
 % % % c_eval('Pm = [Bt?(:,1) 10^(-9)*Bt?(:,2).^2 / (2*units.mu0)];',ic); %nPa
 % % % Pm = irf_resamp(Pm,Ni1);
 % % % Pte_para = [Ne1(:,1) units.e*10^(15)*Ne1(:,2).*Te_para1(:,2)];
@@ -217,7 +216,7 @@ units = irf_units;
 % % % % % % % c_eval('BzE? = B?(:,3).*sqrt(1+(Br?.^2./(B?(:,3).^2+2*miu0*Pthe_interp)));',ic);
 % % % % % % c_eval('PE? = Pthe_interp?+Br?.^2/(2*miu0);',ic);
 % % % % % % C = 0.7368;D = 0.7634;F = -0.3059;
-Pos = mms.get_data('R_gsm',tint);
+
 % % % Pos = Pos.gsmR1/units.RE/1000;
 % % % c_eval('v?=10^0.7368.*sqrt(R?(:,2).^2+R?(:,3).^2).^0.7634.*B?(:,4).^(-0.3059)./sqrt(B?(:,4).^2+2.*miu0.*Pthe?(:,2));',ic);
 % % % c_eval('etr?=Pt?(:,2).*v?.^(5/3);',ic);
@@ -244,35 +243,8 @@ Pos = mms.get_data('R_gsm',tint);
 % % % c_eval('UdU(:,1) = Vi?(:,1);',ic); 
 % % % c_eval('BdB(:,1) = B?(:,1);',ic);
 % % % momentum_equation = irf_resamp(UdU,BdB)-BdB;
-%% pressure & entropy
-Pos = mms.get_data('R_gsm',tint);
-c_eval('R? = Pos.gsmR?;')
-c_eval('R? = [Pos.time.epochUnix R?(:,1:3)];')
-c_eval('R? = irf_resamp(R?,Bt?);')
-mu0 = units.mu0;
-kB = units.kB;
-c_eval('Ne_res?=irf_resamp(Ne?,Ni?);',ic)
-c_eval('Pd? = 1e9*1e6*0.5*Ne_res?(:,2)*units.mp.*(1e3*Vit?(:,2)).^2;',ic);%nPa
-c_eval('Ni_res?=irf_resamp(Ni?,Bt?);',ic)
-c_eval('Ne_res?=irf_resamp(Ne?,Bt?);',ic)
-c_eval('Te_res?=irf_resamp(Te?,Bt?);',ic)
-c_eval('Ti_res?=irf_resamp(Ti?,Bt?);',ic)
-c_eval('Pb?=[Bt?(:,1) ((Bt?(:,2).^2))/(2*mu0)*1e-9];',ic);%nPa
-c_eval('Pti? = irf_multiply(11604.505*kB*1e6*1e9,[Ni_res?(:,1) Ni_res?(:,2)],1,[Ti_res?(:,1) Ti_res?(:,2)],1);',ic);
-c_eval('Pte? = irf_multiply(11604.505*kB*1e6*1e9,[Ne_res?(:,1) Ne_res?(:,2)],1,[Te_res?(:,1) Te_res?(:,2)],1);',ic);
-c_eval('Pt? = [Pti?(:,1) Pti?(:,2)+Pte?(:,2)];',ic);
 
-miu0=400*pi;
-c_eval('R?(:,2:4) = R?(:,2:4)./units.RE*1000;')
-c_eval('VE?=10^0.7368.*sqrt(R?(:,2).^2+R?(:,3).^2).^0.7634.*abs(B?(:,4)).^(-0.3059)./sqrt(B?(:,4).^2+2.*miu0.*Pt?(:,2));',ic);
-c_eval('S?=Pt?(:,2).*VE?.^(5/3);',ic);
-
-c_eval('Br? = sqrt(B?(:,2).^2+B?(:,3).^2);')
-c_eval('S?(B?(:,4) < Br? | B?(:,4) < 0) = nan;')
-
-c_eval('beta? = [Bt?(:,1) Pt?(:,2)./Pb?(:,2)];',ic);
-c_eval('pe_pb? = [Bt?(:,1) Pte?(:,2)./Pb?(:,2)];',ic);
-%%
+%% J & JdotE
 %J
 c_eval('Je?_ts = -units.e*Ne?_ts*gsmVe?_ts*1e3*1e6*1e9;',ic);
 c_eval('Ji?_ts = units.e*Ne?_ts*gsmVi?_ts.resample(Ne?_ts.time)*1e3*1e6*1e9;',ic);
@@ -282,7 +254,7 @@ c_eval('J? = irf.ts2mat(J?_ts);',ic);
 %JdotE
 c_eval('E_resJ = irf_resamp(E?,J?);',ic);
 c_eval('JdotEtemp = [E_resJ(:,1) irf_dot(J?(:,2:4),E_resJ(:,2:4))];',ic);
-c_eval('JdotE? = irf_resamp(JdotEtemp,Ni?);',ic);
+c_eval('JdotE? = irf_resamp(JdotEtemp,Ne?);',ic);
 
 % J dot E'
 [J_B,divB,~,jxB,divTshear,divPb] = c_4_j('R?','B?');
@@ -294,15 +266,15 @@ c_eval('JdotE_B? = [E_resJ?(:,1) irf_dot(J_B(:,2:4),E_resJ?(:,2:4))];',ic);
 % c_eval('Eplus? = [E_resJ?(:,1) E_resJ?(:,2:4) + 1e3*irf_cross(1e3*gsmVe?(:,2:4),1e-9*B?(:,2:4))];',ic)
 % c_eval('JdotEplus? = [Eplus?(:,1) irf_dot(J_B(:,2:4),Eplus?(:,2:4))];',ic);
 c_eval('B?_resE = irf_resamp(B?,E?);',ic)
-c_eval('gsmVe? = irf_resamp(gsmVe?,E?);',ic)
+c_eval('gsmVe?_resE = irf_resamp(gsmVe?,E?);',ic)
 c_eval('J_B = irf_resamp(J_B,E?);',ic)
-c_eval('Eplus? = [E?(:,1) E?(:,2:4) + 1e3*irf_cross(1e3*gsmVe?(:,2:4),1e-9*B?_resE(:,2:4))];',ic)
+c_eval('Eplus? = [E?(:,1) E?(:,2:4) + 1e3*irf_cross(1e3*gsmVe?_resE(:,2:4),1e-9*B?_resE(:,2:4))];',ic)
 % c_eval('JdotEplus? = [Eplus?(:,1) irf_dot(J_B(:,2:4),Eplus?(:,2:4))];',ic);
 c_eval('J? = irf_resamp(J?,E?);',ic);
 c_eval('JdotEplus? = [Eplus?(:,1) irf_dot(J?(:,2:4),Eplus?(:,2:4))];',ic);
 c_eval('JdotEint = [JdotEplus?(:,1) cumsum(JdotEplus?(:,2))];',ic);
 
-
+%% pitch angle
 energy_mid1=mms.db_get_variable('mms1_fpi_brst_l2_des-moms','mms1_des_pitchangdist_miden_brst',tint);
 energy_high1=mms.db_get_variable('mms1_fpi_brst_l2_des-moms','mms1_des_pitchangdist_highen_brst',tint);
 energy_e1=mms.db_get_variable('mms1_fpi_brst_l2_des-moms','mms1_des_energyspectr_omni_brst',tint);
@@ -343,7 +315,7 @@ c_eval('energy_mid2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_miden_brst'
 c_eval('energy_high2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_highen_brst'');',ic);
 c_eval('energy_e2 = get_variable(fpiFilee2,''mms?_des_energyspectr_omni_brst'');',ic);
 % data merge
-data1=energy_low1.data; data2=energy_low2.data; data=[data1;data2];energy_low=energy_low1; energy_low.data=data; energy_low.nrec=energy_low1.nrec+energy_low2.nrec;
+data1=energy_low1.data; data2=energy_low2.data; data=[data1;data2];energy_low=energy_low1; energy_low.data=data;  energy_low.nrec=energy_low1.nrec+energy_low2.nrec;
 data1=energy_mid1.data; data2=energy_mid2.data; data=[data1;data2];energy_mid=energy_mid1; energy_mid.data=data;  energy_mid.nrec=energy_mid1.nrec+energy_mid2.nrec;
 data1=energy_high1.data; data2=energy_high2.data; data=[data1;data2];energy_high=energy_high1; energy_high.data=data;  energy_high.nrec=energy_high1.nrec+energy_high2.nrec;
 data1=energy_e1.data; data2=energy_e2.data; data=[data1;data2];energy_e=energy_e1; energy_e.data=data;  energy_e.nrec=energy_e1.nrec+energy_e2.nrec;
@@ -456,7 +428,7 @@ c_eval('Blmn?=irf_newxyz(B?,L,M,N);',ic);
 % % % c_eval('lmnJ? = irf.ts2mat(lmnJ?_ts);',ic);
 % end
 %% Init figure
-n=13;
+n=2;
 i=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
@@ -476,7 +448,7 @@ c_eval("irf_plot([B?(:,1) B?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold o
 c_eval("irf_plot([Bt?(:,1) 0*Bt?(:,2)],'k--', 'Linewidth',0.75);",ic); hold off;
 grid off;
 c_eval("set(gca,'Ylim',[min([min(B?(:,2)) min(B?(:,3)) min(B?(:,4))])-1 max(Bt?(:,2))+1]);",ic);
-% set(gca,'Ylim',[-10 20], 'ytick',[-30 -20 -10 0 10 20 30],'fontsize',9);
+% set(gca,'Ylim',[-10 15], 'ytick',[-30 -20 -10 0 10 20 30],'fontsize',9);
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
 irf_legend(gca,{'B_x','B_y','B_z','|B|'},[0.97 0.92]);
@@ -650,27 +622,27 @@ i=i+1;
 % i=i+1;
 
 %% N plot
-h(i)=irf_subplot(n,1,-i);
-
-%滤波
-%     irf_plot([Nebf1(:,1) Nebf1(:,2)], 'color','b', 'Linewidth',0.75);hold on;
-%     irf_plot([Nibf1(:,1) Nibf1(:,2)], 'color','g', 'Linewidth',0.75); hold off;
-
-%非滤波
-c_eval("irf_plot([Ne?(:,1) Ne?(:,2)], 'color','b', 'Linewidth',0.75);",ic);hold on;
-c_eval("irf_plot([Ni?(:,1) Ni?(:,2)], 'color','g', 'Linewidth',0.75);",ic); hold off;
-grid off;
-c_eval("set(gca,'Ylim',[max([0 min([min(Ne?(:,2)) min(Ni?(:,2))])-0.02]) max([max(Ne?(:,2)) max(Ni?(:,2))])+0.02]);",ic)
-%     set(gca,'Ylim',[0.15 0.45], 'ytick',[0.1 0.2 0.3 0.4],'fontsize',9);
-% pos1=get(h(1),'pos');
-%  set(gca,'ColorOrder',[[0 0 1];[0 1 0]]);
-%  irf_legend(gca,{'Ne','Ni'},[0.1 0.12]);
-  set(gca,'ColorOrder',[[0 0 1];[0 1 0]]);
- irf_legend(gca,{'Ne','Ni'},[0.97 0.92]);
-% irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
-% irf_legend(gca,'b',[0.99 0.98],'color','k','fontsize',12)
-ylabel('N [cm^{-3}]','fontsize',8);
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % 
+% % % %滤波
+% % % %     irf_plot([Nebf1(:,1) Nebf1(:,2)], 'color','b', 'Linewidth',0.75);hold on;
+% % % %     irf_plot([Nibf1(:,1) Nibf1(:,2)], 'color','g', 'Linewidth',0.75); hold off;
+% % % 
+% % % %非滤波
+% % % c_eval("irf_plot([Ne?(:,1) Ne?(:,2)], 'color','b', 'Linewidth',0.75);",ic);hold on;
+% % % % c_eval("irf_plot([Ni?(:,1) Ni?(:,2)], 'color','g', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % c_eval("set(gca,'Ylim',[max([0 min([min(Ne?(:,2)) min(Ni?(:,2))])-0.02]) max([max(Ne?(:,2)) max(Ni?(:,2))])+0.02]);",ic)
+% % % %     set(gca,'Ylim',[0.15 0.45], 'ytick',[0.1 0.2 0.3 0.4],'fontsize',9);
+% % % % pos1=get(h(1),'pos');
+% % % %  set(gca,'ColorOrder',[[0 0 1];[0 1 0]]);
+% % % %  irf_legend(gca,{'Ne','Ni'},[0.1 0.12]);
+% % %   set(gca,'ColorOrder',[[0 0 1];[0 1 0]]);
+% % %  irf_legend(gca,{'Ne','Ni'},[0.97 0.92]);
+% % % % irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
+% % % % irf_legend(gca,'b',[0.99 0.98],'color','k','fontsize',12)
+% % % ylabel('N [cm^{-3}]','fontsize',8);
+% % % i=i+1;
 
 
 
@@ -711,23 +683,23 @@ i=i+1;
 % % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
 % i=i+1;
 %% Efac
-h(i)=irf_subplot(n,1,-i);
-c_eval("irf_plot([Efac?(:,1) Efac?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
-c_eval("irf_plot([Efac?(:,1) Efac?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
-c_eval("irf_plot([Efac?(:,1) Efac?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
-c_eval("irf_plot([Efac?(:,1) Efac?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
-grid off;
-ylabel('Efac [mV/m]','fontsize',8)
-% set(gca,'Ylim',[-10 10], 'ytick',[-50 -25 0 25 50 75 100]);
-% irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
-c_eval("set(gca,'Ylim',[min([min(Efac?(:,2)) min(Efac?(:,3)) min(Efac?(:,4))])-1 max(Et?(:,2))+1]);",ic);
-set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0]]);
-irf_legend(gca,{'E_{\perp 1}','E_{\perp 2}','E_{||}'},[0.1 0.12]);
-
-pos3=get(gca,'pos');
-set(gca,'ColorOrder',[[0 1 0]]);
-%irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % c_eval("irf_plot([Efac?(:,1) Efac?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+% % % c_eval("irf_plot([Efac?(:,1) Efac?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
+% % % c_eval("irf_plot([Efac?(:,1) Efac?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
+% % % c_eval("irf_plot([Efac?(:,1) Efac?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % ylabel('Efac [mV/m]','fontsize',8)
+% % % set(gca,'Ylim',[-8 18], 'ytick',[-20:5:20]);
+% % % % irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
+% % % c_eval("set(gca,'Ylim',[min([min(Efac?(:,2)) min(Efac?(:,3)) min(Efac?(:,4))])-1 max(Et?(:,2))+1]);",ic);
+% % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0]]);
+% % % irf_legend(gca,{'E_{\perp 1}','E_{\perp 2}','E_{||}'},[0.1 0.12]);
+% % % 
+% % % pos3=get(gca,'pos');
+% % % set(gca,'ColorOrder',[[0 1 0]]);
+% % % %irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
+% % % i=i+1;
 
 
 
@@ -755,6 +727,8 @@ i=i+1;
 
 %% Ve plot
 % % % h(i)=irf_subplot(n,1,-i);
+% % % dspan = 4;
+% % % c_eval('gsmVe? = [smooth(gsmVe?(:,1), dspan), smooth(gsmVe?(:,2), dspan), smooth(gsmVe?(:,3), dspan), smooth(gsmVe?(:,4), dspan)];',ic);
 % % % c_eval("irf_plot([gsmVe?(:,1) gsmVe?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
 % % % c_eval("irf_plot([gsmVe?(:,1) gsmVe?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
 % % % c_eval("irf_plot([gsmVe?(:,1) gsmVe?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
@@ -768,9 +742,9 @@ i=i+1;
 % % % 
 % % % grid off;
 % % % ylabel('Ve [km/s]','fontsize',8);
-% % % c_eval("set(gca,'Ylim',[fix(min([min(gsmVe?(:,2)) min(gsmVe?(:,3)) min(gsmVe?(:,4))])/10)*10-10 fix(max(Vet?(:,2))/10)*10+10]);",ic);
+% % % % c_eval("set(gca,'Ylim',[fix(min([min(gsmVe?(:,2)) min(gsmVe?(:,3)) min(gsmVe?(:,4))])/10)*10-10 fix(max(Vet?(:,2))/10)*10+10]);",ic);
 % % % 
-% % % % c_eval("set(gca,'Ylim',[-700 700]);",ic);
+% % % set(gca,'Ylim',[-1500 2000]);
 % % % % set(gca,'Ylim',[-1000 1000], 'ytick',[-600 -400 -200 0 200 400 600]);
 % % % %irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
 % % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
@@ -836,67 +810,113 @@ i=i+1;
 % % % %irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
 % % % ylabel('E [mV/m]','fontsize',8)
 % % % i=i+1;
-%% E+VxB field
+%% E+VixB field
 % % % h(i)=irf_subplot(n,1,-i);
-% % % c_eval("irf_plot([B?(:,1) Evxb?(:,1)], 'color','b', 'Linewidth',0.75);",ic);hold on;
-% % % c_eval("irf_plot([B?(:,1) Evxb?(:,2)], 'color','g', 'Linewidth',0.75);",ic);hold on;
-% % % c_eval("irf_plot([B?(:,1) Evxb?(:,3)], 'color','r', 'Linewidth',0.75);",ic);hold on;
+% % % c_eval("irf_plot([B?(:,1) Evixb?(:,1)], 'color','b', 'Linewidth',0.75);",ic);hold on;
+% % % c_eval("irf_plot([B?(:,1) Evixb?(:,2)], 'color','g', 'Linewidth',0.75);",ic);hold on;
+% % % c_eval("irf_plot([B?(:,1) Evixb?(:,3)], 'color','r', 'Linewidth',0.75);",ic);hold on;
 % % % c_eval("irf_plot([E?(:,1) E?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
 % % % grid off;
 % % % % set(gca,'Ylim',[-8 8], 'ytick',[-10:4:10],'fontsize',9);
 % % % % set(gca,'Ylim',[-40 50], 'ytick',[-60 -40 -20 0 20 40 60]);
 % % % % irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
-% % % c_eval("set(gca,'Ylim',[min([min(Evxb?(:,1)) min(Evxb?(:,2)) min(Evxb?(:,3))])-2 max([max(Evxb?(:,1)) max(Evxb?(:,2)) max(Evxb?(:,3))])+2]);",ic);
+% % % c_eval("set(gca,'Ylim',[min([min(Evixb?(:,1)) min(Evixb?(:,2)) min(Evixb?(:,3))])-2 max([max(Evixb?(:,1)) max(Evixb?(:,2)) max(Evixb?(:,3))])+2]);",ic);
 % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
 % % % irf_legend(gca,{'E+VixB_x','E+VixB_y','E+VixB_z'},[0.97 0.92]);
 % % % pos3=get(gca,'pos');
-% % % set(gca,'ColorOrder',[[0 1 0]]);
+% % % %irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
+% % % ylabel('E [mV/m]','fontsize',12)
+% % % i=i+1;
+%% E+VexB field
+% % % h(i)=irf_subplot(n,1,-i);
+% % % c_eval("irf_plot([B?(:,1) Evexb?(:,1)], 'color','b', 'Linewidth',0.75);",ic);hold on;
+% % % c_eval("irf_plot([B?(:,1) Evexb?(:,2)], 'color','g', 'Linewidth',0.75);",ic);hold on;
+% % % c_eval("irf_plot([B?(:,1) Evexb?(:,3)], 'color','r', 'Linewidth',0.75);",ic);hold on;
+% % % c_eval("irf_plot([E?(:,1) E?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % % set(gca,'Ylim',[-8 8], 'ytick',[-10:4:10],'fontsize',9);
+% % % % set(gca,'Ylim',[-40 50], 'ytick',[-60 -40 -20 0 20 40 60]);
+% % % % irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
+% % % c_eval("set(gca,'Ylim',[min([min(Evexb?(:,1)) min(Evexb?(:,2)) min(Evexb?(:,3))])-2 max([max(Evexb?(:,1)) max(Evexb?(:,2)) max(Evexb?(:,3))])+2]);",ic);
+% % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+% % % irf_legend(gca,{'E+VexB_x','E+VexB_y','E+VexB_z'},[0.97 0.92]);
+% % % pos3=get(gca,'pos');
 % % % %irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
 % % % ylabel('E [mV/m]','fontsize',12)
 % % % i=i+1;
 %% Vit plot
-h(i)=irf_subplot(n,1,-i);
-c_eval("irf_plot([Vit?(:,1) Vit?(:,2)], 'color','k', 'Linewidth',0.5);",ic); hold on;
-% c_eval("irf_plot([Bt?(:,2) Vn], 'color','r', 'Linewidth',0.75)",ic);
-% % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
-% % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
-% % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
-% irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
-% irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
-c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
-grid off;
-c_eval("set(gca,'Ylim',[0 fix(max(Vit?(:,2))/10)*10+10],'fontsize',9);",ic);
-%set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
-% irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
-% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
-% irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
-set(gca,'ColorOrder',[0 0 0]);
-% irf_legend(gca,{'Vi_x','Vi_y','Vi_z'},[0.97 0.92]);
-ylabel('Vit [km/s]','fontsize',8);
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % c_eval("irf_plot([Vit?(:,1) Vit?(:,2)], 'color','k', 'Linewidth',0.5);",ic); hold on;
+% % % % c_eval("irf_plot([Bt?(:,2) Vn], 'color','r', 'Linewidth',0.75)",ic);
+% % % % % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+% % % % % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
+% % % % % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
+% % % % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% % % % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
+% % % c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % c_eval("set(gca,'Ylim',[0 fix(max(Vit?(:,2))/10)*10+10],'fontsize',9);",ic);
+% % % %set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
+% % % % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+% % % set(gca,'ColorOrder',[0 0 0]);
+% % % % irf_legend(gca,{'Vi_x','Vi_y','Vi_z'},[0.97 0.92]);
+% % % ylabel('Vit [km/s]','fontsize',8);
+% % % i=i+1;
 %% Vi plot
-h(i)=irf_subplot(n,1,-i);
-c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
-c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
-c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
-% c_eval("irf_plot([Bt?(:,2) Vn], 'color','r', 'Linewidth',0.75)",ic);
-% % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
-% % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
-% % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
-% irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
-% irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
-c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
-grid off;
-c_eval("set(gca,'Ylim',[fix(min([min(gsmVi?(:,2)) min(gsmVi?(:,3)) min(gsmVi?(:,4))])/10)*10-10 fix(max(Vit?(:,2))/10)*10+10],'fontsize',9);",ic);
-%set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
-% irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
-% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
-% irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
-set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
-irf_legend(gca,{'Vi_x','Vi_y','Vi_z'},[0.97 0.92]);
-ylabel('Vi [km/s]','fontsize',8);
-i=i+1;
-
+% % % h(i)=irf_subplot(n,1,-i);
+% % % c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+% % % % c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
+% % % % c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
+% % % % c_eval("irf_plot([Bt?(:,2) Vn], 'color','r', 'Linewidth',0.75)",ic);
+% % % % % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+% % % % % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
+% % % % % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
+% % % % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% % % % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
+% % % c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % % c_eval("set(gca,'Ylim',[fix(min([min(gsmVi?(:,2)) min(gsmVi?(:,3)) min(gsmVi?(:,4))])/10)*10-10 fix(max(Vit?(:,2))/10)*10+10],'fontsize',9);",ic);
+% % % set(gca,'Ylim',[0 500], 'ytick',[0 200 400]);
+% % % % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+% % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+% % % % irf_legend(gca,{'Vi_x','Vi_y','Vi_z'},[0.97 0.92]);
+% % % ylabel('Vix [km/s]','fontsize',8);
+% % % i=i+1;
+%% dBz/dx
+% % % h(i)=irf_subplot(n,1,-i);
+% % % c_eval("irf_plot([gradB(:,1) gradB(:,4)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+% % % c_eval("irf_plot([gradB(:,1) gradB(:,10)], 'color','r', 'Linewidth',0.75);",ic); hold on;
+% % % 
+% % % c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % % c_eval("set(gca,'Ylim',[fix(min([min(gsmVi?(:,2)) min(gsmVi?(:,3)) min(gsmVi?(:,4))])/10)*10-10 fix(max(Vit?(:,2))/10)*10+10],'fontsize',9);",ic);
+% % % % set(gca,'Ylim',[0 500], 'ytick',[0 200 400]);
+% % % % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+% % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+% % % % irf_legend(gca,{'Vi_x','Vi_y','Vi_z'},[0.97 0.92]);
+% % % ylabel('dBz/dx [nT/km]','fontsize',8);
+% % % i=i+1;
+%% dBz/dz
+% % % h(i)=irf_subplot(n,1,-i);
+% % % c_eval("irf_plot([gradB(:,1) gradB(:,10)], 'color','k', 'Linewidth',0.75);",ic); hold on;
+% % % 
+% % % c_eval("irf_plot([gsmVi?(:,1) gsmVi?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % % c_eval("set(gca,'Ylim',[fix(min([min(gsmVi?(:,2)) min(gsmVi?(:,3)) min(gsmVi?(:,4))])/10)*10-10 fix(max(Vit?(:,2))/10)*10+10],'fontsize',9);",ic);
+% % % % set(gca,'Ylim',[0 500], 'ytick',[0 200 400]);
+% % % % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+% % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+% % % % irf_legend(gca,{'Vi_x','Vi_y','Vi_z'},[0.97 0.92]);
+% % % ylabel('dBz/dz [nT/km]','fontsize',8);
+% % % i=i+1;
 %% Vifac plot
 % % % h(i)=irf_subplot(n,1,-i);
 % % % c_eval("irf_plot([Vifac?(:,1) Vifac?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
@@ -962,8 +982,8 @@ i=i+1;
 % % % % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
 % % % c_eval("irf_plot([J?(:,1) J?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
 % % % grid off;
-% % % c_eval("set(gca,'Ylim',[fix(min([min(J?(:,2)) min(J?(:,3)) min(J?(:,4))])/10)*10-10 fix(max(max(Jtotal?(:,2)))/10)*10+10],'fontsize',9);",ic);
-% % % %set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
+% % % % c_eval("set(gca,'Ylim',[fix(min([min(J?(:,2)) min(J?(:,3)) min(J?(:,4))])/10)*10-10 fix(max(max(Jtotal?(:,2)))/10)*10+10],'fontsize',9);",ic);
+% % % set(gca,'Ylim',[-500 500]);
 % % % % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
 % % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
 % % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
@@ -972,40 +992,28 @@ i=i+1;
 % % % ylabel('J [nA/m^2]','fontsize',8);
 % % % i=i+1;
 %% J_B plot
-h(i)=irf_subplot(n,1,-i);
-irf_plot([J_B(:,1) J_B(:,2)], 'color','b', 'Linewidth',0.75); hold on;
-irf_plot([J_B(:,1) J_B(:,3)], 'color','g', 'Linewidth',0.75); hold on;
-irf_plot([J_B(:,1) J_B(:,4)], 'color','r', 'Linewidth',0.75); hold on;
-J_B = irf_abs(J_B);
-% irf_plot([J_B(:,1) J_B(:,5)], 'color','r', 'Linewidth',0.75); hold on;
-% c_eval("Jtotal_B = [J_B(:,1) sqrt(J_B(:,2).^2+J_B(:,3).^2+J_B(:,4).^2)];",ic); hold on;
-% % % c_eval("irf_plot([Jtotal_B(:,1) Jtotal_B(:,2)], 'color','k', 'Linewidth',0.75);",ic); hold on;
-% irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
-% irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
-c_eval("irf_plot([J_B(:,1) J_B(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
-grid off;
-c_eval("set(gca,'Ylim',[min([min(J_B(:,2)) min(J_B(:,3)) min(J_B(:,4))])-1 max([max(J_B(:,2)) max(J_B(:,3)) max(J_B(:,4))])+1],'fontsize',9);",ic);
-% set(gca,'Ylim',[-8000 8000]);
-% irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
-% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
-% irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
-set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
-irf_legend(gca,{'J_x','J_y','J_z'},[0.97 0.92]);
-ylabel('J [nA/m^2]','fontsize',8);
-i=i+1;
-%% J dot E' plot
-% % % h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-% % % c_eval("irf_plot([JdotEplus?(:,1) abs(JdotEplus?(:,2))], 'color','k', 'Linewidth',0.75); hold on;",ic)
+% % % h(i)=irf_subplot(n,1,-i);
+% % % irf_plot([J_B(:,1) J_B(:,2)], 'color','b', 'Linewidth',0.75); hold on;
+% % % irf_plot([J_B(:,1) J_B(:,3)], 'color','g', 'Linewidth',0.75); hold on;
+% % % irf_plot([J_B(:,1) J_B(:,4)], 'color','r', 'Linewidth',0.75); hold on;
+% % % J_B = irf_abs(J_B);
+% % % % irf_plot([J_B(:,1) J_B(:,5)], 'color','r', 'Linewidth',0.75); hold on;
+% % % % c_eval("Jtotal_B = [J_B(:,1) sqrt(J_B(:,2).^2+J_B(:,3).^2+J_B(:,4).^2)];",ic); hold on;
+% % % % % % c_eval("irf_plot([Jtotal_B(:,1) Jtotal_B(:,2)], 'color','k', 'Linewidth',0.75);",ic); hold on;
 % % % % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
 % % % % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
-% % % c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
+% % % c_eval("irf_plot([J_B(:,1) J_B(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
 % % % grid off;
-% % % ylabel('|J\dotE| [pw/m]','fontsize',10);
-% % % % set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
-% % % % set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
+% % % % c_eval("set(gca,'Ylim',[min([min(J_B(:,2)) min(J_B(:,3)) min(J_B(:,4))])-1 max([max(J_B(:,2)) max(J_B(:,3)) max(J_B(:,4))])+1],'fontsize',9);",ic);
+% % % set(gca,'Ylim',[-15 37]);
 % % % % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
 % % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
 % % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+% % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+% % % irf_legend(gca,{'J_x','J_y','J_z'},[0.97 0.92]);
+% % % ylabel('J [nA/m^2]','fontsize',8);
+% % % i=i+1;
+
 %% J dot E' integrate plot
 % % % h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 % % % c_eval("irf_plot([JdotEint(:,1) JdotEint(:,2)], 'color','k', 'Linewidth',0.75); hold on;",ic)
@@ -1021,7 +1029,7 @@ i=i+1;
 % % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
 %% JdotE
 % % % h(i)=irf_subplot(n,1,-i);
-% % % irf_plot([JdotE_B(:,1) Ne1(:,2) JdotE_B(:,2)],'yy',1);
+% % % c_eval("irf_plot([JdotE?(:,1) JdotE?(:,2)], 'color','k', 'Linewidth',0.75);",ic); hold on;
 % % % % irf_plot(JdotE_B,['yy',2], 'color','k', 'Linewidth',0.75);
 % % % % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
 % % % % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
@@ -1035,6 +1043,20 @@ i=i+1;
 % % % set(gca,'ColorOrder',[0 0 0]);
 % % % % irf_legend(gca,{'JdotE'},[0.97 0.92]);
 % % % ylabel('J\cdotE [pW/m^3] ','fontsize',10);
+% % % i=i+1;
+%% J dot E' plot
+% % % h(i)=irf_subplot(n,1,-i);
+% % % c_eval("irf_plot([JdotEplus?(:,1) abs(JdotEplus?(:,2))], 'color','k', 'Linewidth',0.75); hold on;",ic)
+% % % % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% % % % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
+% % % c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
+% % % grid off;
+% % % ylabel('|J\cdotE''| [pw/m^3]','fontsize',10);
+% % % % set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
+% % % % set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
+% % % % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
 % % % i=i+1;
 %% Jplasma_lmn plot
 % % % h(i)=irf_subplot(n,1,-i);
@@ -1055,31 +1077,31 @@ i=i+1;
 % % % ylabel('J [nA/m^2]','fontsize',12);
 % % % i=i+1;
 %% Te plot
-h(i)=irf_subplot(n,1,-i);
-c_eval("irf_plot([Te_para?(:,1) (Te_para?(:,2)+2*Te_perp?(:,2))/3], 'color','k', 'Linewidth',0.75);",ic); hold on;
-c_eval("irf_plot([Te_para?(:,1) Te_para?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
-c_eval("irf_plot([Te_perp?(:,1) Te_perp?(:,2)], 'color','r', 'Linewidth',0.75);",ic); hold off;
-grid off;
-c_eval("set(gca,'Ylim',[fix(min([min(Te_para?(:,2)) min(Te_para?(:,2)) min(Te_perp?(:,2))])/10)*10-10 fix(max([max(Te_para?(:,2)) max(Te_para?(:,2)) max(Te_perp?(:,2))])/10)*10+10],'fontsize',9);",ic);
-% set(gca,'Ylim',[500 2500]);
-% irf_legend(gca,'e',[0.99 0.98],'color','k','fontsize',12);
-set(gca,'ColorOrder',[[0 0 0];[0 0 1];[1 0 0]]);
-irf_legend(gca,{'Te','T_/_/','T_⊥'},[0.97 0.92]);
-ylabel('Te [eV]','fontsize',8);
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % c_eval("irf_plot([Te_para?(:,1) (Te_para?(:,2)+2*Te_perp?(:,2))/3], 'color','k', 'Linewidth',0.75);",ic); hold on;
+% % % % c_eval("irf_plot([Te_para?(:,1) Te_para?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+% % % % c_eval("irf_plot([Te_perp?(:,1) Te_perp?(:,2)], 'color','r', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % c_eval("set(gca,'Ylim',[fix(min([min(Te_para?(:,2)) min(Te_para?(:,2)) min(Te_perp?(:,2))])/10)*10-10 fix(max([max(Te_para?(:,2)) max(Te_para?(:,2)) max(Te_perp?(:,2))])/10)*10+10],'fontsize',9);",ic);
+% % % % set(gca,'Ylim',[500 2500]);
+% % % % irf_legend(gca,'e',[0.99 0.98],'color','k','fontsize',12);
+% % % set(gca,'ColorOrder',[[0 0 0];[0 0 1];[1 0 0]]);
+% % % irf_legend(gca,{'Te','T_/_/','T_⊥'},[0.97 0.92]);
+% % % ylabel('Te [eV]','fontsize',8);
+% % % i=i+1;
 %% Ti plot
-h(i)=irf_subplot(n,1,-i);
-c_eval("irf_plot([Ti_para?(:,1) (Ti_para?(:,2)+2*Ti_perp?(:,2))/3], 'color','k', 'Linewidth',0.75);",ic); hold on;
-c_eval("irf_plot([Ti_para?(:,1) Ti_para?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
-c_eval("irf_plot([Ti_perp?(:,1) Ti_perp?(:,2)], 'color','r', 'Linewidth',0.75);",ic); hold off;
-grid off;
-ylabel('Ti [eV]','fontsize',8);
-c_eval("set(gca,'Ylim',[fix(min([min(Ti_para?(:,2)) min(Ti_para?(:,2)) min(Ti_perp?(:,2))])/10)*10-10 fix(max([max(Ti_para?(:,2)) max(Ti_para?(:,2)) max(Ti_perp?(:,2))])/10)*10+10]);",ic);
-%set(gca,'Ylim',[-100 300]);
-% irf_legend(gca,'e',[0.99 0.98],'color','k','fontsize',12);
-set(gca,'ColorOrder',[[0 0 0];[0 0 1];[1 0 0]]);
-irf_legend(gca,{'Ti','Tipara','Tiperp'},[0.97 0.92]);
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % c_eval("irf_plot([Ti_para?(:,1) (Ti_para?(:,2)+2*Ti_perp?(:,2))/3], 'color','k', 'Linewidth',0.75);",ic); hold on;
+% % % c_eval("irf_plot([Ti_para?(:,1) Ti_para?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+% % % c_eval("irf_plot([Ti_perp?(:,1) Ti_perp?(:,2)], 'color','r', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % ylabel('Ti [eV]','fontsize',8);
+% % % c_eval("set(gca,'Ylim',[fix(min([min(Ti_para?(:,2)) min(Ti_para?(:,2)) min(Ti_perp?(:,2))])/10)*10-10 fix(max([max(Ti_para?(:,2)) max(Ti_para?(:,2)) max(Ti_perp?(:,2))])/10)*10+10]);",ic);
+% % % %set(gca,'Ylim',[-100 300]);
+% % % % irf_legend(gca,'e',[0.99 0.98],'color','k','fontsize',12);
+% % % set(gca,'ColorOrder',[[0 0 0];[0 0 1];[1 0 0]]);
+% % % irf_legend(gca,{'Ti','Tipara','Tiperp'},[0.97 0.92]);
+% % % i=i+1;
 %% Pressure
 % % % h(i)=irf_subplot(n,1,-i);
 % % % c_eval("irf_plot([Pb?(:,1) Pb?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
@@ -1151,68 +1173,69 @@ i=i+1;
 % % % % ylabel('\beta','fontsize',12)
 % % % ylabel('Entropy','fontsize',12)
 % % % i=i+1; 
-%% plot low e pad
-%     %0-200eV
-h(i)=irf_subplot(n,1,-i);
-% h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-colormap(h(i),jet)
-specrec_p_elow=struct('t',irf_time(energy_low.DEPEND_0.data,'ttns>epoch'));
-specrec_p_elow.f=transpose(energy_low.DEPEND_1.data(1,1:30));%energy levels
-specrec_p_elow.p=energy_low.data;%data matrix
-specrec_p_elow.f_label='';
-specrec_p_elow.p_label={' ','keV/(cm^2 s sr keV)'};
-[h(i), hcb6]=irf_spectrogram(h(i),specrec_p_elow);
-ylabel('PA low','fontsize',8)
-% set(gca,'yscale','log');
-set(h(i),'ytick',[0 90 180]);
-% caxis(gca,[7 7.7]);
-%irf_legend(h(i),'g',[0.99 0.98],'color','w','fontsize',12);
-poscbar6=get(hcb6,'pos');
-poscbar6(3)=poscbar6(3)*0.5;
-set(hcb6,'pos',poscbar6);
-i=i+1;
-%% plot mid e pad
-%     %200-2000eV
-h(i)=irf_subplot(n,1,-i);
-%h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-colormap(h(i),jet)
 
-specrec_p_emid=struct('t',irf_time(energy_mid.DEPEND_0.data,'ttns>epoch'));
-specrec_p_emid.f=transpose(energy_mid.DEPEND_1.data(1,1:30));%energy levels
-specrec_p_emid.p=energy_mid.data;%data matrix
-specrec_p_emid.f_label='';
-specrec_p_emid.p_label={' ','keV/(cm^2 s sr keV)'};
-[h(i), hcb7]=irf_spectrogram(h(i),specrec_p_emid);
-ylabel('PA mid','fontsize',8)
-%set(gca,'yscale','log');
-set(h(i),'ytick',[0 90 180]);
-% clim(gca,[6 8]);
-%irf_legend(h(i),'h',[0.99 0.98],'color','w','fontsize',12);
-poscbar7=get(hcb7,'pos');
-poscbar7(3)=poscbar7(3)*0.5;
-set(hcb7,'pos',poscbar7);
-i=i+1;
+%% plot low e pad
+% % % %     %0-200eV
+% % % h(i)=irf_subplot(n,1,-i);
+% % % % h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+% % % colormap(h(i),jet)
+% % % specrec_p_elow=struct('t',irf_time(energy_low.DEPEND_0.data,'ttns>epoch'));
+% % % specrec_p_elow.f=transpose(energy_low.DEPEND_1.data(1,1:30));%energy levels
+% % % specrec_p_elow.p=energy_low.data;%data matrix
+% % % specrec_p_elow.f_label='';
+% % % specrec_p_elow.p_label={' ','keV/(cm^2 s sr keV)'};
+% % % [h(i), hcb6]=irf_spectrogram(h(i),specrec_p_elow);
+% % % ylabel('PA low','fontsize',8)
+% % % % set(gca,'yscale','log');
+% % % set(h(i),'ytick',[0 90 180]);
+% % % % caxis(gca,[7 7.7]);
+% % % %irf_legend(h(i),'g',[0.99 0.98],'color','w','fontsize',12);
+% % % poscbar6=get(hcb6,'pos');
+% % % poscbar6(3)=poscbar6(3)*0.5;
+% % % set(hcb6,'pos',poscbar6);
+% % % i=i+1;
+%% plot mid e pad
+% % % %     %200-2000eV
+% % % h(i)=irf_subplot(n,1,-i);
+% % % %h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+% % % colormap(h(i),jet)
+% % % 
+% % % specrec_p_emid=struct('t',irf_time(energy_mid.DEPEND_0.data,'ttns>epoch'));
+% % % specrec_p_emid.f=transpose(energy_mid.DEPEND_1.data(1,1:30));%energy levels
+% % % specrec_p_emid.p=energy_mid.data;%data matrix
+% % % specrec_p_emid.f_label='';
+% % % specrec_p_emid.p_label={' ','keV/(cm^2 s sr keV)'};
+% % % [h(i), hcb7]=irf_spectrogram(h(i),specrec_p_emid);
+% % % ylabel('PA mid','fontsize',8)
+% % % %set(gca,'yscale','log');
+% % % set(h(i),'ytick',[0 90 180]);
+% % % % clim(gca,[6 8]);
+% % % %irf_legend(h(i),'h',[0.99 0.98],'color','w','fontsize',12);
+% % % poscbar7=get(hcb7,'pos');
+% % % poscbar7(3)=poscbar7(3)*0.5;
+% % % set(hcb7,'pos',poscbar7);
+% % % i=i+1;
 %% plot high e pad
 %2k-30keV
-h(i)=irf_subplot(n,1,-i);
-% h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-colormap(h(i),jet)
-
-specrec_p_ehigh=struct('t',irf_time(energy_high.DEPEND_0.data,'ttns>epoch'));
-specrec_p_ehigh.f=transpose(energy_high.DEPEND_1.data(1,1:30));%energy levels
-specrec_p_ehigh.p=energy_high.data;%data matrix
-specrec_p_ehigh.f_label='';
-specrec_p_ehigh.p_label={' ','keV/(cm^2 s sr keV)'};
-[h(i), hcb6]=irf_spectrogram(h(i),specrec_p_ehigh);
-ylabel('PA high','fontsize',8)
-
-set(h(i),'ytick',[0 90 180]);
-% clim(gca,[6 7.6]);
-irf_legend(h(i),'h',[0.99 0.98],'color','w','fontsize',12);
-poscbar6=get(hcb6,'pos');
-poscbar6(3)=poscbar6(3)*0.5;
-set(hcb6,'pos',poscbar6);
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % % h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+% % % colormap(h(i),jet)
+% % % 
+% % % specrec_p_ehigh=struct('t',irf_time(energy_high.DEPEND_0.data,'ttns>epoch'));
+% % % specrec_p_ehigh.f=transpose(energy_high.DEPEND_1.data(1,1:30));%energy levels
+% % % specrec_p_ehigh.p=energy_high.data;%data matrix
+% % % specrec_p_ehigh.f_label='';
+% % % specrec_p_ehigh.p_label={' ','keV/(cm^2 s sr keV)'};
+% % % [h(i), hcb6]=irf_spectrogram(h(i),specrec_p_ehigh);
+% % % ylabel('PA high','fontsize',8)
+% % % 
+% % % set(h(i),'ytick',[0 90 180]);
+% % % % clim(gca,[6 7.6]);
+% % % irf_legend(h(i),'h',[0.99 0.98],'color','w','fontsize',12);
+% % % poscbar6=get(hcb6,'pos');
+% % % poscbar6(3)=poscbar6(3)*0.5;
+% % % set(hcb6,'pos',poscbar6);
+% % % i=i+1;
 
 %% plot high e pad2
 % h(i)=irf_subplot(n,1,-i);
@@ -1324,7 +1347,7 @@ set(h(i),'yscale','log');
 set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
 ylabel('Ee(ev)','fontsize',8)
 set(gca,'Ylim',[1e1 3e4]);
-caxis(gca,[6.4 7.4])
+clim(gca,[6.2 7.4])
 
 % irf_legend(gca,'f',[0.99 0.98],'color','k','fontsize',12);
 poscbar8=get(hcb8,'pos');
@@ -1333,60 +1356,103 @@ poscbar8(3)=poscbar8(3)*0.5;
 set(hcb8,'pos',poscbar8);
 i=i+1;
 %% plot ION energy spectrom
-h(i)=irf_subplot(n,1,-i);
-
-c_eval("specrec_p_i=struct('t',irf_time(energy_i?.DEPEND_0.data,'ttns>epoch'));",ic);
-c_eval("specrec_p_i.f=transpose(energy_i?.DEPEND_1.data(1,1:32));",ic);%energy levels
-c_eval("specrec_p_i.p=energy_i?.data;",ic);%data matrix
-specrec_p_i.f_label='';
-specrec_p_i.p_label={' ','keV/(cm^2 s sr keV)'};
-[h(i), hcb7]=irf_spectrogram(h(i),specrec_p_i);
-% hold on;
-% irf_plot([Energy_exb1(:,1) Energy_exb1(:,2)], 'color','k', 'Linewidth',0.75); hold off;
-grid off;
-set(h(i),'yscale','log');
-set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
-ylabel('Ei(ev)','fontsize',8)
-set(gca,'Ylim',[1e1 3e4]);
-clim(gca,[5 6])
-
-
-% irf_legend(gca,'f',[0.99 0.98],'colo6.4r','k','fontsize',12);
-poscbar7=get(hcb7,'pos');
-poscbar7(3)=poscbar7(3)*0.5;
-set(hcb7,'pos',poscbar7);
-load('/Users/fwd/Documents/MATLAB/Code/zwz/color_rwb.mat');
-% % % cm = othercolor('PuBu8');
-% % % % cm = othercolor('Greys9');
-% % % cm = flip(cm);
-% % % % cm(:,3) = linspace(0.15,0.851, 256);
-colormap(color_rwb)
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % 
+% % % c_eval("specrec_p_i=struct('t',irf_time(energy_i?.DEPEND_0.data,'ttns>epoch'));",ic);
+% % % c_eval("specrec_p_i.f=transpose(energy_i?.DEPEND_1.data(1,1:32));",ic);%energy levels
+% % % c_eval("specrec_p_i.p=energy_i?.data;",ic);%data matrix
+% % % specrec_p_i.f_label='';
+% % % specrec_p_i.p_label={' ','keV/(cm^2 s sr keV)'};
+% % % [h(i), hcb7]=irf_spectrogram(h(i),specrec_p_i);
+% % % % hold on;
+% % % % irf_plot([Energy_exb1(:,1) Energy_exb1(:,2)], 'color','k', 'Linewidth',0.75); hold off;
+% % % grid off;
+% % % set(h(i),'yscale','log');
+% % % set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
+% % % ylabel('Ei(ev)','fontsize',8)
+% % % set(gca,'Ylim',[1e1 3e4]);
+% % % clim(gca,[4.5 6])
+% % % 
+% % % 
+% % % % irf_legend(gca,'f',[0.99 0.98],'colo6.4r','k','fontsize',12);
+% % % poscbar7=get(hcb7,'pos');
+% % % poscbar7(3)=poscbar7(3)*0.5;
+% % % set(hcb7,'pos',poscbar7);
+% % % % % % load('/Users/fwd/Documents/MATLAB/Code/zwz/color_rwb.mat');
+% % % % % % cm = othercolor('PuBu8');
+% % % % % % % cm = othercolor('Greys9');
+% % % % % % cm = flip(cm);
+% % % % % % % cm(:,3) = linspace(0.15,0.851, 256);
+% % % % % % colormap(color_rwb)
+% % % i=i+1;
 %% plot e energy spectrom
-% h(i)=irf_subplot(n,1,-i);
-% colormap(h(i),jet)
-% 
-% specrec_p_e=struct('t',irf_time(energy_e.DEPEND_0.data,'ttns>epoch'));
-% specrec_p_e.f=transpose(energy_e.DEPEND_1.data(1,1:32));%energy levels
-% specrec_p_e.p=energy_e.data;%data matrix
-% specrec_p_e.f_label='';
-% specrec_p_e.p_label={' ','keV/(cm^2 s sr keV)'};
-% [h(i), hcb8]=irf_spectrogram(h(i),specrec_p_e);
-% % hold on;
-% % irf_plot([Energy_exb1(:,1) Energy_exb1(:,2)], 'color','k', 'Linewidth',0.75); hold off;
-% grid off;
-% set(h(i),'yscale','log');
-% set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
-% ylabel('Ee(ev)','fontsize',12)
-% set(gca,'Ylim',[1e1 3e4]);
-% caxis(gca,[6.4 7.4])
-% % irf_legend(gca,'f',[0.99 0.98],'color','k','fontsize',12);
-% poscbar8=get(hcb8,'pos');
-% poscbar8(3)=poscbar8(3)*0.5;
-% %poscbar6(1)=poscbar6(1)*0.5;
-% set(hcb8,'pos',poscbar8);
-% i=i+1;
-
+% % % h(i)=irf_subplot(n,1,-i);
+% % % colormap(h(i),jet)
+% % % 
+% % % specrec_p_e=struct('t',irf_time(energy_e.DEPEND_0.data,'ttns>epoch'));
+% % % specrec_p_e.f=transpose(energy_e.DEPEND_1.data(1,1:32));%energy levels
+% % % specrec_p_e.p=energy_e.data;%data matrix
+% % % specrec_p_e.f_label='';
+% % % specrec_p_e.p_label={' ','keV/(cm^2 s sr keV)'};
+% % % [h(i), hcb8]=irf_spectrogram(h(i),specrec_p_e);
+% % % % hold on;
+% % % % irf_plot([Energy_exb1(:,1) Energy_exb1(:,2)], 'color','k', 'Linewidth',0.75); hold off;
+% % % grid off;
+% % % set(h(i),'yscale','log');
+% % % set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
+% % % ylabel('Ee(ev)','fontsize',12)
+% % % set(gca,'Ylim',[1e1 3e4]);
+% % % caxis(gca,[6.6 7.8])
+% % % % irf_legend(gca,'f',[0.99 0.98],'color','k','fontsize',12);
+% % % poscbar8=get(hcb8,'pos');
+% % % poscbar8(3)=poscbar8(3)*0.5;
+% % % %poscbar6(1)=poscbar6(1)*0.5;
+% % % set(hcb8,'pos',poscbar8);
+% % % i=i+1;
+%% pressure & entropy & interchange instability 
+% % % ic = 1:2;
+% % % 
+% % % c_eval('Bt? = irf_resamp(Bt?, Ni?);',ic)
+% % % c_eval('R? = irf_resamp(R?, Ni?);',ic)
+% % % c_eval('B? = irf_resamp(B?, Ni?);',ic)
+% % % c_eval('Ni?=irf_resamp(Ni?,Bt?);',ic)
+% % % c_eval('Ne?=irf_resamp(Ne?,Bt?);',ic)
+% % % c_eval('Te?=irf_resamp(Te?,Bt?);',ic)
+% % % c_eval('Ti?=irf_resamp(Ti?,Bt?);',ic)
+% % % c_eval('Pb?=[Bt?(:,1) ((Bt?(:,2).^2))/(2*units.mu0)*1e-9];',ic);%nPa
+% % % c_eval('Pti? = irf_multiply(11604.505*units.kB*1e6*1e9,[Ni?(:,1) Ni?(:,2)],1,[Ti?(:,1) Ti?(:,2)],1);',ic);
+% % % c_eval('Pte? = irf_multiply(11604.505*units.kB*1e6*1e9,[Ne?(:,1) Ne?(:,2)],1,[Te?(:,1) Te?(:,2)],1);',ic);
+% % % c_eval('Pt? = [Pti?(:,1) Pti?(:,2)+Pte?(:,2)];',ic);
+% % % 
+% % % c_eval('v?=10^0.7368.*sqrt(R?(:,2).^2+R?(:,3).^2).^0.7634.*B?(:,4).^(-0.3059)./sqrt(B?(:,4).^2+2.*400.*pi.*Pt?(:,2));',ic);
+% % % c_eval('etr?=Pt?(:,2).*v?.^(5/3);',ic);
+% % % 
+% % % c_eval('beta? = [Bt?(:,1) Pt?(:,2)./Pb?(:,2)];',ic);
+% % % c_eval('pe_pb? = [Bt?(:,1) Pte?(:,2)./Pb?(:,2)];',ic);
+% % % 
+% % % deltaR = irf_abs(R2(:,2:4) - R1(:,2:4));
+% % % deltaR = 1./deltaR(:,4);
+% % % c=(deltaR.*(v1-v2)./v2-beta2(:,2).*(deltaR.*(Pt1(:,2)-Pt2(:,2)))./(2.*Pt2(:,2)));
+% % % d=deltaR.*(etr1-etr2);
+% % % f=c.*d;
+% % % 
+% % % h(i)=irf_subplot(n,1,-i);
+% % % % c_eval("irf_plot([beta?(:,1) beta?(:,2)], 'color','k', 'Linewidth',0.75);",1); hold on;
+% % % c_eval("irf_plot([Bt?(:,1) f], 'color','k', 'Linewidth',0.75); hold on;",1);
+% % % c_eval("irf_plot([Bt?(:,1) 0*Bt?(:,2)],'k--', 'Linewidth',0.75);",ic); hold off;
+% % % grid off;
+% % % % set(h(i),'yscale','log');
+% % % % set(h(i),'ytick',[1 2 3 4],'fontsize',9);
+% % % % set(gca,'Ylim',[-5 5]);
+% % % % set(gca,'Ylim',[round(min(S1))-1 round(max(S1))]);
+% % % set(gca,'ColorOrder',[0 0 1]);
+% % % % irf_legend(gca,{'/beta'},[0.97 0.92]);
+% % % % pos3=get(gca,'pos');
+% % % % set(gca,'ColorOrder',[[0 1 0]]);
+% % % %irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
+% % % % ylabel('\beta','fontsize',12)
+% % % ylabel('Criterion','fontsize',12)
+% % % i=i+1; 
 %% plot waves
 % % % c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',tint);',ic);
 % % % c_eval('Exyz=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',tint);',ic);
@@ -1432,9 +1498,9 @@ i=i+1;
 % % % 
 % % % % Wavelet transforms
 % % % nf = 100;
-% % % Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[5 4000]);
-% % % Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[5 50000]);
-% % % Bwavelet = irf_wavelet(Bscmfac,'nf',nf,'f',[5 4000]);
+% % % Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[1 4000]);
+% % % % Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[5 50000]);
+% % % Bwavelet = irf_wavelet(Bscmfac,'nf',nf,'f',[1 4000]);
 % % % 
 % % % %compress wavelet transform data 10 point average
 % % % nc = 20;
@@ -1515,15 +1581,15 @@ i=i+1;
 % % % [a8,b8]=irf_spectrogram(h(i),specE,'log');
 % % % 
 % % % hold(h(i),'on');
-% % % irf_plot(h(i),Fpe,'color','k','LineWidth',1)
+% % % % irf_plot(h(i),Fpe,'color','k','LineWidth',1)
 % % % irf_plot(h(i),Flh,'color','k','LineWidth',1)
-% % % irf_plot(h(i),Fce,'color','r','LineWidth',1)
-% % % irf_plot(h(i),Fce01,'color','w','LineWidth',1)
-% % % irf_plot(h(i),Fce05,'color','c','LineWidth',1)
+% % % % % % irf_plot(h(i),Fce,'color','r','LineWidth',1)
+% % % % % % irf_plot(h(i),Fce01,'color','w','LineWidth',1)
+% % % % % % irf_plot(h(i),Fce05,'color','c','LineWidth',1)
 % % % hold(h(i),'off');
 % % % 
 % % % % irf_legend(h(i),'(h)',[0.99 0.97],'color','w','fontsize',12)
-% % % caxis(h(i),[-12 0]);
+% % % caxis(h(i),[-7 -1]);
 % % % set(h(i),'yscale','log');
 % % % set(h(i),'ytick',[1e1 1e2 1e3 1e4]);
 % % % ylabel(h(i),{'f (Hz)'},'fontsize',12,'Interpreter','tex');
@@ -1541,13 +1607,12 @@ i=i+1;
 % % % 
 % % % hold(h(i),'on');
 % % % irf_plot(h(i),Flh,'color','k','LineWidth',1)
-% % % irf_plot(h(i),Fce,'color','r','LineWidth',1)
-% % % irf_plot(h(i),Fce01,'color','w','LineWidth',1)
-% % % irf_plot(h(i),Fce05,'color','c','LineWidth',1)
+% % % % % % irf_plot(h(i),Fce,'color','r','LineWidth',1)
+% % % % % % irf_plot(h(i),Fce01,'color','w','LineWidth',1)
+% % % % % % irf_plot(h(i),Fce05,'color','c','LineWidth',1)
 % % % hold(h(i),'off');
 % % % 
-% % % % irf_legend(h(i),'(zhaomingjie)',[0.99 0.97],'color','w','fontsize',12)
-% % % caxis(h(i),[-12 0]);
+% % % caxis(h(i),[-8 1]);
 % % % set(h(i),'yscale','log');
 % % % set(h(i),'ytick',[1e1 1e2 1e3 1e4]);
 % % % ylabel(h(i),{'f (Hz)'},'fontsize',12,'Interpreter','tex');
@@ -1557,7 +1622,7 @@ i=i+1;
 % % % poscbar9(3)=poscbar9(3)*0.5;
 % % % set(b9,'pos',poscbar9);
 % % % i=i+1;
-% % % % 
+% 
 %   set(h(1:n),'fontsize',8);
 % %   irf_zoom(tint,'x',h(1:n));
 
@@ -1583,7 +1648,7 @@ set(gca,"XTickLabelRotation",0)
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
 
-% cd  C:\Matlab\bin\新建文件夹\fwd\
-% rmdir(TempDir,'s'); 
-% figname = 'overview';
-%     print(gcf, '-dpdf', [figname '.pdf']);    
+% % % cd  /Users/fwd/Documents/Ti~mor~/M/DF&MP/1-Comparison&Implication/Figures/
+% % % % rmdir(TempDir,'s'); 
+% % % figname = 'mp';
+% % %     print(gcf, '-dpdf', [figname '.pdf']);    
