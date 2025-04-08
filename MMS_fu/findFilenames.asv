@@ -64,13 +64,9 @@ elseif flag == 1
     desmoms2 = [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag2(1:4),'/',tempTag2(5:6),'/',...
             tempTag2(7:8),'/',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
 else
-    filenames = [];
     for ii = 1:length(i)
-    tempTag = num2str(NameTags{i});
-    tempfilenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag)));
-    filenames = [filenames, tempfilenames];
-    end
-    desmoms1 = nan; desmoms2 = desmoms1;
+    tempTag = num2str(NameTags{i})
+    filenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag1)));
 end
 else
     if flag == 0
@@ -79,7 +75,7 @@ else
     desmoms =  [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag(1:4),'/',tempTag(5:6),'/',...
             '/',filenames{cellfun(@(x)(~isempty(x)),strfind(filenames,'des-moms'))}];
     desmoms1 = desmoms; desmoms2 = desmoms1;
-    elseif flag == 1
+else
     if i == 1
         errordlg('时间起始处无brst数据，请检查时间范围,或使用Overview_srvydownload程序')
     end
@@ -92,14 +88,6 @@ else
             '/',filenames1{cellfun(@(x)(~isempty(x)),strfind(filenames1,'des-moms'))}];
     desmoms2 = [ParentDir,'mms',num2str(ic),'/fpi/',datamode,'/l2/des-moms/',tempTag2(1:4),'/',tempTag2(5:6),'/',...
             '/',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
-    else
-    filenames = [];
-    for ii = 1:length(i)
-    tempTag = num2str(NameTags{i});
-    tempfilenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag)));
-    filenames = [filenames, tempfilenames];
-    end 
-    desmoms1 = nan; desmoms2 = desmoms1;
-    end
+end
 end
 end

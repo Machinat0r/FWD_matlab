@@ -2,29 +2,16 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
-DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+ParentDir = 'C:\Users\pc\Documents\MATLAB\MMS_fu\'; 
+DownloadDir = 'C:\Users\pc\Documents\MATLAB\MMS_fu\';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 % TT = '2021-08-15T03:35:15.00Z/2021-08-15T03:35:30.00Z';
 % TT = '2021-08-22T06:39:30.00Z/2021-08-22T06:43:00.00Z';
 % TT = '2018-02-06T13:29:00.00Z/2018-02-06T13:30:30.00Z';
-TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+% TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+TT = '2019-08-05T12:00:00.000Z/2019-08-05T16:00:00.000Z';
 % TT = '2015-11-04T04:34:00.00Z/2015-11-04T04:37:00.00Z';
-% TT = '2018-07-03T15:50:10.00Z/2018-07-03T15:50:25.00Z';
-% TT = '2018-08-19T18:24:30.00Z/2018-08-19T18:26:20.00Z';
-% TT = '2019-08-16T01:03:33.00Z/2019-08-16T01:05:13.00Z';
-% % TT='2017-08-23T15:38:30.00Z/2017-08-23T15:39:15.00Z';
-% TT = '2021-07-10T12:41:23.00Z/2021-07-10T12:42:23.00Z';
-% TT = '2018-07-03T15:50:00.00Z/2018-07-03T15:51:00.00Z';
-% TT = '2017-08-20T02:01:30.00Z/2017-08-20T02:03:00.00Z';
-% TT = '2017-08-07T16:01:00.00Z/2017-08-07T16:02:00.00Z';
-% TT = '2021-07-21T12:46:20.00Z/2021-07-21T12:46:40.00Z';
-% TT = '2017-05-05T20:06:30.00Z/2017-05-05T20:07:10.00Z';
-% TT = '2022-08-18T23:53:00.00Z/2022-08-18T23:54:00.00Z';
-% TT = '2022-08-19T01:13:40.00Z/2022-08-19T01:14:40.00Z';
-% TT = '2020-08-02T16:56:10.00Z/2020-08-02T16:56:25.00Z';
-% TT = '2017-06-25T05:06:58.00Z/2017-06-25T05:07:02.00Z';
 % % TT = '2017-06-11T17:50:00.000Z/2017-06-11T18:00:00.000Z';
 % % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57:43.000Z';
 % % % TT = '2016-04-07T11:55:00.000Z/2023-07-27T12:05:00.000Z';
@@ -36,18 +23,18 @@ Date = [Datelist{1},'/',Datelist{2}];
 ic = 1;
 iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
-filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
-filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce,scpot');
-filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
+% filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
+% filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
+% filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce,scpot');
+% filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
 % filenames_fast = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms,des-dist,dis-dist');
-filenames = [filenames1,filenames2,filenames3,filenames4];
+% filenames = [filenames1,filenames2,filenames3,filenames4];
 
-[filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
+[filenames,desmoms1,desmoms2] = findFilenames(TT,filenames1,'brst',ic);
 % [filenames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
 [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
 
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 1)
 % SDCFilesDownload_NAS(filenames_fast,TempDir)
 SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 32, 'CheckSize', 0)
 % % % id_flagTime = OverView_download(tint,desmoms,IC,Name,flagTime)
