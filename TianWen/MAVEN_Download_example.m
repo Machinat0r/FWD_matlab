@@ -13,7 +13,7 @@
 % for some reason, Please delete the recently file and let it download again (⊙﹏⊙)
 % Some time i may update this script ヾ(≧▽≦*)o
 % -----------------------------------------------------------
-% see also SDCFilenames_modifed,SDCFilesDownload
+% see also SDCFilenames_modifed, SDCFilesDownload
 %%
 close all
 clear;clc

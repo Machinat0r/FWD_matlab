@@ -5,15 +5,15 @@
 %%
 clear; close all
 
-ic=1;
-tint = irf.tint('2016-11-21T07:22:21.800Z/2016-11-21T07:22:21.900Z');
+ic=3;
+tint = irf.tint('2019-08-16T09:31:57.600Z/2019-08-16T09:31:58.900Z');
 mms.db_init('local_file_db','/Users/fwd/Documents/MATLAB/MMS/');
 %% Load data
 Bxyz1=mms.get_data('B_gse_brst',tint,ic);
 
 c_eval('Ne_ts = mms.get_data(''Ne_fpi_brst_l2'',tint,?);',ic);
 c_eval(['Ne=irf.ts2mat(Ne_ts);'],ic);
-Ne = Ne(1,2);
+Ne = mean(Ne(:,2));
 
 c_eval('diste1 = mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
 theta1=diste1.DEPEND_2.data;
@@ -21,7 +21,8 @@ c_eval('diste1 = mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brs
 length_diste1=length(diste1.time.epoch);
 timeUTC1=irf_time(diste1.time,'epochtt>utc');
 %% Produce PAD at all selected time
-tint1 = irf_time(timeUTC1(1,:),'utc>epochTT');
+% tint1 = irf_time(timeUTC1(1,:),'utc>epochTT');
+tint1 = tint;
 [paddist10,thetapad1,energypad1,tintpad1] = mms_get_pitchangledist_my_change(diste1,Bxyz1,tint1);
 paddist11 = paddist10*1e30;
 
@@ -37,16 +38,16 @@ m=9.1*10^-31;
 k=1.38e-23; 
 e=1.6e-19;
 %% curve fitting function
-energy_section = {1:4;5:14;15:25};
+energy_section = {1:4;5:24;25:32};
 % low energy electron maxwell
 X1=energypad1(energy_section{1});
 Y1=double(psd1(energy_section{1}));
-p01 = [10,5];
+p01 = [1,5];
 
 % mid energy electron maxwell
 X2=energypad1(energy_section{2});
 Y2=double(psd1(energy_section{2}));
-p02 = [10,60];
+p02 = [1,10];
 
 % high energy electron maxwell
 X3=energypad1(energy_section{3});
@@ -113,7 +114,8 @@ figname=['R2fitomini0720'];
 
 %% Maxwell function
 function Maxwellfun = MaxwellFunc(p, X1, X2, X3, Y1, Y2, Y3, Ne)
-Maxwellfun = [p(1)+p(3)+p(5)-Ne;...
+Maxwellfun = [...
+    p(1)+p(3)+p(5)-Ne;...
     p(1)*1e24*power((9.1*10^-31)/(2*pi*(1.38e-23)*p(2)*11605),3/2)*exp(-X1*(1.6e-19)/((1.38e-23)*p(2)*11605))-Y1;...
     p(3)*1e24*power((9.1*10^-31)/(2*pi*(1.38e-23)*p(4)*11605),3/2)*exp(-X2*(1.6e-19)/((1.38e-23)*p(4)*11605))-Y2;...
     p(5)*1e24*power((9.1*10^-31)/(2*pi*(1.38e-23)*p(6)*11605),3/2)*exp(-X3*(1.6e-19)/((1.38e-23)*p(6)*11605))-Y3...

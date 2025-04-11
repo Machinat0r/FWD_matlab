@@ -6,14 +6,14 @@ ParentDir = '/Volumes/172.17.190.41/Data/MMS/';
 DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-ic=1;
-TT = '2019-07-19T13:47:05.200Z/2019-07-19T13:47:06.500Z';
+ic=3;
+TT = '2019-08-16T09:31:57.600Z/2019-08-16T09:31:58.900Z';
 % TT = '2016-11-21T07:22:21.800Z/2016-11-21T07:22:21.900Z';
 % TT = '2021-07-22T05:20:55.00Z/2021-07-22T05:20:58.00Z';
 tint = irf.tint(TT);
 
 % % % inpath = '/Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/pdrk.in';
-inpath = '/Users/fwd/Documents/MATLAB/Code/XIE_HS/pdrk/pdrk_master_v181027/pdrk-master/ECW/input/yy.in';
+inpath = '/Users/fwd/Documents/Ti~mor~/M/Chorus/yy.in';
 
 % % % Datelist = regexp(TT,'\d+-\d+-\d+','match');
 % % % Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
@@ -41,8 +41,7 @@ mms.db_init('local_file_db',ParentDir);
 Bxyz1=mms.get_data('B_gse_brst',tint,ic);
 
 c_eval('Ne_ts = mms.get_data(''Ne_fpi_brst_l2'',tint,?);',ic);
-c_eval(['Ne=irf.ts2mat(Ne_ts);'],ic);
-Ne = Ne(1,2);
+c_eval(['Ne=irf.ts2mat(Ne_ts);'],ic)
 
 c_eval('diste1 = mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
 theta1=diste1.DEPEND_2.data;
@@ -52,8 +51,8 @@ timeUTC1=irf_time(diste1.time,'epochtt>utc');
 %% Produce PAD at all selected time
 tint1 = irf_time(timeUTC1(1,:),'utc>epochTT');
 % tint1 = tint;
-% [paddist10,thetapad1,energypad1,tintpad1] = mms_get_pitchangledist_my_change(diste1,Bxyz1,tint1);
-[paddist10,thetapad1,energypad1,tintpad1] = mms.get_pitchangledist(diste1,Bxyz1,tint1);
+[paddist10,thetapad1,energypad1,tintpad1] = mms_get_pitchangledist_my_change(diste1,Bxyz1,tint1);
+% [paddist10,thetapad1,energypad1,tintpad1] = mms.get_pitchangledist(diste1,Bxyz1,tint1);
 energypad1 = energypad1(1,:);
 paddist11 = paddist10*1e30;
 % paddist11 = mean(paddist11.data,1);
