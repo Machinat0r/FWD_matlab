@@ -1,0 +1,354 @@
+%% 找涡旋之重构彩图
+clear 
+Tcomputsta=clock; 
+%--------------------------------------------
+mms.db_init('local_file_db','E:\fu\data2')
+%Tsta='2015-10-16T13:07:00Z'; 
+%Tend='2015-10-16T13:07:03Z';
+%Tnull='2015-10-16T13:07:02.250Z';
+%e1=[-0.552, 0.834, -0.008];
+hh1=20;
+Tsta='2017-01-27T12:05:30.40Z'; %别删
+Tend='2017-01-27T12:05:32.41Z'; 
+% Tnull='2017-01-27T12:05:31.712Z';
+Tnull='2017-01-27T12:05:30.99Z';
+
+% e1=[0.928580204157578 -0.145037102078109 -0.341618271565582];%31.712，别删
+e1=[0.384889128652657 -0.890735064677563 -0.241767250054376];%30.99,别删
+
+%--------------------------------------------
+
+tint=irf.tint('2017-01-27T12:05:30.40Z/2017-01-27T12:05:32.41Z');
+tint2=irf.tint('2017-01-27T12:05:26.40Z/2017-01-27T12:05:59.00Z');
+%--------------------------------------------
+%background magnetic field
+for ic=1:4
+c_eval('Vegse?=mms.get_data(''Ve_dbcs_fpi_brst_l2'',tint,?);',ic);
+c_eval('VeS?=irf.ts2mat(Vegse?);',ic);
+c_eval('Vet?=Vegse?.abs;',ic);
+c_eval('Bxyz?=mms.get_data(''B_gse_brst_l2'',tint,?);',ic);
+c_eval('B?=irf.ts2mat(Bxyz?);',ic);
+c_eval('Bt?=Bxyz?.abs;',ic);
+c_eval('Rgse?=mms.get_data(''R_gse'',tint2,?);',ic);
+c_eval('R?=irf.ts2mat(Rgse?);',ic);
+c_eval('e_r? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energy_brst'',tint);',ic);
+end
+%% smooth_step1
+kk = length (e_r1.data);
+if mod(kk,2) == 1
+   le = kk-2; lo = kk-3;%even偶数（这里当它是奇数），odd奇数
+else
+   le = kk-3; lo = kk-2;%even偶数，odd奇数
+end
+for ic =1:4
+    c_eval('e_r = e_r?;',ic)
+    if e_r.data(1)>e_r.data(2)
+        for ii = 1:2:le
+            c_eval('VeS?(ii+1,2:4)=(VeS?(ii+2,2:4)+VeS?(ii,2:4))/2;',ic)
+        end
+    else
+        for ii = 2:2:lo
+            c_eval('VeS?(ii+1,2:4)=(VeS?(ii+2,2:4)+VeS?(ii,2:4))/2;',ic)
+        end
+    end
+end
+
+
+VeS1=irf_resamp(VeS1,B1);
+VeS2=irf_resamp(VeS2,VeS1);
+VeS3=irf_resamp(VeS3,VeS1);
+VeS4=irf_resamp(VeS4,VeS1);
+%% smooth_step2
+for ic =1:4
+    c_eval('VeS?(:,2)=smooth(VeS?(:,2),hh1);',ic);
+    c_eval('VeS?(:,3)=smooth(VeS?(:,3),hh1);',ic);
+    c_eval('VeS?(:,4)=smooth(VeS?(:,4),hh1);',ic);
+    c_eval('VeS?(:,2)=smooth(VeS?(:,2),hh1);',ic);
+    c_eval('VeS?(:,3)=smooth(VeS?(:,3),hh1);',ic);
+    c_eval('VeS?(:,4)=smooth(VeS?(:,4),hh1);',ic);
+    c_eval('VeS?(:,2)=smooth(VeS?(:,2),hh1);',ic);
+    c_eval('VeS?(:,3)=smooth(VeS?(:,3),hh1);',ic);
+    c_eval('VeS?(:,4)=smooth(VeS?(:,4),hh1);',ic);
+    c_eval('VeS?(:,2)=smooth(VeS?(:,2),hh1);',ic);
+    c_eval('VeS?(:,3)=smooth(VeS?(:,3),hh1);',ic);
+    c_eval('VeS?(:,4)=smooth(VeS?(:,4),hh1);',ic);
+    c_eval('Ve?(:,1:4)=VeS?(:,1:4);',ic);
+end
+
+tint=[iso2epoch(Tsta) iso2epoch(Tend)];
+for ic=1:4
+  c_eval(['R?=irf_resamp(R?,Ve?);'],ic);
+  c_eval(['Ve?=irf_tlim(Ve?,tint);'],ic);
+  c_eval(['R?=irf_tlim(R?,tint);'],ic);
+end
+
+
+%--------------------------------------------
+% change the coordinates to eigen vector corrdinate
+e1=irf_norm(e1);
+etmp=[0 1 0];
+e3=cross(e1,etmp);          e3=irf_norm(e3);
+e2=cross(e3,e1);
+
+%L=[0.79 0.58 0.19]; L=irf_norm(L);
+%etmp=[0 0 1];
+%M=cross(etmp,L);          M=irf_norm(M);
+%N=cross(L,M);
+
+for ic=1:4
+   c_eval(['Ve?=irf_newxyz(Ve?, e1,e2,e3);'],ic);
+   c_eval(['R?=irf_newxyz(R?, e1,e2,e3);'],ic);
+end
+%--------------------------------------------
+%for ic=1:4
+%   c_eval('R?(:,2:end)=R?(:,2:end)-R3(:,2:end);',ic)
+%end
+gradVe=c_4_grad('R?','Ve?','grad');
+[j,divB,B,jxB,divTshear,divPb] = c_4_j('R?','Ve?');
+
+%construct B around null
+idxnull=find(gradVe(:,1,1)>=iso2epoch(Tnull)); idxnull=idxnull(1);
+dVe_null=reshape(gradVe(idxnull,2:end),3,3);%选定零点时刻的Ve梯度矩阵
+
+dR1=inv(dVe_null) * (Ve1(idxnull,2:4))';% '为转置，inv为逆矩阵，dR1为卫星距离磁零点的距离【null速度为0＋一阶泰勒展开假设】
+R_null=R1(idxnull,2:4)-dR1';%R1=R_null+dR1
+
+Rsc1=R1(idxnull,2:end);%磁零点时刻卫星的位置——绝对
+Rsc2=R2(idxnull,2:end);
+Rsc3=R3(idxnull,2:end);
+Rsc4=R4(idxnull,2:end);
+
+Rsc1=Rsc1-R_null;%磁零点时刻卫星的位置——相对磁零点
+Rsc2=Rsc2-R_null;
+Rsc3=Rsc3-R_null;
+Rsc4=Rsc4-R_null;
+
+% Rsc1=Rsc1-Rsc3;
+% Rsc2=Rsc2-Rsc3;
+% Rsc4=Rsc4-Rsc3;
+% Rsc3=Rsc3-Rsc3;
+
+j_null=j(idxnull,2:end) .* 1e9;
+%% construct B around null
+
+set(0,'defaultLineLineWidth', 0.5);
+set(0,'defaultAxesFontSize', 12);
+set(0,'defaultTextFontSize', 12);
+set(0,'defaultAxesFontUnits', 'pixels');
+fig1=figure( ...
+          'Name','Dataset coverage', ...
+          'Tag','XYXgsm');clf;
+set(fig1,'PaperUnits','centimeters')
+xSize = 20; ySize = 20; coef=floor(min(800/xSize,800/ySize));
+xLeft = 0; yTop = -1;
+set(fig1,'PaperPosition',[xLeft yTop xSize ySize]);
+set(fig1,'Position',[10 10 xSize*coef ySize*coef]);
+
+h=[];
+
+h(1)=axes('position',[0.1 0.1 0.8 0.8]); % [x y dx dy]
+aaa=1;
+BoxWid=110; %图坐标上下限[-100 100]
+Vup=1300;
+
+%for Xgrid=[-40 -38 -35 -31 -26 -20 -13 -5 5 13 20 26 31 35 38 40]
+% for Xgrid=[-2 -1.3 -0.5 0.5 1.3 2 ]%三个循环，Xgrid变，theta变，X/Y/Z prev/curt变
+for Xgrid=[-2 -1.8 -1.5 -1.3 -1 -0.8 -0.5 -0.2 0 0.2 0.5 0.8 1 1.3 1.5 1.8 2 ]%31712
+    for theta=[0:30:330]*pi/180
+%     for theta=[0:120:240]*pi/180
+    %for theta=[0:90:270]*pi/180
+% for theta=[0:90:350]*pi/180
+        Ygrid=Xgrid*cos(theta);%暂时不理解他在图上是哪一段，theta让人特别迷惑，先往下看，别纠结
+        Zgrid=Xgrid*sin(theta);
+        
+        %-----inverse trace-----
+        ii=1;
+        Xprev=Xgrid;  Yprev=Ygrid;  Zprev=Zgrid;%在此之前为Xgrid和theta变,控制XYZgrid;此后为
+        Bmcurt=0;
+        while abs(Xprev)<BoxWid & abs(Yprev)<BoxWid & abs(Zprev)<BoxWid & Bmcurt<Vup%速度的绝对值小于阈值
+            Xcurt=Xprev;
+            Ycurt=Yprev;
+            Zcurt=Zprev;
+            Ver =dVe_null * ([Xcurt Ycurt Zcurt])';%一阶泰勒+零点速度为0+零点坐标位置为0，算速度分量
+            Bxcurt=Ver(1);
+            Bycurt=Ver(2);
+            Bzcurt=Ver(3);
+%             Bxcurt=Br(1)+B3(idxnull,2);
+%             Bycurt=Br(2)+B3(idxnull,3);
+%             Bzcurt=Br(3)+B3(idxnull,4);
+            Bmcurt=sqrt(Ver(1).^2+Ver(2).^2+Ver(3).^2);%速度绝对值
+            %step=Bmcurt;
+            step=1;
+            stepvec=[Bxcurt Bycurt Bzcurt]/norm([Bxcurt Bycurt Bzcurt])*step;%步长向量，速度矢量方向，“逆”着磁力线画
+            Xprev=Xcurt-stepvec(1);%下一次while循环的XYZcurt为逆着磁力线往前推1个单位长度
+            Yprev=Ycurt-stepvec(2);
+            Zprev=Zcurt-stepvec(3);
+
+            Xline(ii)=Xcurt;%XYZ点的|B|对应存储
+            Yline(ii)=Ycurt;
+            Zline(ii)=Zcurt;
+            Bmline(ii)=Bmcurt;
+            ii=ii+1;
+        end
+        if exist('Xline')
+%             plot3(gca, Xline, Yline, Zline,'b'); hold on;
+            Nlin=length(Xline);
+%           cline(Xline, Yline, Zline, Bmline, 0, 1500, cool); view(3); hold on;%就是画个图，字面意思
+            cline(Xline, Yline, Zline, Bmline, 0, 1300, jet); view(3); hold on;%就是画个图，字面意思
+            arrP=fix(Nlin*0.65);%315%舍入到最接近的整数,向0取整%完全没懂，但似乎影响不大
+%             daspect([1,1,1]); 
+%              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP-1) Yline(arrP-1) Zline(arrP-1)],'r',2.5,3.5); hold on;
+            arrP=fix(Nlin*0.5);%115
+%              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP-1) Yline(arrP-1) Zline(arrP-1)],'r',2.5,3.5); hold on;
+            arrP=fix(Nlin*0.7);%250
+%              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP-1) Yline(arrP-1) Zline(arrP-1)],'r',2.5,3.5); hold on;
+            Bmax(aaa)=max(Bmline); Bmin(aaa)=min(Bmline); aaa=aaa+1;%计算这条磁力线上磁场强度最大值，最小值
+        end
+        clear Xline
+        clear Yline
+        clear Zline
+        clear Bmline
+        clear Nlin
+        
+        
+        %-----positive trace-----
+        ii=1;
+        Xnext=Xgrid;  Ynext=Ygrid;  Znext=Zgrid;
+        Bmcurt=0;
+        while abs(Xnext)<BoxWid & abs(Ynext)<BoxWid & abs(Znext)<BoxWid & Bmcurt<Vup
+            Xcurt=Xnext;
+            Ycurt=Ynext;
+            Zcurt=Znext;
+            Ver = dVe_null * ([Xcurt Ycurt Zcurt])';
+            Bxcurt=Ver(1);
+            Bycurt=Ver(2);
+            Bzcurt=Ver(3);
+%             Bxcurt=Br(1)+B3(idxnull,2);
+%             Bycurt=Br(2)+B3(idxnull,3);
+%             Bzcurt=Br(3)+B3(idxnull,4);
+            Bmcurt=sqrt(Ver(1).^2+Ver(2).^2+Ver(3).^2);
+            %step=Bmcurt;
+            step=1;
+            stepvec=[Bxcurt Bycurt Bzcurt]/norm([Bxcurt Bycurt Bzcurt])*step;
+            Xnext=Xcurt+stepvec(1);
+            Ynext=Ycurt+stepvec(2);
+            Znext=Zcurt+stepvec(3);
+
+            Xline(ii)=Xcurt;
+            Yline(ii)=Ycurt;
+            Zline(ii)=Zcurt;
+            Bmline(ii)=Bmcurt;
+            ii=ii+1;
+        end
+        if exist('Xline')
+%             plot3(gca, Xline, Yline, Zline,'r'); hold on;
+            Nlin=length(Xline);
+%           cline(Xline, Yline, Zline, Bmline, 0, 1500, cool); view(3); hold on;
+            cline(Xline, Yline, Zline, Bmline, 0, 1300, jet); view(3); hold on;
+            arrP=fix(Nlin*0.55);%315
+%             arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP+1) Yline(arrP+1) Zline(arrP+1)],'r',2.5,3.5); hold on;
+            arrP=fix(Nlin*0.7);%115
+%             arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP+1) Yline(arrP+1) Zline(arrP+1)],'r',2.5,3.5); hold on;
+            arrP=fix(Nlin*0.55);%250
+%              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP+1) Yline(arrP+1) Zline(arrP+1)],'r',2.5,3.5); hold on;
+%              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP+4) Yline(arrP+4) Zline(arrP+4)],'r',2.5,3.5); hold on;
+            Bmax(aaa)=max(Bmline); Bmin(aaa)=min(Bmline); aaa=aaa+1;
+        end
+        clear Xline
+        clear Yline
+        clear Zline
+        clear Bmline
+        clear Nlin
+     
+    end
+end
+
+
+% Jlinelngth=BoxWid;
+% Jendp1=Jlinelngth*irf_norm(j_null);
+% Jendp2=-Jendp1;
+% arrow3(Jendp2, Jendp1,'s5',3,5); hold on;
+% light('position',Jendp1); lighting gouraud;
+
+
+plot3(gca, [Rsc1(1) Rsc2(1) Rsc3(1) Rsc4(1)], [Rsc1(2) Rsc2(2) Rsc3(2) Rsc4(2)], ...%画线，四点出三线
+           [Rsc1(3) Rsc2(3) Rsc3(3) Rsc4(3)], 'k', 'Linewidth',1); hold on;
+plot3(gca, [Rsc2(1) Rsc4(1) Rsc1(1) Rsc3(1)], [Rsc2(2) Rsc4(2) Rsc1(2) Rsc3(2)], ...%同画线，四点出另外三线
+           [Rsc2(3) Rsc4(3) Rsc1(3) Rsc3(3)], 'k', 'Linewidth',1); hold on;
+plot3(gca, [Rsc1(1)], [Rsc1(2)],[Rsc1(3)], 'ks', 'Linewidth',1, ...%画点
+           'MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',12); hold on;
+plot3(gca, [Rsc2(1)], [Rsc2(2)],[Rsc2(3)], 'rs', 'Linewidth',1, ...
+           'MarkerEdgeColor','r','MarkerFaceColor','r','MarkerSize',12); hold on;
+plot3(gca, [Rsc3(1)], [Rsc3(2)],[Rsc3(3)], 'gs', 'Linewidth',1, ...
+           'MarkerEdgeColor','g','MarkerFaceColor','g','MarkerSize',12); hold on;
+plot3(gca, [Rsc4(1)], [Rsc4(2)],[Rsc4(3)], 'bs', 'Linewidth',1, ...
+           'MarkerEdgeColor','b','MarkerFaceColor','b','MarkerSize',12); hold off;   
+RSC(1,1)=(Rsc1(1,1)+Rsc2(1,1)+Rsc3(1,1)+Rsc4(1,1))/4;
+RSC(2,1)=(Rsc1(1,2)+Rsc2(1,2)+Rsc3(1,2)+Rsc4(1,2))/4;
+RSC(3,1)=(Rsc1(1,3)+Rsc2(1,3)+Rsc3(1,3)+Rsc4(1,3))/4;
+
+
+maxB=max(Bmax);
+minB=min(Bmin);
+       
+hcb=colorbar('peer',h(1),'North', 'XDir','reverse', 'TickDirection','out', 'XAxisLocation','top');
+posFig=get(h(1),'Position'); 
+left=posFig(1)+posFig(3)*0.7; low=posFig(2)+posFig(4)*4/5; width=posFig(3)/4; height=0.015;
+
+% hcb=colorbar('peer',h(1),'East','TickDirection','out');
+% posFig=get(h(1),'Position'); 
+% left=posFig(1)+posFig(3)*1; low=posFig(2)+posFig(4)*0.87; width=posFig(3)/40; height=0.1;
+% set(hcb,'Position',[left low width height]);
+% ylabel(hcb,'|Ve|');
+
+
+caxis([0, 1300]);   %here is derived from minB & maxB. 【it should be consistent with cline range】
+set(gca,'Xlim',[-35 35], 'Ylim',[-35 35], 'Zlim',[-35 35]);
+set(gca,'xtick',[-35:35:35], 'ytick',[-35:35:35], 'ztick',[-35:35:35],'fontsize',23);
+set(gca,'DataAspectRatio',[1 1.0 1]);
+% xlabel(gca,'e_{1} [km]','fontsize',20);
+% ylabel(gca,'e_{2} [km]','fontsize',20);
+% zlabel(gca,'e_{3} [km]','fontsize',20);
+xlabel(gca,'e1 [km]','fontsize',20);
+ylabel(gca,'e2 [km]','fontsize',20);
+zlabel(gca,'e3 [km]','fontsize',20);
+%irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.98 0.26],'color','cluster')
+grid off;
+
+
+
+%angles=get(gca,'view');
+%set(gca,'view',angles)
+
+
+
+%% save figure
+% set(fig1,'render','painters');
+% figname=['B_around_null_cycle10000_spiral_cluster'];
+% print(fig1, '-dpdf', [figname '.pdf']);
+
+set(fig1,'renderer','opengl');
+%axis off;
+figname=['Vetopology_3D_3099'];
+% set(gca,'view',[-46.5949303652596,20.7818750000000])%31712角度
+set(gca,'view',[11.3094596268930	28.0706250000000])%3099角度
+%  print(fig1, '-dpng','-r400',[figname '.png']);
+set(fig1, 'Position', [100, 100, 300, 300]);
+colorbar('off');
+% viewInfo=get(gca,'view');
+
+% set(gca,'view',[0 90])
+% figname=['Vetopology_xy_33485'];
+% print(fig1, '-dpng','-r400',[figname '.png']);
+% 
+% set(gca,'view',[0 0])
+% figname=['Vetopology_xz_33485'];
+% print(fig1, '-dpng','-r400',[figname '.png']);
+
+set(gca,'view',[90 0])
+figname=['Vetopology_yz_3099'];
+% print(fig1, '-dpng','-r400',[figname '.png']);
+
+figname=['Vetopology_of',Tnull ] ;
+Tcomputend=clock;
+Telaps=etime(Tcomputend, Tcomputsta)/60  %minute

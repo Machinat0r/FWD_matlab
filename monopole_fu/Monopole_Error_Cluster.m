@@ -36,7 +36,7 @@ close all
 % % % TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % cd /Volumes/FWD-WorkDisk/Cluster
 % cd /Volumes/172.17.190.41/Data/Cluster/
-cd /Users/fwd/Documents/MATLAB/Cluster
+cd Z:\Data\Cluster
 ic=1:4;
 % 
 % Tsta='2002-02-18T08:41:00.00Z';

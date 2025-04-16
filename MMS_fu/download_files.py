@@ -14,6 +14,7 @@ def download_chunk(args):
             for chunk in response.iter_content(chunk_size=1024*10):
                 if chunk:
                     file.write(chunk)
+                    time.sleep(0.01)
                     progress_callback(len(chunk))
 
 def write_files(file_url, local_file_path, file_name, num_threads):
@@ -28,7 +29,7 @@ def write_files(file_url, local_file_path, file_name, num_threads):
         nonlocal current_size
         current_size += chunk_size
         elapsed_time = time.time() - start_time
-        print(f'\rDownloaded: [{round(current_size / 1024 / 1024, 2)} MB]'
+        print(f'\n Downloaded: [{round(current_size / 1024 / 1024, 2)} MB]'
               f'[{round(float(current_size / content_size) * 100, 2)}%]'
               f'Elapsed Time: {round(elapsed_time, 2)} seconds', end="")
 

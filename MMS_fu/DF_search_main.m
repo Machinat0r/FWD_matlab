@@ -1,5 +1,10 @@
 %------written by Wending Fu, Nov.2023 in Beijing------------
 clear;clc;
+global ParentDir OutputDir
+ParentDir = 'Z:/Data/MMS/'; 
+DownloadDir = 'C:/MMS/';
+TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
+
 Date = '2019-08-05/2019-08-06';
 splitDate = regexp(Date,'/','split');
 ic = 1;iic = 1;
@@ -20,8 +25,6 @@ for j = 1:length(NameTags)
 end
 FileGroups = cellfun(@cellstr,FileGroups,'UniformOutput',false);%按时间分类整理后的文件名组
 
-global OutputDir ParentDir
-ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
 %修改文件夹时特别注意SDCFilesDownload需要datamove的文件夹必须是ParentDir，否则需要手动修改
 OutputDir = [ParentDir,'DFSearch/',splitDate{1},'To',splitDate{2},'/'];
 if ~isfolder([OutputDir,'OverviewFig/'])
@@ -29,7 +32,6 @@ if ~isfolder([OutputDir,'OverviewFig/'])
 end
 
 units = irf_units;
-
 for TDT = 1:length(NameTags)-1 %This is a distinctive temp  (๑ˉ∀ˉ๑)
 tempDir = [OutputDir,NameTags{TDT}(2:end-2),'/'];
 clc;fprintf(['当前处理时间为:',NameTags{TDT}(2:end-2),'\n'])

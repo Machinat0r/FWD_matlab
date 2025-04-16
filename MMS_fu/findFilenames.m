@@ -1,7 +1,7 @@
 function [filenames,desmoms1,desmoms2] =  findFilenames(TT,filenames,datamode,ic)
 %------modified by Wending Fu, Nov.2024 in Beijing------------
-% Add a new mode to download multiple files at once.
-% In this mode, the output of desmoms1 & desmoms2 is meaningless.
+% Add new modes 'srvy' and 'fast' to download multiple files at once.
+% In these mode, the output of desmoms1 & desmoms2 is meaningless.
 %------written by Wending Fu, Nov.2023 in Beijing------------
 % This is the function to find the filenames which include the time
 % interval, and need to be used with the SDCFilenames.m
@@ -36,6 +36,7 @@ NameTags_mat = cell2mat(NameTags);
 NameTags_idx = NameTags_mat(Tm1<=NameTags_mat & NameTags_mat<=Tm2);
 switch length(NameTags_idx)
     case 0, flag = 0; i = find(Tm1<=NameTags_mat, 1); 
+        if isempty(i), i = find(Tm2>=NameTags_mat, 1, 'last'); end
     case 1, flag = 1; i = find(NameTags_mat == NameTags_idx(1));
     otherwise, flag = 2; [~,i] = ismember(NameTags_idx, NameTags_mat);
 end
