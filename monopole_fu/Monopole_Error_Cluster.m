@@ -36,7 +36,7 @@ close all
 % % % TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % cd /Volumes/FWD-WorkDisk/Cluster
 % cd /Volumes/172.17.190.41/Data/Cluster/
-cd Z:\Data\Cluster
+cd Z:\Data\Cluster\
 ic=1:4;
 % 
 % Tsta='2002-02-18T08:41:00.00Z';
@@ -95,9 +95,12 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % Tend2='2003-12-29T13:40:26.600Z';
 % Tsta2='2003-12-29T13:40:26.150Z';
 % Tend2='2003-12-29T13:40:26.320Z';
-Tsta2='2004-01-21T08:56:59.275Z';
-Tend2='2004-01-21T08:56:59.435Z';
+% % % Tsta2='2004-01-21T08:56:59.275Z';
+% % % Tend2='2004-01-21T08:56:59.435Z';
+Tsta2='2004-01-21T08:56:57.750Z';
+Tend2='2004-01-21T08:57:00.500Z';
 tint2=[iso2epoch(Tsta2) iso2epoch(Tend2)];
+% tint2=tint;
 
 % % % caa_download(tint,'C?_CP_EFW_L3_E3D_INERT');
 % % % caa_download(tint,'C?_CP_EFW_L?_E');
