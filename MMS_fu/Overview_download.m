@@ -11,7 +11,7 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57:43.000Z';
 % TT = '2019-08-16T09:31:45.000Z/2019-08-16T09:32:15.000Z';
 % TT = '2017-05-22T10:42:12.000Z/2017-05-22T10:42:14.000Z';
-TT = '2015-11-19T13:50:00.000Z/2015-11-19T14:20:00.000Z';
+% TT = '2015-11-19T13:50:00.000Z/2015-11-19T14:20:00.000Z';
 % % % TT = '2015-11-19T14:07:30.000Z/2015-11-19T14:09:30.000Z';
 % % % TT = '2018-07-05T20:39:27.000Z/2018-07-05T20:39:30.000Z';
 % TT = '2019-03-29T13:22:50.00Z/2019-03-29T13:23:30.00Z';
@@ -25,8 +25,8 @@ TT = '2015-11-19T13:50:00.000Z/2015-11-19T14:20:00.000Z';
 % TT = '2017-06-25T05:39:53.000Z/2017-06-25T05:40:05.000Z';
 % TT = '2017-06-19T03:54:05.000Z/2017-06-19T03:54:30.000Z';
 % TT = '2017-07-06T01:44:35.000Z/2017-07-06T01:45:40.000Z';
-% TT = '2017-07-06T17:31:52.000Z/2017-07-06T17:32:07.000Z';
-% % % TT = '2017-c07-06T17:31:58.000Z/2017-07-06T17:31:59.500Z';
+TT = '2017-07-06T17:31:52.000Z/2017-07-06T17:32:07.000Z';
+% TT = '2017-07-06T17:31:58.000Z/2017-07-06T17:31:59.500Z';
 % TT = '2019-07-20T10:55:20.000Z/2019-07-20T10:55:25.000Z';
 
 tint=irf.tint(TT);
@@ -435,7 +435,7 @@ c_eval('lmnJ? = irf.ts2mat(lmnJ?_ts);',ic);
 % end
 %% Init figure
 % ic = 1;
-n=12;
+n=13;
 i=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
@@ -815,22 +815,22 @@ set(gca,'ColorOrder',[[0 1 0]]);
 ylabel('E [mV/m]','fontsize',8)
 i=i+1;
 %% E+VixB field
-% % % h(i)=irf_subplot(n,1,-i);
-% % % c_eval("irf_plot([B?(:,1) Evixb?(:,1)], 'color','b', 'Linewidth',0.75);",ic);hold on;
-% % % c_eval("irf_plot([B?(:,1) Evixb?(:,2)], 'color','g', 'Linewidth',0.75);",ic);hold on;
-% % % c_eval("irf_plot([B?(:,1) Evixb?(:,3)], 'color','r', 'Linewidth',0.75);",ic);hold on;
-% % % c_eval("irf_plot([E?(:,1) E?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
-% % % grid off;
-% % % % set(gca,'Ylim',[-8 8], 'ytick',[-10:4:10],'fontsize',9);
-% % % % set(gca,'Ylim',[-40 50], 'ytick',[-60 -40 -20 0 20 40 60]);
-% % % % irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
-% % % c_eval("set(gca,'Ylim',[min([min(Evixb?(:,1)) min(Evixb?(:,2)) min(Evixb?(:,3))])-2 max([max(Evixb?(:,1)) max(Evixb?(:,2)) max(Evixb?(:,3))])+2]);",ic);
-% % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
-% % % irf_legend(gca,{'E+VixB_x','E+VixB_y','E+VixB_z'},[0.97 0.92]);
-% % % pos3=get(gca,'pos');
-% % % %irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
-% % % ylabel('E [mV/m]','fontsize',12)
-% % % i=i+1;
+h(i)=irf_subplot(n,1,-i);
+c_eval("irf_plot([B?(:,1) Evixb?(:,1)], 'color','b', 'Linewidth',0.75);",ic);hold on;
+c_eval("irf_plot([B?(:,1) Evixb?(:,2)], 'color','g', 'Linewidth',0.75);",ic);hold on;
+c_eval("irf_plot([B?(:,1) Evixb?(:,3)], 'color','r', 'Linewidth',0.75);",ic);hold on;
+c_eval("irf_plot([E?(:,1) E?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
+grid off;
+% set(gca,'Ylim',[-8 8], 'ytick',[-10:4:10],'fontsize',9);
+% set(gca,'Ylim',[-40 50], 'ytick',[-60 -40 -20 0 20 40 60]);
+% irf_legend(gca,'c',[0.99 0.98],'color','k','fontsize',12);
+c_eval("set(gca,'Ylim',[min([min(Evixb?(:,1)) min(Evixb?(:,2)) min(Evixb?(:,3))])-2 max([max(Evixb?(:,1)) max(Evixb?(:,2)) max(Evixb?(:,3))])+2]);",ic);
+set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+irf_legend(gca,{'E+VixB_x','E+VixB_y','E+VixB_z'},[0.97 0.92]);
+pos3=get(gca,'pos');
+%irf_legend(gca,{'MMS3'},[pos3(1)+1.15*pos3(3),pos3(2)]);
+ylabel('E+VixB [mV/m]','fontsize',12)
+i=i+1;
 %% E+VexB field
 % % % h(i)=irf_subplot(n,1,-i);
 % % % c_eval("irf_plot([B?(:,1) Evexb?(:,1)], 'color','b', 'Linewidth',0.75);",ic);hold on;

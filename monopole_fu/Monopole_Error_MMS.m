@@ -30,13 +30,13 @@ clear;clc;close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 global ParentDir 
-ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
-DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+ParentDir = 'Z:/Data/MMS/'; 
+DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
-TT = '2019-01-16T04:09:55.605Z/2019-01-16T04:09:55.630Z'; %no boundary, 10,78-81
-% TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
+% TT = '2019-01-16T04:09:55.605Z/2019-01-16T04:09:55.630Z'; %no boundary, 10,78-81
+TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % TT = '2019-01-16T04:09:55.420Z/2019-01-16T04:09:55.800Z'; %no boundary, 10,78-81
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:15:50.00Z';
 
@@ -140,11 +140,11 @@ Locerror(i) = 200;
 end
 end  
 %% Coordinate
-c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
-for i = 1:length(PI)
-    LocRes{i} = LocRes{i}-LocPoint(i,:);
-end
-LocPoint = LocPoint - LocPoint;
+% c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
+% for i = 1:length(PI)
+%     LocRes{i} = LocRes{i}-LocPoint(i,:);
+% end
+% LocPoint = LocPoint - LocPoint;
 
 %% cal B
 for i = 1:length(PI)

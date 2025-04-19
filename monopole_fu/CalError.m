@@ -256,7 +256,7 @@ function fun6 = fun6(t,B2,B4,R2,R4)
 end
 %% 2 S/C data into the monopole model to solve the Q & location
 function [t,residual,flag]=ModelSolve(R1,R2,R3,R4,B1,B2,B3,B4,lb,ub,MultiPower,idx_flag,LocationSkew)
-% % % x0 = [idx_flag*1e4*MultiPower+15,10,10,10];
+% x0 = [idx_flag*1e4*MultiPower+15,10,10,10];
 x0 = [idx_flag*1e4*MultiPower+15,LocationSkew*ones(1,3)];
 % x0 = [idx_flag*1e4*MultiPower,3,-1,2];
 % x0 = [idx_flag*1e4*MultiPower,ones(1,3)*MultiPower];

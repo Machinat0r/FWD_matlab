@@ -5,7 +5,7 @@ ParentDir = 'Z:/Data/MMS/';
 DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
-Date = '2015-01-01/2023-01-01';
+Date = '2015-01-01/2019-01-01';
 splitDate = regexp(Date,'/','split');
 OutputDir = [ParentDir,'CurlB_Search/',splitDate{1},'To',splitDate{2},'/'];
 CaseListPath = [OutputDir, 'errorlog.txt'];
@@ -44,18 +44,7 @@ for ii = 1:length(filenames)
 delete(filepath)
 end
 
-try
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
 % SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 64, 'CheckSize', 0)
 SDCDataMove(TempDir,ParentDir)
-fileID = fopen(CaseListPath, 'r');
-lines = textscan(fileID, '%s', 'Delimiter', '\n');
-fclose(fileID);
-lines = lines{1}(2:end);
-fileID = fopen(CaseListPath, 'w');
-fprintf(fileID, '%s\n', lines{:});
-fclose(fileID);
-catch
-    continue
-end
 end

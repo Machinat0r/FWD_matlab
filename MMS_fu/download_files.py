@@ -14,7 +14,7 @@ def download_chunk(args):
             for chunk in response.iter_content(chunk_size=1024*10):
                 if chunk:
                     file.write(chunk)
-                    time.sleep(0.01)
+                    time.sleep(0.02)
                     progress_callback(len(chunk))
 
 def write_files(file_url, local_file_path, file_name, num_threads):

@@ -54,8 +54,6 @@ Tend = '2004-01-21T08:58:00.000Z';
 
 % Tsta='2004-01-01T11:10:00.00Z';
 % Tend='2004-01-01T11:11:00.00Z';
-% % % Tsta='2004-01-21T08:56:00.00Z';
-% % % Tend='2004-01-21T08:58:00.00Z';
 % Tsta='2004-05-30T20:22:00.00Z';
 % Tend='2004-05-30T20:23:00.00Z';
 % Tsta='2003-12-29T13:40:00.00Z';
@@ -78,17 +76,17 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % % % Tend2='2003-12-30T18:55:08.740Z';
 % Tsta2='2003-12-30T18:55:06.800Z';
 % Tend2='2003-12-30T18:55:09.800Z';
-% % % Tsta2 = '2004-01-17T19:31:45.765Z';
-% % % Tend2 = '2004-01-17T19:31:45.925Z';
-% Tsta2 = '2004-01-17T19:31:44.900Z';
-% Tend2 = '2004-01-17T19:31:46.500Z';
+% Tsta2 = '2004-01-17T19:31:45.765Z';
+% Tend2 = '2004-01-17T19:31:45.925Z';
+% % % Tsta2 = '2004-01-17T19:31:44.900Z';
+% % % Tend2 = '2004-01-17T19:31:46.500Z';
 % Tsta2='2004-05-03T05:02:28.00Z';
 % Tend2='2004-05-03T05:02:30.00Z';
 
 % Tsta2='2004-01-01T11:10:03.500Z';
 % Tend2='2004-01-01T11:10:04.500Z';
-% % % Tsta2='2004-01-21T08:56:58.200Z';
-% % % Tend2='2004-01-21T08:57:00.200Z';
+Tsta2='2004-01-21T08:56:58.200Z';
+Tend2='2004-01-21T08:57:00.200Z';
 % Tsta2='2004-05-30T20:22:30.00Z';
 % Tend2='2004-05-30T20:22:32.00Z';
 % Tsta2='2003-12-29T13:40:25.00Z';
@@ -97,8 +95,8 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % Tend2='2003-12-29T13:40:26.320Z';
 % % % Tsta2='2004-01-21T08:56:59.275Z';
 % % % Tend2='2004-01-21T08:56:59.435Z';
-Tsta2='2004-01-21T08:56:57.750Z';
-Tend2='2004-01-21T08:57:00.500Z';
+% % % Tsta2='2004-01-21T08:56:57.750Z';
+% % % Tend2='2004-01-21T08:57:00.500Z';
 tint2=[iso2epoch(Tsta2) iso2epoch(Tend2)];
 % tint2=tint;
 
@@ -212,11 +210,11 @@ Locerror(i) = 100*volume/volume_a;
 end
 meand = mean(dLoc,2);
 %% Coordinate
-c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
-for i = 1:length(PI)
-    LocRes{i} = LocRes{i}-LocPoint(i,:);
-end
-LocPoint = LocPoint - LocPoint;
+% % % c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
+% % % for i = 1:length(PI)
+% % %     LocRes{i} = LocRes{i}-LocPoint(i,:);
+% % % end
+% % % LocPoint = LocPoint - LocPoint;
 
 %% cal B
 for i = 1:length(R1)

@@ -6,7 +6,7 @@ ParentDir = 'Z:/Data/MMS/';
 DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
-Date = '2020-01-01/2022-01-01';
+Date = '2015-01-01/2023-01-01';
 splitDate = regexp(Date,'/','split');
 ic = 1:4;iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
@@ -62,7 +62,7 @@ tempTint=irf.tint(tempDate);
 try
     B1_ts=mms.get_data('B_gsm_brst',tempTint,1);%先导入一个文件看看文件中包含的时间段
     tint = irf.tint(B1_ts.time.epoch(1),B1_ts.time.epoch(end));    
-    Pos = mms.get_data('R_gse',tint);
+    Pos = mms.get_data('R_gsm',tint);
     Pos = Pos.gsmR1;
 catch
     writematrix([NameTags{TDT}(2:end-2),'的数据导入1出现问题'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
