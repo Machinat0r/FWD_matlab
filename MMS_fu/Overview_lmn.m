@@ -1,16 +1,13 @@
 clear;clc
 
 global ParentDir 
-ParentDir = 'D:\MMS\'; 
-TempDir = 'D:\MMS\temp\';mkdir(TempDir);
-TT = '2021-08-22T06:40:00.00Z/2021-08-22T06:42:30.00';
-% TT = '2019-08-05T16:24:00.00Z/2019-08-05T16:25:00.00Z';
-% TT = '2019-08-16T09:29:45.00Z/2019-08-16T09:30:15.00Z';
-% TT='2017-08-23T15:38:30.00Z/2017-08-23T15:39:15.00Z';
-% TT = '2021-07-10T12:41:23.00Z/2021-07-10T12:42:23.00Z';
-% TT = '2018-07-03T15:50:00.00Z/2018-07-03T15:51:00.00Z';
-% TT = '2017-08-20T02:01:30.00Z/2017-08-20T02:03:00.00Z';
-% TT = '2021-07-21T12:46:20.00Z/2021-07-21T12:46:40.00Z';   
+ParentDir = 'Z:/Data/MMS/'; 
+DownloadDir = 'C:/MMS/';
+TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
+TT = '2017-07-12T11:54:32.000Z/2017-07-12T11:54:42.000Z';
+% TT = '2019-07-29T16:05:30.000Z/2019-07-29T16:07:00.000Z';
+ % TT = '2019-07-06T17:47:00.000Z/2019-07-06T17:47:30.000Z';
+
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
@@ -21,45 +18,19 @@ filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
 filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
 filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
-filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); %为了知道坐标
-filenames = [filenames1,filenames2,filenames3,filenames4];
+filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
+filenames_fast = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms');
+filenames = [filenames1, filenames2, filenames3, filenames4];
+% % % 
+[filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
+% % % [fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
+[filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
 
-expr1 = '_\d+\_v';
-NameTags = regexp(filenames,expr1,'match');
-NameTags = cellfun(@(x)(str2double(x(2:end-2))),unique(cellfun(@cellstr,NameTags)),'UniformOutput',false);
-
-TTlist = strjoin(regexp(TT,'\d+','match'),'');
-i = 1;flag = 0;%若flag=0，说明整段时间都在第i-1个Tag里
-while str2double(TTlist(17:30)) > NameTags{i}  % 如果时间段刚好仅在某天的最后一个文件里会出bug，可以把时间往前调1ms
-    if str2double(TTlist(1:14)) < NameTags{i}
-        flag=1; break  %若flag=1，说明时间段的开始在第i-1个Tag里，结束在第i个里
-    else
-        i=i+1;
-    end
-end
-
-if flag == 0
-    tempTag = num2str(NameTags{i-1});
-    filenames = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag)));
-    desmoms =  [ParentDir,'mms',num2str(ic),'\fpi\brst\l2\des-moms\',tempTag(1:4),'\',tempTag(5:6),'\',...
-            tempTag(7:8),'\',filenames{cellfun(@(x)(~isempty(x)),strfind(filenames,'des-moms'))}];
-    desmoms1 = desmoms; desmoms2 = desmoms1;
-else
-    if i == 1
-        errordlg('时间起始处无brst数据，请检查时间范围,或使用Overview_srvydownload程序')
-    end
-    tempTag1 = num2str(NameTags{i-1});
-    tempTag2 = num2str(NameTags{i});
-    filenames1 = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag1)));
-    filenames2 = filenames(cellfun(@(x)(~isempty(x)),strfind(filenames,tempTag2)));
-    filenames = [filenames1,filenames2];
-    desmoms1 = [ParentDir,'mms',num2str(ic),'\fpi\brst\l2\des-moms\',tempTag1(1:4),'\',tempTag1(5:6),'\',...
-            tempTag1(7:8),'\',filenames1{cellfun(@(x)(~isempty(x)),strfind(filenames1,'des-moms'))}];
-    desmoms2 = [ParentDir,'mms',num2str(ic),'\fpi\brst\l2\des-moms\',tempTag2(1:4),'\',tempTag2(5:6),'\',...
-            tempTag2(7:8),'\',filenames2{cellfun(@(x)(~isempty(x)),strfind(filenames2,'des-moms'))}];
-end
-SDCFilesDownload(filenames,TempDir)
-SDCFilesDownload(filenames_srvy(1),TempDir)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
+% SDCFilesDownload(filenames,TempDir)
+% % % 
+% % % SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 32, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 64, 'CheckSize', 0)
 % % % id_flagTime = OverView_download(tint,desmoms,IC,Name,flagTime)
 %% load data
 SDCDataMove(TempDir,ParentDir)
@@ -336,7 +307,7 @@ end
 
 
 %% lmn
-% irf_minvar_gui(B1);
+irf_minvar_gui(B1);
 L=[0.69 0.69 -0.24];%最大变化方向
 M=[0.72 -0.69 0.08];%N x L
 N=[0.10 0.23 0.97];%外法向

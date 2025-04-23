@@ -5,7 +5,7 @@ ParentDir = 'Z:/Data/MMS/';
 DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
-Date = '2015-01-01/2019-01-01';
+Date = '2015-01-01/2023-01-01';
 splitDate = regexp(Date,'/','split');
 OutputDir = [ParentDir,'CurlB_Search/',splitDate{1},'To',splitDate{2},'/'];
 CaseListPath = [OutputDir, 'caselist.txt'];
@@ -76,7 +76,7 @@ xlabel('Ne [cc]');ylabel('Counts');
 figure(2);
 Jlobe = sortJ(Ne<0.1);
 Tlobe = sortT(Ne<0.1);
-Jbinranges = 0:10:140;
+Jbinranges = 0:10:150;
 Jbincounts = histc(Jlobe,Jbinranges);
 Jbar = bar(Jbinranges+5,Jbincounts,'FaceColor',"#D95319");
 Jbar.Labels = Jbar.YData;

@@ -29,13 +29,18 @@ c_eval('resX?pos = resX?;',1:6);c_eval('resX?neg = resX?;',1:6);
 c_eval('resX?pos(resX?<=0) = 0;',1:6);
 c_eval('resX?neg(resX?>=0) = 0;',1:6);
 c_eval('x?pos = errorbar(B1(:,1),XPoint,resX?neg,resX?pos);hold on;',1:6)
+line(B1(:,1),XPoint,'color','#3d8aa4','LineWidth',0.75);hold on;
 scatter(B1(:,1),XPoint,'d','filled','MarkerFaceColor','#EDB120')
-c_eval("x?pos.Color = 'k';",1:6)
+c_eval("x?pos.Color = '#3d8aa4';",1:6)
+c_eval("x?pos.LineWidth = 0.5;",1:6)
+c_eval("x?pos.CapSize = 6;",1:6)
 
 ylabel('x [km] ','fontsize',12);
 ax = gca;
 ax.YLim = [-max(RR_mean),max(RR_mean)];
 irf_timeaxis(ax,'date')
+set(gca,'XTick',[]);
+set(gca,'YTick',[]);
 i_subplot=i_subplot+1;
 %% plot y errorbar
 h(i_subplot) = subplot(n_subplot,1,i_subplot);
@@ -47,31 +52,41 @@ c_eval('resY?pos = resY?;',1:6);c_eval('resY?neg = resY?;',1:6);
 c_eval('resY?pos(resY?<=0) = 0;',1:6);
 c_eval('resY?neg(resY?>=0) = 0;',1:6);
 c_eval('y?pos = errorbar(B1(:,1),YPoint,resY?neg,resY?pos);hold on;',1:6)
+line(B1(:,1),YPoint,'color','#3d8aa4','LineWidth',0.75);hold on;
 scatter(B1(:,1),YPoint,'d','filled','MarkerFaceColor','#EDB120')
-c_eval("y?pos.Color = 'k';",1:6)
+c_eval("y?pos.Color = '#3d8aa4';",1:6)
+c_eval("y?pos.LineWidth = 0.5;",1:6)
+c_eval("y?pos.CapSize = 6;",1:6)
 
 ylabel('y [km] ','fontsize',12);
 ax = gca;
 ax.YLim = [-max(RR_mean),max(RR_mean)];
 irf_timeaxis(ax,'date')
+set(gca,'XTick',[]);
+set(gca,'YTick',[]);
 i_subplot=i_subplot+1;
-%% plot x errorbar
+%% plot z errorbar
 h(i_subplot) = subplot(n_subplot,1,i_subplot);
-ZPoint = LocPoint(:,1);
+ZPoint = LocPoint(:,3);
 for i =1:length(ZPoint)
-c_eval('resZ?(i) = LocRes{i}(?,1) - ZPoint(i);',1:6)
+c_eval('resZ?(i) = LocRes{i}(?,3) - ZPoint(i);',1:6)
 end
 c_eval('resZ?pos = resZ?;',1:6);c_eval('resZ?neg = resZ?;',1:6);
 c_eval('resZ?pos(resZ?<=0) = 0;',1:6);
 c_eval('resZ?neg(resZ?>=0) = 0;',1:6);
 c_eval('z?pos = errorbar(B1(:,1),ZPoint,resZ?neg,resZ?pos);hold on;',1:6)
-scatter(B1(:,1),XPoint,'d','filled','MarkerFaceColor','#EDB120')
-c_eval("z?pos.Color = 'k';",1:6)
+line(B1(:,1),ZPoint,'color','#3d8aa4','LineWidth',0.75);hold on;
+scatter(B1(:,1),ZPoint,'d','filled','MarkerFaceColor','#EDB120')
+c_eval("z?pos.Color = '#3d8aa4';",1:6)
+c_eval("z?pos.LineWidth = 0.5;",1:6)
+c_eval("z?pos.CapSize = 6;",1:6)
 
 ylabel('z [km] ','fontsize',12);
 ax = gca;
 ax.YLim = [-max(RR_mean),max(RR_mean)];
 irf_timeaxis(ax,'date')
+set(gca,'XTick',[]);
+set(gca,'YTick',[]);
 i_subplot=i_subplot+1;
 %% plot distance
 % % % h(i_subplot) = subplot(n_subplot,1,i_subplot);
@@ -89,16 +104,17 @@ i_subplot=i_subplot+1;
 % % % resdpos = resd; resdneg = resd;
 % % % resdpos(resdpos<0) = 0;resdneg(resdneg>=0) = 0;
 % % % c_eval('d?neg = errorbar(B1(:,1),meand,resdneg(:,?),resdpos(:,?));hold on;',1:15);
-% % % line(B1(:,1),meand,'color','#BEBEBE','LineWidth',1);
+% % % line(B1(:,1),meand,'color','#3d8aa4','LineWidth',0.5);hold on;
 % % % scatter(B1(:,1),meand,'d','filled','MarkerFaceColor','#EDB120')
 % % % % c_eval('d?neg = errorbar(B1(:,1),meand,resdneg(:,?),zeros(size(resdneg(:,?))));hold on;',1:6);
 % % % % c_eval('d?pos = errorbar(B1(:,1),meand,zeros(size(resdpos(:,?))),resdpos(:,?));hold on;',1:6);
 % % % % c_eval("d?pos.Marker = 'o';",1:6)
 % % % % c_eval("d?pos.Color = 'k';",1:6)
 % % % % c_eval("d?neg.Marker = 'o';",1:6)
-% % % c_eval("d?neg.Color = '#696969';",1:15)
-% % % c_eval("d?neg.LineWidth = 0.8;",1:15)
+% % % c_eval("d?neg.Color = '#3d8aa4';",1:15)
+% % % c_eval("d?neg.LineWidth = 0.5;",1:15)
 % % % c_eval("d?neg.CapSize = 6;",1:15)
+% % % 
 % % % 
 % % % % errorbar
 % % % % % % resd = dLoc-meand;
@@ -133,8 +149,10 @@ c_eval('e?pos = errorbar(B1(:,1),Q,resQ?neg,resQ?pos);hold on;',1:6)
 % c_eval('e?pos = errorbar(B1(:,1),Q,resQ?neg,zeros(size(resQ?pos)));hold on;',1:6)
 % c_eval('e?neg = errorbar(B1(:,1),Q,zeros(size(resQ?neg)),resQ?pos);hold on;',1:6)
 % c_eval("e?pos.LineWidth = 1.5;",1:6)
+line(B1(:,1),Q,'color','#3d8aa4','LineWidth',0.75);hold on;
 scatter(B1(:,1),Q,'d','filled','MarkerFaceColor','#EDB120')
-c_eval("e?pos.Color = 'k';",1:6)
+c_eval("e?pos.Color = '#3d8aa4';",1:6)
+c_eval("e?pos.LineWidth = 0.5;",1:6)
 c_eval("e?pos.CapSize = 6;",1:6)
 % c_eval("e?neg.Marker = 'o';",1:6)
 % c_eval("e?neg.Color = 'k';",1:6)
@@ -158,6 +176,8 @@ ax = gca;
 ax.YScale = 'log';
 ax.YLim = [1e5,1e8];
 irf_timeaxis(ax,'date')
+set(gca,'XTick',[]);
+set(gca,'YTick',[]);
 i_subplot=i_subplot+1;
 %% plot div err
 % % % h(i_subplot) = subplot(n_subplot,1,i_subplot);

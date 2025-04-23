@@ -35,7 +35,7 @@ clear;clc;close all
 % % % TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % cd /Volumes/FWD-WorkDisk/Cluster
 % cd /Volumes/172.17.190.41/Data/Cluster/
-cd /Users/fwd/Documents/MATLAB/Cluster
+cd Z:/Data/Cluster/
 ic=1:4;
 % 
 % Tsta='2002-02-18T08:41:00.00Z';
@@ -77,10 +77,10 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % % % Tend2='2003-12-30T18:55:08.740Z';
 % Tsta2='2003-12-30T18:55:06.800Z';
 % Tend2='2003-12-30T18:55:09.800Z';
-Tsta2 = '2004-01-17T19:31:45.765Z';
-Tend2 = '2004-01-17T19:31:45.925Z';
-% Tsta2 = '2004-01-17T19:31:44.900Z';
-% Tend2 = '2004-01-17T19:31:46.500Z';
+% Tsta2 = '2004-01-17T19:31:45.765Z';
+% Tend2 = '2004-01-17T19:31:45.925Z';
+Tsta2 = '2004-01-17T19:31:44.900Z';
+Tend2 = '2004-01-17T19:31:46.500Z';
 % Tsta2='2004-05-03T05:02:28.00Z';
 % Tend2='2004-05-03T05:02:30.00Z';
 
@@ -266,6 +266,8 @@ c_eval('B2? = irf_abs([B?(:,1), B?_sph(:,1) - Br0? - Br1?, B?_sph(:,2) - Bt1?, B
 c_eval('rate1? = B1?(:,5)./B0?(:,5);', 1:4);
 c_eval('rate2? = B2?(:,5)./B0?(:,5);', 1:4);
 
+c_eval('rate1?(meand>=1)=200;',1:4)
+c_eval('rate2?(meand>=1)=200;',1:4)
 %% Init figure 3
 h = figure(3);
 set(gcf,'PaperUnits','centimeters')
@@ -385,12 +387,12 @@ ax.XTickLabel = '';
 h(4) = subplot(7,1,4);
 cor = {'#000000','#D95319','#77AC30','#0072BD'};
 c_eval("line(B?(:,1),Btheta?,'color',cor{?});hold on;")
-s1 = scatter(B1(:,1),Btheta1,50,'k','filled');hold on;
-s2 = scatter(B2(:,1),Btheta2,50,'filled');hold on;
+s1 = scatter(B1(:,1),Btheta1,15,'k','filled');hold on;
+s2 = scatter(B2(:,1),Btheta2,15,'filled');hold on;
 s2.MarkerFaceColor = '#D95319';
-s3 = scatter(B3(:,1),Btheta3,50,'filled');hold on;
+s3 = scatter(B3(:,1),Btheta3,15,'filled');hold on;
 s3.MarkerFaceColor = '#77AC30';
-s4 = scatter(B4(:,1),Btheta4,50,'filled');hold on;
+s4 = scatter(B4(:,1),Btheta4,15,'filled');hold on;
 s4.MarkerFaceColor = '#0072BD';
 
 
@@ -399,37 +401,41 @@ ax.YLim = [0,100];
 box('on')
 % irf_timeaxis(ax,'date')
 ylabel('\kappa_\theta [%]','fontsize',12);
+set(gca,'XTick',[]);
+set(gca,'YTick',[]);
 ax.XTickLabel = '';
 %% Model strength Error
 h(5) = subplot(7,1,5);
 c_eval("line(B?(:,1),100*Blength?,'color',cor{?});hold on;")
 % cor = {'#000000','#D95319','#77AC30','#0072BD'};
-s1 = scatter(B1(:,1),100*Blength1,50,'k','filled');hold on;
-s2 = scatter(B2(:,1),100*Blength2,50,'filled');hold on;
+s1 = scatter(B1(:,1),100*Blength1,15,'k','filled');hold on;
+s2 = scatter(B2(:,1),100*Blength2,15,'filled');hold on;
 s2.MarkerFaceColor = '#D95319';
-s3 = scatter(B3(:,1),100*Blength3,50,'filled');hold on;
+s3 = scatter(B3(:,1),100*Blength3,15,'filled');hold on;
 s3.MarkerFaceColor = '#77AC30';
-s4 = scatter(B4(:,1),100*Blength4,50,'filled');hold on;
+s4 = scatter(B4(:,1),100*Blength4,15,'filled');hold on;
 s4.MarkerFaceColor = '#0072BD';
 
 
 ax = gca;
 ax.YLim = [0,100];
 box('on')
+set(gca,'XTick',[]);
+set(gca,'YTick',[]);
 % irf_timeaxis(ax,'date')
 ylabel('\kappa_\rho [%]','fontsize',12);
 ax.XTickLabel = '';
-%% SPH rate 1: l0/l1
+%% SPH rate 1: l1/l0
 h(6)=subplot(7,1,6);
 c_eval("line(B?(:,1), rate1?, 'color', cor{?}); hold on;");
 line(B1(:,1), ones(size(B1(:,1))),'LineStyle','--', 'Linewidth',0.25); hold on;
 
-s1 = scatter(B1(:,1),rate11,60,'k','filled','hexagram');hold on;
-s2 = scatter(B2(:,1),rate12,60,'filled','hexagram');hold on;
+s1 = scatter(B1(:,1),rate11,15,'k','filled','^');hold on;
+s2 = scatter(B2(:,1),rate12,15,'filled','^');hold on;
 s2.MarkerFaceColor = '#D95319';
-s3 = scatter(B3(:,1),rate13,60,'filled','hexagram');hold on;
+s3 = scatter(B3(:,1),rate13,15,'filled','^');hold on;
 s3.MarkerFaceColor = '#77AC30';
-s4 = scatter(B4(:,1),rate14,60,'filled','hexagram');hold on;
+s4 = scatter(B4(:,1),rate14,15,'filled','^');hold on;
 s4.MarkerFaceColor = '#0072BD';
 grid off;
 
@@ -439,21 +445,23 @@ grid off;
 ylabel('\Re_1','fontsize',12);
 ax = gca;
 % ax.YScale = 'log';
-ax.YLim = [0,1];
+ax.YLim = [0,1.1];
 ax.XTickLabel = '';
 % ax.YTick = [1, 5, 10];
 box('on')
+set(gca,'XTick',[]);
+set(gca,'YTick',[]);
 % irf_timeaxis(ax,'date')
-%% SPH rate 2: l0/l2
+%% SPH rate 2: l2/l0
 h(7)=subplot(7,1,7);
 c_eval("line(B?(:,1), rate2?, 'color', cor{?}); hold on;");
 line(B1(:,1), ones(size(B1(:,1))),'LineStyle','--', 'Linewidth',0.25); hold on;
-s1 = scatter(B1(:,1),rate21,60,'k','filled','hexagram');hold on;
-s2 = scatter(B2(:,1),rate22,60,'filled','hexagram');hold on;
+s1 = scatter(B1(:,1),rate21,15,'k','filled','^');hold on;
+s2 = scatter(B2(:,1),rate22,15,'filled','^');hold on;
 s2.MarkerFaceColor = '#D95319';
-s3 = scatter(B3(:,1),rate23,60,'filled','hexagram');hold on;
+s3 = scatter(B3(:,1),rate23,15,'filled','^');hold on;
 s3.MarkerFaceColor = '#77AC30';
-s4 = scatter(B4(:,1),rate24,60,'filled','hexagram');hold on;
+s4 = scatter(B4(:,1),rate24,15,'filled','^');hold on;
 s4.MarkerFaceColor = '#0072BD';
 grid off;
 
@@ -463,10 +471,12 @@ grid off;
 ylabel('\Re_2','fontsize',12);
 ax = gca;
 % ax.YScale = 'log';
-ax.YLim = [0,1];
+ax.YLim = [0,1.1];
 % ax.YTick = [1, 10, 100];
 box('on')
 irf_timeaxis(ax,'date')
+set(gca,'XTick',[]);
+set(gca,'YTick',[]);
 set(ax,'XTickLabelRotation',0);
 %% Adjust the position
 set(gcf,'render','painters');
