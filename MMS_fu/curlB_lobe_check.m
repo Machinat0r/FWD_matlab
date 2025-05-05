@@ -1,11 +1,11 @@
 %------written by Wending Fu, Apr.2025 in Beijing------------
 clear;clc;
 global ParentDir OutputDir
-ParentDir = 'Z:/Data/MMS/'; 
+ParentDir = 'D:/MMS/'; 
 DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
-Date = '2015-01-01/2023-01-01';
+Date = '2016-01-01/2023-01-01';
 splitDate = regexp(Date,'/','split');
 OutputDir = [ParentDir,'CurlB_Search/',splitDate{1},'To',splitDate{2},'/'];
 CaseListPath = [OutputDir, 'caselist.txt'];
@@ -36,15 +36,19 @@ fprintf(['当前处理时间为:',sortT{tt},'\n'])
     Date = [Datelist{1},'/',Datelist{2}];
 
     ic = 1;
-    filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms');
+    filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms');
     filenames = [filenames2];
 
-    [filenames,~,~] = findFilenames(TT,filenames,'brst',ic);
+    try
+    [filenames,~,~] = findFilenames(TT,filenames,'fast',ic);
     SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
     SDCDataMove(TempDir,ParentDir)
+    catch
+    writematrix([TT,'的Ne数据缺失'],[OutputDir,'errorlog2.txt'],'WriteMode','append','Encoding','UTF-8')
+    end
 
     try
-    Ne1_ts = mms.get_data('Ne_fpi_brst_l2',tint,1);
+    Ne1_ts = mms.get_data('Ne_fpi_fast_l2',tint,1);
     Ne1=irf.ts2mat(Ne1_ts);
     catch
     global ErrorFilePath_fwd_modified
@@ -52,8 +56,12 @@ fprintf(['当前处理时间为:',sortT{tt},'\n'])
     SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
     SDCDataMove(TempDir,ParentDir)
     clear ErrorFilePath_fwd_modified
-    Ne1_ts = mms.get_data('Ne_fpi_brst_l2',tint,1);
+    try
+    Ne1_ts = mms.get_data('Ne_fpi_fast_l2',tint,1);
     Ne1=irf.ts2mat(Ne1_ts);
+    catch
+    writematrix([TT,'的Ne导入出现问题'],[OutputDir,'errorlog2.txt'],'WriteMode','append','Encoding','UTF-8')
+    end
     end
 
     if size(Ne1,1) > 1

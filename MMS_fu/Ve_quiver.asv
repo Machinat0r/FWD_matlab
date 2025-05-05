@@ -164,9 +164,9 @@ xx = Ve1(1:dd:end,1);
 % i=i+1;
 %%
 h(1)=irf_subplot(4,1,-1);
-plot(B1(:,1), B1(:,2), 'color','b', 'Linewidth',0.75); hold on;
-plot(B1(:,1), B1(:,3), 'color','g', 'Linewidth',0.75); hold on;
-plot(B1(:,1), B1(:,2)*0, 'color','k', 'Linewidth',0.75); hold on;
+plot([B1(:,1) B1(:,2)], 'color','b', 'Linewidth',0.75); hold on;
+plot([B1(:,1) B1(:,3)], 'color','b', 'Linewidth',0.75); hold on;
+plot([B1(:,1) B1(:,2)], 'color','k--', 'Linewidth',0.75); hold on;
 set(gca,'Ylim',[-7 7]);
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
 irf_legend(gca,{'B_x','B_y'},[0.97 0.92]);
