@@ -30,7 +30,7 @@ clear;clc;close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 global ParentDir 
-ParentDir = 'Z:/Data/MMS/'; 
+ParentDir = 'D:/MMS/'; 
 DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
@@ -140,11 +140,11 @@ Locerror(i) = 200;
 end
 end  
 %% Coordinate
-% c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
-% for i = 1:length(PI)
-%     LocRes{i} = LocRes{i}-LocPoint(i,:);
-% end
-% LocPoint = LocPoint - LocPoint;
+c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
+for i = 1:length(PI)
+    LocRes{i} = LocRes{i}-LocPoint(i,:);
+end
+LocPoint = LocPoint - LocPoint;
 
 %% cal B
 for i = 1:length(PI)
@@ -157,17 +157,20 @@ divErr = [divB(:,1) 100*abs(divB(:,2)-divBm(:,2))./abs(divBm(:,2))]; %|deltB-del
 %% B error
 c_eval('R? = irf_abs(R?);')
 c_eval('Bcross? = irf_dot(B?(:,2:4),Bm?(:,2:4));')
-c_eval('Btheta? = acosd(Bcross?./(B?(:,5).*Bm?(:,5)))./RR_mean.*R?(:,5);')
-c_eval('R? = irf_abs(R?);')
-c_eval('theta? = acos(Bcross?./(B?(:,5).*Bm?(:,5)));')
-Rres = cellfun(@irf_abs,LocRes,'UniformOutput',false);
-Rres = cellfun(@(x) [max(x([1,4,5],4)),max(x([1,2,6],4)),max(x([2,3,4],4)),max(x([3,5,6],4)),mean(x(:,4))],Rres,'UniformOutput',false);
-Rres = cell2mat(Rres);
+
+% c_eval('R? = irf_abs(R?);')
+% c_eval('theta? = acos(Bcross?./(B?(:,5).*Bm?(:,5)));')
+% Rres = cellfun(@irf_abs,LocRes,'UniformOutput',false);
+% Rres = cellfun(@(x) [max(x([1,4,5],4)),max(x([1,2,6],4)),max(x([2,3,4],4)),max(x([3,5,6],4)),mean(x(:,4))],Rres,'UniformOutput',false);
+% Rres = cell2mat(Rres);
 % c_eval('Btheta? = 100*theta?./RR_mean.*Rres(:,?);')
 % % c_eval('Btheta? = 100*theta?./RR_mean.*R?(:,5);')
 % c_eval('Btheta? = asin(sqrt(1-(Bcross?./(B?(:,5).*Bm?(:,5))).^2))*180/pi;')
 % c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5)./RR_mean.*Rres(:,?);')
-c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5)./RR_mean.*R?(:,5);')
+% % % % % c_eval('Btheta? = acosd(Bcross?./(B?(:,5).*Bm?(:,5)))./RR_mean.*R?(:,5);')
+% % % % % c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5)./RR_mean.*R?(:,5);')
+c_eval('Btheta? = acosd(Bcross?./(B?(:,5).*Bm?(:,5)));')
+c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5);')
 % % % c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5)./RR_mean.*R?(:,5);')
 Blength = 0.25*(Blength1+Blength2+Blength3+Blength4);
 c_eval('BErr? = 100*(1-(1-Btheta?).*(1-Blength?));')

@@ -31,7 +31,7 @@ clear;clc;close all
 %%
 
 global ParentDir 
-ParentDir = 'C:\MMS\'; 
+ParentDir = 'D:\MMS\'; 
 TempDir = 'C:\MMS\temp\';mkdir(TempDir);
 % TT = '2017-10-21T22:26:28.00Z/2017-10-21T22:26:32.00Z';
 

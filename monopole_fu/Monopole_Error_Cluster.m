@@ -48,8 +48,8 @@ ic=1:4;
 Tsta = '2004-01-21T08:56:00.000Z';
 Tend = '2004-01-21T08:58:00.000Z';
 
-% % % Tsta = '2000-01-01T00:00:00.000Z';
-% % % Tend = '2020-01-01T00:00:00.000Z';
+% Tsta = '2000-01-01T00:00:00.000Z';
+% Tend = '2020-01-01T00:00:00.000Z';
 
 
 % Tsta='2004-01-01T11:10:00.00Z';
@@ -72,8 +72,8 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % Tend2='2002-06-13T18:41:50.00Z';
 % Tsta2='2003-12-17T01:20:05.00Z';
 % Tend2='2003-12-17T01:20:09.00Z';
-% % % Tsta2='2003-12-30T18:55:08.560Z';
-% % % Tend2='2003-12-30T18:55:08.740Z';
+% Tsta2='2003-12-30T18:55:08.560Z';
+% Tend2='2003-12-30T18:55:08.740Z';
 % Tsta2='2003-12-30T18:55:06.800Z';
 % Tend2='2003-12-30T18:55:09.800Z';
 % Tsta2 = '2004-01-17T19:31:45.765Z';
@@ -85,8 +85,8 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 
 % Tsta2='2004-01-01T11:10:03.500Z';
 % Tend2='2004-01-01T11:10:04.500Z';
-Tsta2='2004-01-21T08:56:58.200Z';
-Tend2='2004-01-21T08:57:00.200Z';
+% % % Tsta2='2004-01-21T08:56:58.200Z';
+% % % Tend2='2004-01-21T08:57:00.200Z';
 % Tsta2='2004-05-30T20:22:30.00Z';
 % Tend2='2004-05-30T20:22:32.00Z';
 % Tsta2='2003-12-29T13:40:25.00Z';
@@ -95,26 +95,26 @@ Tend2='2004-01-21T08:57:00.200Z';
 % Tend2='2003-12-29T13:40:26.320Z';
 % % % Tsta2='2004-01-21T08:56:59.275Z';
 % % % Tend2='2004-01-21T08:56:59.435Z';
-% % % Tsta2='2004-01-21T08:56:57.750Z';
-% % % Tend2='2004-01-21T08:57:00.500Z';
+Tsta2='2004-01-21T08:56:57.750Z';
+Tend2='2004-01-21T08:57:00.500Z';
 tint2=[iso2epoch(Tsta2) iso2epoch(Tend2)];
 % tint2=tint;
 
-% % % caa_download(tint,'C?_CP_EFW_L3_E3D_INERT');
-% % % caa_download(tint,'C?_CP_EFW_L?_E');
-% % % % % try
-% % % % %     c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
-% % % % %     c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
-% % % % % %     c_eval("caa_load('C?_CP_FGM_FULL',Tsta,Tend);",ic);
-% % % % % %     c_eval("caa_load('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
-% % % % % catch
-% % % % % 
-% % % % %     %    Magnetic fields
-% % % % % c_eval("caa_download(tint,'C?_CP_FGM_FULL')",ic);
-% % % % % c_eval("caa_download(tint,'C?_CP_AUX_POSGSE_1M')",ic);  % position & velocity for each sc
-% % % % %     c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
-% % % % %     c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
-% % % % % end
+% caa_download(tint,'C?_CP_EFW_L3_E3D_INERT');
+% caa_download(tint,'C?_CP_EFW_L?_E');
+try
+    c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
+    c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
+%     c_eval("caa_load('C?_CP_FGM_FULL',Tsta,Tend);",ic);
+%     c_eval("caa_load('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
+catch
+
+    %    Magnetic fields
+c_eval("caa_download(tint,'C?_CP_FGM_FULL')",ic);
+c_eval("caa_download(tint,'C?_CP_AUX_POSGSE_1M')",ic);  % position & velocity for each sc
+    c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
+    c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
+end
 % caa_download(tint,'CL_SP_AUX')% position,attitude.. for all sc
 % caa_download(tint,'C2_CP_FGM_FULL');
 % caa_download(tint,'C4_CP_FGM_FULL');
@@ -210,11 +210,11 @@ Locerror(i) = 100*volume/volume_a;
 end
 meand = mean(dLoc,2);
 %% Coordinate
-% % % c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
-% % % for i = 1:length(PI)
-% % %     LocRes{i} = LocRes{i}-LocPoint(i,:);
-% % % end
-% % % LocPoint = LocPoint - LocPoint;
+c_eval('R?(:,2:4) = R?(:,2:4)-LocPoint;');
+for i = 1:length(PI)
+    LocRes{i} = LocRes{i}-LocPoint(i,:);
+end
+LocPoint = LocPoint - LocPoint;
 
 %% cal B
 for i = 1:length(R1)
@@ -233,10 +233,12 @@ c_eval('theta? = acosd(Bcross?./(B?(:,5).*Bm?(:,5)));')
 % % Rres = cellfun(@(x) [max(x([1,4,5],4)),max(x([1,2,6],4)),max(x([2,3,4],4)),max(x([3,5,6],4)),mean(x(:,4))],Rres,'UniformOutput',false);
 % % Rres = cell2mat(Rres);
 % % c_eval('Btheta? = 100*theta?./RR_mean.*Rres(:,?);')
-c_eval('Btheta? = theta?./RR_mean.*R?(:,5);')
 % c_eval('Btheta? = asin(sqrt(1-(Bcross?./(B?(:,5).*Bm?(:,5))).^2))*180/pi;')
 % % c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5)./RR_mean.*Rres(:,?);')
+c_eval('Btheta? = theta?./RR_mean.*R?(:,5);')
 c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5)./RR_mean.*R?(:,5);')
+% % % % % c_eval('Btheta? = theta?;')
+% % % % % c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5);')
 Blength = 0.25*(Blength1+Blength2+Blength3+Blength4);
 c_eval('BErr? = 100*(1-(1-Btheta?).*(1-Blength?));')
 BErr = mean([BErr1,BErr2,BErr3,BErr4],2);

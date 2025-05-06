@@ -4,7 +4,7 @@
 clear;close all
 clc
 global ParentDir 
-ParentDir = 'C:\MMS/'; 
+ParentDir = 'D:/MMS/'; 
 DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 %% VORTEX_9图全版
@@ -16,13 +16,13 @@ thresold = 0.4;
 % Tsta = '2017-07-06T01:44:50.000Z';
 % Tend = '2017-07-06T01:45:10.000Z';
 
-Tsta = '2017-07-06T17:31:58.000Z';
-Tend = '2017-07-06T17:31:59.500Z';
+Tsta = '2017-07-12T11:54:33.600Z';
+Tend = '2017-07-12T11:54:35.400Z';
 % Tsta = '2017-07-06T17:31:55.000Z';
 % Tend = '2017-07-06T17:32:05.000Z';
 tint = irf.tint(Tsta,Tend);
 % tint=irf.tint('2017-01-27T12:05:42.50Z/2017-01-27T12:05:43.80Z');
-TT = '2017-07-06T17:31:30.000Z/2017-07-06T17:32:30.000Z';
+TT = '2017-07-12T11:54:00.000Z/2017-07-12T11:55:00.000Z';
 tint2=irf.tint(TT);
 
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
@@ -30,16 +30,16 @@ Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 
 filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
-filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
-filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
-filenames = [filenames1, filenames2, filenames3, filenames4];
+filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist');
+% filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
+% filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
+filenames = [filenames1, filenames2];
 % % % 
 [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
 
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 128, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
 SDCDataMove(TempDir,ParentDir)
-mms.db_init('local_file_db','Z:/Data/MMS')
+mms.db_init('local_file_db','D:/MMS/')
 
 c_eval('e_r? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energy_brst'',tint);',ic);
 

@@ -2,14 +2,17 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = 'Z:/Data/MMS/'; 
+ParentDir = 'D:/MMS/'; 
 DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 
 % TT = '2017-06-19T03:54:16.000Z/2017-06-19T03:54:20.000Z';
 % TT = '2017-07-06T01:44:55.000Z/2017-07-06T01:45:04.000Z';
-TT = '2017-07-06T17:31:58.000Z/2017-07-06T17:31:59.500Z';
+% % % TT = '2017-07-06T17:31:58.000Z/2017-07-06T17:31:59.500Z';
+% TT = '2019-07-29T16:06:16.000Z/2019-07-29T16:06:19.000Z';
+TT = '2017-07-12T11:54:33.600Z/2017-07-12T11:54:35.400Z';
+
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
@@ -29,7 +32,7 @@ filenames = [filenames1, filenames2, filenames3, filenames4];
 % % % [fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
 % % % [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
 
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 64, 'CheckSize', 0)
 % SDCFilesDownload(filenames,TempDir)
 % % % 
 % % % SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 32, 'CheckSize', 0)
@@ -127,9 +130,10 @@ c_eval(['Vit?=irf.ts2mat(Vit?_ts);'],ic);
 % c_eval('R? = irf_resamp(R?,Bt?);',1:iic)
 
 %% Smooth
-dspan = 5;
-Ve1 = [smooth(Ve1(:,1),dspan),smooth(Ve1(:,2),dspan),smooth(Ve1(:,3),dspan),smooth(Ve1(:,4),dspan)];
-dd=1;
+dspan = 15;
+Ve1 = [smooth(gsmVe1(:,1),dspan),smooth(gsmVe1(:,2),dspan),...
+    smooth(gsmVe1(:,3),dspan),smooth(gsmVe1(:,4),dspan)];
+dd=2;
 xx = Ve1(1:dd:end,1);
 % xx=xx';
 %%
@@ -139,36 +143,46 @@ xx = Ve1(1:dd:end,1);
 % % h(2) = irf_subplot(3,1,-2);
 % % quiver(xx,0*xx,Ve_smooth(1:dd:end,2),Ve_smooth(1:dd:end,4))
 
-% h(1) = irf_subplot(4,1,-1);
-% c_eval("irf_plot([Ve?(:,1) Ve?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
-% c_eval("irf_plot([Ve?(:,1) Ve?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
-% c_eval("irf_plot([Ve?(:,1) Ve?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
-% % c_eval("irf_plot([Bt?(:,2) Vn], 'color','r', 'Linewidth',0.75)",ic);
-% % % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
-% % % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
-% % % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
-% % irf_plot([Vet1(:,1) Vet1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
-% % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
-% c_eval("irf_plot([Ve?(:,1) Ve?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
-% grid off;
+h(1) = irf_subplot(1,1,-1);
+c_eval("irf_plot([Ve?(:,1) Ve?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+c_eval("irf_plot([Ve?(:,1) Ve?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
+c_eval("irf_plot([Ve?(:,1) Ve?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
+% c_eval("irf_plot([Bt?(:,2) Vn], 'color','r', 'Linewidth',0.75)",ic);
+% % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+% % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
+% % % c_eval("irf_plot([Vibf?(:,1) Vibf?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
+% irf_plot([Vet1(:,1) Vet1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
+c_eval("irf_plot([Ve?(:,1) Ve?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
+grid off;
 % c_eval("set(gca,'Ylim',[fix(min([min(Ve?(:,2)) min(Ve?(:,3)) min(Ve?(:,4))])/10)*11 fix(max(Vet?(:,2))/10)*10.5],'fontsize',9);",ic);
-% % set(gca,'Ylim',[-100 200], 'ytick',[0 200 400]);
-% % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
-% % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
-% % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
-% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
-% irf_legend(gca,{'Ve_x','Ve_y','Ve_z','|Ve|'},[0.97 0.92]);
-% ylabel('Ve [km/s]','fontsize',8);
-% i=i+1;
+set(gca,'Ylim',[-1000 2000]);
+% irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+irf_legend(gca,{'Ve_x','Ve_y','Ve_z','|Ve|'},[0.97 0.92]);
+ylabel('Ve [km/s]','fontsize',8);
+i=i+1;
 %%
-h(1) = irf_subplot(3,1,-1);
-quiver(xx,0*xx,Ve1(1:dd:end,2),Ve1(1:dd:end,3))
+h(1)=irf_subplot(4,1,-1);
+plot(B1(:,1), B1(:,2), 'color','b', 'Linewidth',0.75); hold on;
+plot(B1(:,1), B1(:,3), 'color','g', 'Linewidth',0.75); hold on;
+plot(B1(:,1), B1(:,2)*0, 'color','k', 'Linewidth',0.75); hold on;
+set(gca,'Ylim',[-5 10]);
+set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
+irf_legend(gca,{'B_x','B_y'},[0.97 0.92]);
+ylabel('B [nT]','fontsize',8);
 
-h(2) = irf_subplot(3,1,-2);
-quiver(xx,0*xx,Ve1(1:dd:end,2),Ve1(1:dd:end,4))
+h(2) = irf_subplot(4,1,-2);
+q=quiver(xx,0*xx,Ve1(1:dd:end,2),Ve1(1:dd:end,3),0.5);
+q.ShowArrowHead = 'off';
 
-h(3) = irf_subplot(3,1,-3);
-quiver(xx,0*xx,Ve1(1:dd:end,3),Ve1(1:dd:end,4))
+h(3) = irf_subplot(4,1,-3);
+quiver(xx,0*xx,Ve1(1:dd:end,2),Ve1(1:dd:end,4),0.5)
 
-irf_zoom(tint,'x',h(1:3));
+h(4) = irf_subplot(4,1,-4);
+quiver(xx,0*xx,Ve1(1:dd:end,3),Ve1(1:dd:end,4),0.5)
+
+irf_zoom(tint,'x',h(1:4));
 irf_plot_axis_align(h)
