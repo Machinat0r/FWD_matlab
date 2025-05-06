@@ -2,7 +2,7 @@
 %% 1/3程序
 clc
 clear
-mms.db_init('local_file_db','Z:/Data/MMS/')
+mms.db_init('local_file_db','D:/MMS/')
 % load err_4CV2
 Tsta = '2017-07-06T17:31:58.000Z';
 Tend = '2017-07-06T17:31:59.500Z';

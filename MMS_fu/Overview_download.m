@@ -11,7 +11,7 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57:43.000Z';
 % % % TT = '2015-11-19T14:07:30.000Z/2015-11-19T14:09:30.000Z';
 % % % TT = '2018-07-05T20:39:27.000Z/2018-07-05T20:39:30.000Z';
-% % % % % TT = '2017-07-12T11:54:32.000Z/2017-07-12T11:54:42.000Z';
+TT = '2017-07-12T11:54:20.000Z/2017-07-12T11:54:48.000Z';
 % % % TT = '2017-07-06T17:47:05.000Z/2017-07-06T17:47:17.000Z';
 % TT = '2017-05-19T03:06:30.000Z/2017-05-19T03:07:10.000Z'; % x-y direction N
 % TT = '2017-06-25T04:39:20.000Z/2017-06-25T04:39:42.000Z';
@@ -24,7 +24,7 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT= '2022-12-27T12:04:13.000Z/2022-12-27T12:04:213.000Z'
 % TT = '2017-07-06T15:28:24.000Z/2017-07-06T15:28:26.000Z';
 
-TT = '2019-07-29T16:06:13.000Z/2019-07-29T16:06:20.000Z';
+% % % TT = '2019-07-29T16:06:13.000Z/2019-07-29T16:06:20.000Z';
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
@@ -644,7 +644,7 @@ c_eval("irf_plot([Ne_smooth(:,1) Ne_smooth(:,2)], 'color','b', 'Linewidth',0.75)
 % c_eval("irf_plot([Ni?(:,1) Ni?(:,2)], 'color','g', 'Linewidth',0.75);",ic); hold off;
 grid off;
 % c_eval("set(gca,'Ylim',[max([0 min([min(Ne?(:,2)) min(Ni?(:,2))])-0.02]) max([max(Ne?(:,2)) max(Ni?(:,2))])+0.02]);",ic)
-% set(gca,'Ylim',[0 25])
+set(gca,'Ylim',[0 0.3])
 %     set(gca,'Ylim',[0.15 0.45], 'ytick',[0.1 0.2 0.3 0.4],'fontsize',9);
 % pos1=get(h(1),'pos');
 %  set(gca,'ColorOrder',[[0 0 1];[0 1 0]]);
@@ -736,9 +736,9 @@ i=i+1;
 h(i)=irf_subplot(n,1,-i);
 % dspan = 4;
 % c_eval('gsmVe? = [smooth(gsmVe?(:,1), dspan), smooth(gsmVe?(:,2), dspan), smooth(gsmVe?(:,3), dspan), smooth(gsmVe?(:,4), dspan)];',ic);
-% % % c_eval("irf_plot([gsmVe?(:,1) gsmVe?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
-% % % c_eval("irf_plot([gsmVe?(:,1) gsmVe?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
-% % % c_eval("irf_plot([gsmVe?(:,1) gsmVe?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
+c_eval("irf_plot([gsmVe?(:,1) gsmVe?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
+c_eval("irf_plot([gsmVe?(:,1) gsmVe?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
+c_eval("irf_plot([gsmVe?(:,1) gsmVe?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
 % % % c_eval("irf_plot([Vebf?(:,1) Vebf?(:,2)], 'color','b', 'Linewidth',0.75);",ic); hold on;
 % % % c_eval("irf_plot([Vebf?(:,1) Vebf?(:,3)], 'color','g', 'Linewidth',0.75);",ic); hold on;
 % c_eval("irf_plot([Vebf?(:,1) Vebf?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold on;
@@ -1361,7 +1361,7 @@ set(h(i),'yscale','log');
 set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
 ylabel('Ee(ev)','fontsize',8)
 set(gca,'Ylim',[1e1 3e4]);
-caxis(gca,[6.2 7.3])
+caxis(gca,[6.2 7.2])
 set(gca,'xtick',[])
 % irf_legend(gca,'f',[0.99 0.98],'color','k','fontsize',12);
 poscbar8=get(hcb8,'pos');
@@ -1385,7 +1385,7 @@ set(h(i),'yscale','log');
 set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
 ylabel('Ei(ev)','fontsize',8)
 set(gca,'Ylim',[1e1 3e4]);
-caxis(gca,[5 6.5])
+caxis(gca,[5 6])
 set(gca,'xtick',[])
 
 % irf_legend(gca,'f',[0.99 0.98],'colo6.4r','k','fontsize',12);
