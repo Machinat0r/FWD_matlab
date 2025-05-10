@@ -138,8 +138,7 @@ dd=2;
 xx = Ve1(1:dd:end,1);
 B1_smooth = [smooth(B1(:,1),dspan),smooth(B1(:,2),dspan),...
     smooth(B1(:,3),dspan),smooth(B1(:,4),dspan)];
-dd_B = 10;
-BB = B1(1:dd_B:end,1);
+BB = B1(1:dd:end,1);
 % xx=xx';
 %%
 % % h(1) = irf_subplot(3,1,-1);
@@ -181,8 +180,7 @@ ylabel('B [nT]','fontsize',8);
 
 h(2) = irf_subplot(4,1,-2);
 % q=quiver(xx,0*xx,Ve1(1:dd:end,2),Ve1(1:dd:end,3),0.5);
-q=quiver(BB,0*BB,B1_smooth(1:dd_B:end,2),B1_smooth(1:dd_B:end,3),0.5);
-ylim([-0.1,0.08])
+q=quiver(B,0*xx,Ve1(1:dd:end,2),Ve1(1:dd:end,3),0.5);
 q.ShowArrowHead = 'off';
 
 h(3) = irf_subplot(4,1,-3);

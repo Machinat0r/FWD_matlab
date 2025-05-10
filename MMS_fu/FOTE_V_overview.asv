@@ -10,29 +10,26 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 %% VORTEX_9图全版
 %% load data
 ic=1:4;
-hh = 20;
-hh1= 20;
+hh = 15;
+hh1= 15;
 thresold = 0.4;  
 % Tsta = '2017-07-06T01:44:50.000Z';
 % Tend = '2017-07-06T01:45:10.000Z';
 
-Tsta = '2017-07-12T11:54:33.600Z';
-Tend = '2017-07-12T11:54:35.400Z';
+% % % Tsta = '2017-07-12T11:54:33.600Z';
+% % % Tend = '2017-07-12T11:54:35.400Z';
 % Tsta = '2018-07-06T12:37:04.500Z';
 % Tend = '2018-07-06T12:37:05.250Z';
-% Tsta = '2017-05-22T08:23:52.000Z';
-% Tend = '2017-05-22T08:23:55.000Z';
-% Tsta = '2017-05-25T04:40:29.500Z';
-% Tend = '2017-05-25T04:40:33.000Z';
+Tsta = '2017-05-22T08:23:52.000Z';
+Tend = '2017-05-22T08:23:55.000Z';
 % Tsta = '2017-07-06T17:31:55.000Z';
 % Tend = '2017-07-06T17:32:05.000Z';
 tint = irf.tint(Tsta,Tend);
 % tint=irf.tint('2017-01-27T12:05:42.50Z/2017-01-27T12:05:43.80Z');
-TT = '2017-07-12T11:54:00.000Z/2017-07-12T11:55:00.000Z';
+% % % TT = '2017-07-12T11:54:00.000Z/2017-07-12T11:55:00.000Z';
 % % % TT = '2017-07-06T17:46:30.000Z/2017-07-06T17:48:00.000Z';
 % TT = '2018-07-06T12:36:30.000Z/2018-07-06T12:38:00.000Z';
-% TT = '2017-05-22T08:23:30.000Z/2017-05-22T08:24:30.000Z';
-% TT = '2017-05-25T04:40:00.000Z/2017-05-25T04:41:00.000Z';
+TT = '2017-05-22T08:23:30.000Z/2017-05-22T08:24:30.000Z';
 
 tint2=irf.tint(TT);
 
@@ -184,14 +181,12 @@ c_eval('Vet?=Vexyz?.abs;',ic);
     c_eval('VeSS?(:,3)=temp?(:,3);',ic)
     c_eval("temp?(:,4)=smooth(VeSS?(:,4),hh1);",ic)
     c_eval('VeSS?(:,4)=temp?(:,4);',ic)
-
     c_eval("temp?(:,2)=smooth(VeSS?(:,2),hh1);",ic)
     c_eval('VeSS?(:,2)=temp?(:,2);',ic)
     c_eval("temp?(:,3)=smooth(VeSS?(:,3),hh1);",ic)
     c_eval('VeSS?(:,3)=temp?(:,3);',ic)
     c_eval("temp?(:,4)=smooth(VeSS?(:,4),hh1);",ic)
     c_eval('VeSS?(:,4)=temp?(:,4);',ic)
-    
     c_eval("temp?(:,2)=smooth(VeSS?(:,2),hh1);",ic)
     c_eval('VeSS?(:,2)=temp?(:,2);',ic)
     c_eval("temp?(:,3)=smooth(VeSS?(:,3),hh1);",ic)
@@ -415,8 +410,8 @@ c_eval('E_lmn?=irf_resamp(E_lmn?,B?);',ic);
 c_eval('Vi_LMN?=irf_newxyz(Vi?,L,M,N);',ic);
 
 [j,divB,B,jxB,divTshear,divPb] = c_4_j('R?','B?');
-% d_cros_ve=c_4_grad('R?','Ve?(:,1:4)','curl');
-d_cros_ve=c_4_grad('R?','VeSS?(:,1:4)','curl');
+d_cros_ve=c_4_grad('R?','Ve?(:,1:4)','curl');
+% d_cros_ve=c_4_grad('R?','VeSS?(:,1:4)','curl');
 d_cros_ve_LMN=irf_newxyz(d_cros_ve,L,M,N);
 n=length(j(:,1)); 
 j_total=zeros(n,1);
@@ -462,7 +457,7 @@ end
 
 %% plot
 h=irf_plot(10,'newfigure');
-xSize=750; ySize=900;
+xSize=500; ySize=600;
 set(gcf,'Position',[100 100 xSize ySize]);
 mmscolors=[0 0 1; 0 1 0; 1 0 0; 0 0 0]; 
 set(h,'ColorOrder',mmscolors);
@@ -544,9 +539,9 @@ grid(h(5),'off');
 
 h(6)=irf_panel('VeLMN');
 hold(h(6),'on');
-irf_plot(h(6),[VeSS1(:,1),VeSS1(:,2)],'Linewidth',lnwid);
-irf_plot(h(6),[VeSS1(:,1),VeSS1(:,3)],'Linewidth',lnwid);
-irf_plot(h(6),[VeSS1(:,1),VeSS1(:,4)],'Linewidth',lnwid);
+irf_plot(h(6),[Ve1(:,1),Ve1(:,2)],'Linewidth',lnwid);
+irf_plot(h(6),[Ve1(:,1),Ve1(:,3)],'Linewidth',lnwid);
+irf_plot(h(6),[Ve1(:,1),Ve1(:,4)],'Linewidth',lnwid);
 % irf_plot(h(6),[VeS2(:,1),VeS2(:,5)],'Linewidth',lnwid,'color','k');
 irf_plot(h(6),[B_lmn3(:,1) B_lmn3(:,2)*0],'k--', 'Linewidth',0.5);%%铏氱嚎
 hold(h(6),'off');
@@ -651,12 +646,52 @@ grid(h(10),'off');
 % set(h1(i_plot),'Ylim',[0 160]);
 %ylabel('\fontcolor{k}|\nabla\cdot\bf{B}|/|\nabla\times\bf{B}|,\fontcolor{b}|(\lambda_1+\lambda_2+\lambda_3)/\lambda_{am}| [%]');
 ylabel(h(10),{'\alpha',' (%)'},'Interpreter','tex');
-set(h(10),'Ylim',[0 100],'Ytick',[0 40 100]);
+set(h(10),'Ylim',[0 130],'Ytick',[0 40 100]);
 irf_legend(h(10),'(j)',[0.99 0.94],'color','k','fontsize',12)
 irf_legend(h(10),{'|\nabla\cdot\bf{nVe}|/|\nabla\times\bf{nVe}|'},[0.85 0.9],'color','k','fontsize',10)
 
-%%
-colormap(jet)
-set(gca,"XTickLabelRotation",0)
+
+%% mark
+
+Tnull='2017-01-27T12:05:31.712Z';
+idxnull=find(gradVe(:,1,1)>=iso2epoch(Tnull)); idxnull=idxnull(1);
+mark1=B1(idxnull,1);
+for ii = 1:10
+    c_eval("irf_pl_mark(h(?),mark1,'k','linewidth',lnwid)",ii);
+end
+
+tint3=irf.tint('2017-01-27T12:05:31.67Z/2017-01-27T12:05:31.74Z');
+for ii = 1:10
+    c_eval('irf_pl_mark(h(?),tint3,[0.7,0.7,0.7])',ii)
+end
+
+tint4=irf.tint('2017-01-27T12:05:30.945Z/2017-01-27T12:05:31.045Z');
+for ii = 1:10
+    c_eval('irf_pl_mark(h(?),tint4,[0.7,0.7,0.7])',ii)
+end
+
+Tnull='2017-01-27T12:05:30.99Z';
+idxnull=find(gradVe(:,1,1)>=iso2epoch(Tnull)); idxnull=idxnull(1);
+mark1=B1(idxnull,1);
+for ii = 1:10
+    c_eval("irf_pl_mark(h(?),mark1,'k','linewidth',lnwid)",ii);
+end
+
+% xSize = 400; ySize=600;
+xSize = 700; ySize=1000;
+set(gcf,'position',[200 50 xSize ySize])
 set(gcf,'render','painters');
-set(gcf,'paperpositionmode','auto')
+Paper_X = 25; Paper_Y = 17; 
+coef=floor(max(xSize/Paper_X,ySize/Paper_Y));
+FigSize_X = xSize/coef; FigSize_Y = ySize/coef;
+xLeft2 = (Paper_X- FigSize_X)/2;  yTop2 = (Paper_Y- FigSize_Y)/2; 
+set(gcf,'PaperSize', [Paper_X Paper_Y]); 
+set(gcf,'PaperPosition',[xLeft2 yTop2 FigSize_X FigSize_Y])
+
+irf_plot_ylabels_align(h)
+irf_zoom(h,'x',tint);
+set(gca,"XTickLabelRotation",0)
+% set(gcf,'paperpositionmode','auto')
+set(h,'fontsize',12);
+% figname = ['vortex_observe_Vt'];
+% print(gcf, '-dpdf','-r600',[figname '.pdf']);

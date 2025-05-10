@@ -12,7 +12,7 @@ Time='2015-09-19T07:43:31.115Z';
 % Tsta='2018-08-27T12:15:30.000Z'; 
 % Tend='2018-08-27T12:15:50.000Z'; 
 
-mms.db_init('local_file_db','E:\MMS\')
+mms.db_init('local_file_db','D:\MMS\')
                         
 % tint=irf.tint('2018-08-27T12:15:30.000Z/2018-08-27T12:15:50.000Z');
 
