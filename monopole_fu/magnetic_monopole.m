@@ -354,7 +354,7 @@ c_eval("set(gca,'Ylim',[min(divB(:,2))-0.005 max(divB(:,2)+0.005)],'fontsize',9)
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 1];[1 0 0]]);
 % irf_legend(gca,{'B_x','B_z'},[0.97 0.92]);
-ylabel('divB [nT/km^2] ','fontsize',12);
+ylabel('divB [nT/km] ','fontsize',12);
 % irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
 % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
 i=i+1;
@@ -394,12 +394,13 @@ i=i+1;
 %% meandLoc Error
 h(i)=irf_subplot(n,1,-i);
 
-irf_plot([B1(:,1) mean(dLoc,2)], 'color','k', 'Linewidth',0.75); hold on;
+irf_plot([B1(:,1) mean(dLoc,2)*100], 'color','k', 'Linewidth',0.75); hold on;
+irf_plot([B1(:,1) 0*mean(dLoc,2)+66.1], 'r-', 'Linewidth',0.75); hold on;
 grid off;
 % set(gca,'Ylim',[0 max(Locerror)]);
-set(gca,'Ylim',[0,1], 'ytick',[0 0.5 1],'fontsize',9);
+set(gca,'Ylim',[0,200], 'ytick',[0 100],'fontsize',9);
 pos1=get(gca,'pos');
-ylabel('mean','fontsize',12);
+ylabel('d Err','fontsize',12);
 i=i+1;
 %% stddLoc Error
 % % % h(i)=irf_subplot(n,1,-i);

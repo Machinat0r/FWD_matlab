@@ -13,13 +13,13 @@
 % c_eval('gseVe? = mms.get_data(''Ve_gse_fpi_brst_l2'',tint,?);',ic)
 %% Plot overview figure with focus on electrons, including single time electron distributions
 npanels = 12;
-tint = irf.tint('2017-07-06T17:47:06.00Z/2017-07-06T17:47:14.00Z');
- %tint = irf.tint('2017-07-12T11:54:40.00Z/2017-07-12T11:54:43.00Z');
+% tint = irf.tint('2017-07-06T17:47:06.00Z/2017-07-06T17:47:14.00Z');
+ tint = irf.tint('2017-07-12T11:54:40.00Z/2017-07-12T11:54:43.00Z');
 tintZoom = tint;
 
 cmap = 'jet';
 [h1,h2] = initialize_combined_plot(npanels,3,4,0.4,'vertical');
-ic = 2;
+ic = 1:4;
 iisub = 0;
 cmap = colormap('jet');
 
@@ -263,7 +263,8 @@ end
 % zoomy = [];
 ic=1:4;
 % tintDist = irf.tint('2017-07-17T07:53:05.50Z/2017-07-17T07:53:06.10Z');
-tintDist = irf.tint('2017-07-06T17:47:06.00Z/2017-07-06T17:47:14.00Z');
+ tintDist = irf.tint('2017-07-12T11:54:34.600Z/2017-07-12T11:54:35.00Z');
+% irf.tint('2017-07-06T17:47:06.00Z/2017-07-06T17:47:14.00Z');
 
 % tintDist = irf.tint('2017-07-18T13:04:53.00Z/2017-07-18T13:04:58.00Z');
 c_eval('dist? = ePDist?.convertto(''s^3/km^6'');',ic)
@@ -286,7 +287,7 @@ c_eval('times = ePDist?.time;',ic)
 [tind,~] = times.tlim(tintDist);
 
 doReducedF = 1;
-for it_ =1:1:numel(tind);
+for it_ =1:1:numel(tind)
   it = tind(it_);
   time = times(it);
   it_
@@ -632,7 +633,7 @@ agyrotropy42{it_,2}=FF4;
     hold (gca,'off');
   end 
  
-  if 0 % Perpendicular plane, integrated, smaller vint
+  if 0 % Perpendicular plane, integrated, smaller vintagyrotropy610
    vint = 40000*[-1 1]; hca = h2(isub); isub = isub + 1; 
     xyz = [perp1;perp2;par]; vlabels = {'v_{bxe}','v_{(bxe)xb}}','v_{b}'};
     mms.plot_int_projection(hca,dist_scm4,'t',time,'xyz',xyz,'vlim',vlim,'vzint',vint,'clim',projclim_int_2,'vlabel',vlabels,'colorbar',1);
@@ -648,14 +649,14 @@ agyrotropy42{it_,2}=FF4;
   %cn.print(['e_proj_in_fix_mms' num2str(ic) '_' timeUTC '_opengl'],'opengl','path',[eventPath 'proj_int_mms1/'])
   set(gcf,'render','painters');
 figname=['20170706e1' num2str(it)];
-print(gcf, '-dpng', [figname '.png']);
+% print(gcf, '-dpng', [figname '.png']);
 end
  af = ePitch1.depend(1);
 af{1};
  af=af{1};
 energy_pad = af(1:2,:);
 save('energy_pad6','energy_pad')
-save('agyrotropy610.mat','agyrotropy10')
-save('agyrotropy620.mat','agyrotropy20')
-save('agyrotropy630.mat','agyrotropy30')
-save('agyrotropy640.mat','agyrotropy40')
+% save('agyrotropy610.mat','agyrotropy10')
+% save('agyrotropy620.mat','agyrotropy20')
+% save('agyrotropy630.mat','agyrotropy30')
+% save('agyrotropy640.mat','agyrotropy40')

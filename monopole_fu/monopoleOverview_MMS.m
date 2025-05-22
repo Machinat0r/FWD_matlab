@@ -30,17 +30,16 @@ clear;clc;close all
 %%
 
 global ParentDir 
-ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
-DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
-TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
+ParentDir = 'D:\MMS\'; 
+TempDir = 'C:\MMS\temp\';mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
-TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
+% TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % TT = '2019-01-16T04:09:55.420Z/2019-01-16T04:09:55.800Z'; %no boundary, 10,78-81
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:15:50.00Z';
 
 % TT = '2016-01-06T00:33:07.00Z/2016-01-06T00:33:07.200Z';
-% TT = '2015-09-19T07:43:28.000Z/2015-09-19T07:43:33.000Z';
+TT = '2015-09-19T07:43:28.000Z/2015-09-19T07:43:33.000Z';
 % TT = '2017-02-20T04:43:57.00Z/2017-02-20T04:43:58.00Z';
 % TT = '2021-03-30T07:58:01.00Z/2021-03-30T07:58:02.00Z';
 % TT = '2020-07-27T11:30:23.00Z/2020-07-27T11:30:24.00Z';
@@ -50,10 +49,10 @@ Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 ic = 1:4;
-filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
-[filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
-
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+% filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
+% [filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
+% 
+% SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
 %% Poincare Index  
 SDCDataMove(TempDir,ParentDir); mms.db_init('local_file_db',ParentDir);
 
@@ -385,7 +384,7 @@ set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
 set(gcf,'Position',[10 10 xSize*coef ySize*coef])
 
 %% Index id
-length(find(Locerror<50 & Qerror<=1000))
+% length(find(Locerror<50 & Qerror<=1000))
 % tempidx_B1 = find(PI~=0);
 % tempidx_B1 = tempidx_B1(mean(dLoc(tempidx_B1,:),2) == min(mean(dLoc(tempidx_B1,:),2)));
 % tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));

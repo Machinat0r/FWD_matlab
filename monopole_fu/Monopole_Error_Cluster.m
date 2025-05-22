@@ -36,7 +36,7 @@ close all
 % % % TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % cd /Volumes/FWD-WorkDisk/Cluster
 % cd /Volumes/172.17.190.41/Data/Cluster/
-cd Z:\Data\Cluster\
+cd D:\Cluster\
 ic=1:4;
 % 
 % Tsta='2002-02-18T08:41:00.00Z';
@@ -45,8 +45,10 @@ ic=1:4;
 % Tend='2003-12-30T18:56:00.00Z';%7,268
 % % % Tsta = '2004-01-17T19:31:00.000Z';
 % % % Tend = '2004-01-17T19:32:00.000Z';
-Tsta = '2004-01-21T08:56:00.000Z';
-Tend = '2004-01-21T08:58:00.000Z';
+% % % Tsta = '2004-01-21T08:56:00.000Z';
+% % % Tend = '2004-01-21T08:58:00.000Z';
+Tsta='2002-08-21T08:18:30.000Z';
+Tend='2002-08-21T08:21:00.000Z';
 
 % Tsta = '2000-01-01T00:00:00.000Z';
 % Tend = '2020-01-01T00:00:00.000Z';
@@ -95,8 +97,10 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % Tend2='2003-12-29T13:40:26.320Z';
 % % % Tsta2='2004-01-21T08:56:59.275Z';
 % % % Tend2='2004-01-21T08:56:59.435Z';
-Tsta2='2004-01-21T08:56:57.750Z';
-Tend2='2004-01-21T08:57:00.500Z';
+% % % Tsta2='2004-01-21T08:56:57.750Z';
+% % % Tend2='2004-01-21T08:57:00.500Z';
+Tsta2='2002-08-21T08:19:30.000Z';
+Tend2='2002-08-21T08:20:00.000Z';
 tint2=[iso2epoch(Tsta2) iso2epoch(Tend2)];
 % tint2=tint;
 

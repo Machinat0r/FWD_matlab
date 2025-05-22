@@ -1,4 +1,6 @@
- Tintr = irf.tint('2017-07-06T17:47:06.00Z/2017-07-06T17:47:14.00Z');
+
+%%
+Tintr = irf.tint('2017-07-12T11:54:33.600Z/2017-07-12T11:54:35.400Z');
 c_eval('tic; gseB? = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gse_brst_l2'',Tintr); toc;',ic);
 c_eval('tic; gsmB? = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',Tintr); toc;',ic);
 c_eval('ne? = mms.get_data(''Ne_fpi_brst_l2'',Tintr,?);',ic);
@@ -7,7 +9,7 @@ c_eval('facPepp? = mms.rotate_tensor(gsePe?,''fac'',gseB?,''pp'');',ic); % Peper
 c_eval('facPeqq? = mms.rotate_tensor(gsePe?,''fac'',gseB?,''qq'');',ic); % Peperp1 and Peperp2 are most unequal
 c_eval('Q? = (facPepp?.xy.data.^2+facPepp?.xz.data.^2+facPepp?.yz.data.^2)./(facPepp?.yy.data.^2+2*facPepp?.yy.data.*facPepp?.xx.data);',ic);
 c_eval('Q? = irf.ts_scalar(ne?.time,sqrt(Q?));',ic);
-load agyrotropy640
+load agyrotropy40
 load energy_pad6
 
 

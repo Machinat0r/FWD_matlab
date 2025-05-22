@@ -659,7 +659,7 @@ set(gcf,'color','w');
 ic=1:4;
 % tintDist = irf.tint('2017-07-20T11:44:01.00Z/2017-07-20T11:44:05.00Z');
 % tintDist = irf.tint('2017-07-17T07:53:05.50Z/2017-07-17T07:53:06.10Z');
-tintDist = irf.tint('2017-07-17T07:53:16.317Z/2017-07-17T07:53:16.50Z');
+tintDist = irf.tint('2017-07-12T11:54:00.000Z/2017-07-12T11:55:00.000Z');
 c_eval('dist? = ePDist?.convertto(''s^3/km^6'');',ic)
 c_eval('dist_scm? = ePDist?;',ic)
  c_eval('scpot? = scPot?;',ic)

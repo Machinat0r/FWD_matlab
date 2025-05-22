@@ -2,6 +2,7 @@ function [Q,resQ,LocPoint,resLoc] = CalError(varargin)
 % function [LocRes,Loc,LocPoint,Point] = CalError(varargin)
 % PlotFlag choose whether to find the intersection of two tetrahedrons, if
 % PlotFlag = 2, solute the intersection
+% R, B, idx_R, idx_flag, MultiPower, LocationSkew
 %------written by Wending Fu, May.8.2022 in Beijing------------
 % lb,ub未启用
 %% input data
@@ -56,10 +57,10 @@ if isempty(find(cell2mat(flag)>=-1, 1))
     Q = nan;resQ = nan*ones(6,1);
     resLoc = nan*ones(6,3);LocPoint = nan*ones(1,3);
 else
-resQ = [t{1}(1);t{2}(1);t{3}(1);t{4}(1);t{5}(1);t{6}(1)];
+resQ = [t{1}(:,1)';t{2}(:,1)';t{3}(:,1)';t{4}(:,1)';t{5}(:,1)';t{6}(:,1)'];
 % units = irf_units;
 % resQ = resQ / units.mu0;
-resLoc = [t{1}(2:4);t{2}(2:4);t{3}(2:4);t{4}(2:4);t{5}(2:4);t{6}(2:4)];
+resLoc = [t{1}(:,2:4);t{2}(:,2:4);t{3}(:,2:4);t{4}(:,2:4);t{5}(:,2:4);t{6}(:,2:4)];
 Q = mean(resQ);
 
 LocPoint = resLoc(1,:);
@@ -257,12 +258,14 @@ end
 %% 2 S/C data into the monopole model to solve the Q & location
 function [t,residual,flag]=ModelSolve(R1,R2,R3,R4,B1,B2,B3,B4,lb,ub,MultiPower,idx_flag,LocationSkew)
 % x0 = [idx_flag*1e4*MultiPower+15,10,10,10];
-x0 = [idx_flag*1e4*MultiPower+15,LocationSkew*ones(1,3)];
+% x0 = [idx_flag*1e4*MultiPower+15,LocationSkew*ones(1,3)];
+x0 = [idx_flag*1e4*MultiPower*ones(size(B1,1),1),LocationSkew*ones(size(B1,1),3)];
 % x0 = [idx_flag*1e4*MultiPower,3,-1,2];
 % x0 = [idx_flag*1e4*MultiPower,ones(1,3)*MultiPower];
 % x0 = [idx_flag*1e4*MultiPower,0,0,0];
 % lb = [0.1*idx_flag*1e4*MultiPower,1000*ones(1,3)*MultiPower]; ub = [ub,1000*ones(1,3)*MultiPower];
 lb = [];ub = [];
+% options = optimoptions('lsqnonlin','UseParallel',true);
 options = optimoptions('lsqnonlin');
 % options = optimoptions('lsqnonlin','Algorithm','trust-region-reflective',...
     % 'OptimalityTolerance',1e-10,'FunctionTolerance',1e-10,'MaxFunctionEvaluations',1e4,'MaxIterations',1e4);
@@ -287,63 +290,63 @@ end
 
 function myfun1 = myfunc1(t,B1,B2,B3,B4,R1,R2,R3,R4)
 % t = [Q,x,y,z]
-    loc = [t(2),t(3),t(4)];
+    loc = [t(:,2),t(:,3),t(:,4)];
     c_eval('d? = R?(:,2:4)-loc;');
     c_eval('d? = irf_abs(d?);');
-    c_eval('dnorm? = d?(:,1:3)/d?(:,4);');
+    c_eval('dnorm? = d?(:,1:3)./d?(:,4);');
      
-    myfun1 = [t(1)/(4*pi*(d1(4))^2)*dnorm1' - B1(:,2:4)';...
-             t(1)/(4*pi*(d2(4))^2)*dnorm2' - B2(:,2:4)';];
+    myfun1 = [transpose(t(:,1)./(4*pi*(d1(:,4)).^2).*dnorm1 - B1(:,2:4));...
+             transpose(t(:,1)./(4*pi*(d2(:,4)).^2).*dnorm2 - B2(:,2:4));];
 end
 function myfun2 = myfunc2(t,B1,B2,B3,B4,R1,R2,R3,R4)
 % t = [Q,x,y,z]
-    loc = [t(2),t(3),t(4)];
+    loc = [t(:,2),t(:,3),t(:,4)];
     c_eval('d? = R?(:,2:4)-loc;');
     c_eval('d? = irf_abs(d?);');
-    c_eval('dnorm? = d?(:,1:3)/d?(:,4);');
+    c_eval('dnorm? = d?(:,1:3)./d?(:,4);');
      
-    myfun2 = [t(1)/(4*pi*(d2(4))^2)*dnorm2' - B2(:,2:4)';...
-             t(1)/(4*pi*(d3(4))^2)*dnorm3' - B3(:,2:4)';];
+    myfun2 = [transpose(t(:,1)./(4*pi*(d2(:,4)).^2).*dnorm2 - B2(:,2:4));...
+             transpose(t(:,1)./(4*pi*(d3(:,4)).^2).*dnorm3 - B3(:,2:4));];
 end
 function myfun3 = myfunc3(t,B1,B2,B3,B4,R1,R2,R3,R4)
 % t = [Q,x,y,z]
-    loc = [t(2),t(3),t(4)];
+    loc = [t(:,2),t(:,3),t(:,4)];
     c_eval('d? = R?(:,2:4)-loc;');
     c_eval('d? = irf_abs(d?);');
-    c_eval('dnorm? = d?(:,1:3)/d?(:,4);');
+    c_eval('dnorm? = d?(:,1:3)./d?(:,4);');
      
-    myfun3 = [t(1)/(4*pi*(d3(4))^2)*dnorm3' - B3(:,2:4)';...
-             t(1)/(4*pi*(d4(4))^2)*dnorm4' - B4(:,2:4)';];
+    myfun3 = [transpose(t(:,1)./(4*pi*(d3(:,4)).^2).*dnorm3 - B3(:,2:4));...
+             transpose(t(:,1)./(4*pi*(d4(:,4)).^2).*dnorm4 - B4(:,2:4));];
 end
 function myfun4 = myfunc4(t,B1,B2,B3,B4,R1,R2,R3,R4)
 % t = [Q,x,y,z]
-    loc = [t(2),t(3),t(4)];
+    loc = [t(:,2),t(:,3),t(:,4)];
     c_eval('d? = R?(:,2:4)-loc;');
     c_eval('d? = irf_abs(d?);');
-    c_eval('dnorm? = d?(:,1:3)/d?(:,4);');
+    c_eval('dnorm? = d?(:,1:3)./d?(:,4);');
      
-    myfun4 = [t(1)/(4*pi*(d1(4))^2)*dnorm1' - B1(:,2:4)';...
-             t(1)/(4*pi*(d3(4))^2)*dnorm3' - B3(:,2:4)';];
+    myfun4 = [transpose(t(:,1)./(4*pi*(d1(:,4)).^2).*dnorm1 - B1(:,2:4));...
+             transpose(t(:,1)./(4*pi*(d3(:,4)).^2).*dnorm3 - B3(:,2:4));];
 end
 function myfun5 = myfunc5(t,B1,B2,B3,B4,R1,R2,R3,R4)
 % t = [Q,x,y,z]
-    loc = [t(2),t(3),t(4)];
+    loc = [t(:,2),t(:,3),t(:,4)];
     c_eval('d? = R?(:,2:4)-loc;');
     c_eval('d? = irf_abs(d?);');
-    c_eval('dnorm? = d?(:,1:3)/d?(:,4);');
+    c_eval('dnorm? = d?(:,1:3)./d?(:,4);');
      
-    myfun5 = [t(1)/(4*pi*(d1(4))^2)*dnorm1' - B1(:,2:4)';...
-             t(1)/(4*pi*(d4(4))^2)*dnorm4' - B4(:,2:4)';];
+    myfun5 = [transpose(t(:,1)./(4*pi*(d1(:,4)).^2).*dnorm1 - B1(:,2:4));...
+             transpose(t(:,1)./(4*pi*(d4(:,4)).^2).*dnorm4 - B4(:,2:4));];
 end
 function myfun6 = myfunc6(t,B1,B2,B3,B4,R1,R2,R3,R4)
 % t = [Q,x,y,z]
-    loc = [t(2),t(3),t(4)];
+    loc = [t(:,2),t(:,3),t(:,4)];
     c_eval('d? = R?(:,2:4)-loc;');
     c_eval('d? = irf_abs(d?);');
-    c_eval('dnorm? = d?(:,1:3)/d?(:,4);');
+    c_eval('dnorm? = d?(:,1:3)./d?(:,4);');
      
-    myfun6 = [t(1)/(4*pi*(d2(4))^2)*dnorm2' - B2(:,2:4)';...
-             t(1)/(4*pi*(d4(4))^2)*dnorm4' - B4(:,2:4)';];
+    myfun6 = [transpose(t(:,1)./(4*pi*(d2(:,4)).^2).*dnorm2 - B2(:,2:4));...
+             transpose(t(:,1)./(4*pi*(d4(:,4)).^2).*dnorm4 - B4(:,2:4));];
 end
 
 %% plane equation

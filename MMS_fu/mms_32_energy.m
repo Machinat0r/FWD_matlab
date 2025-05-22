@@ -39,11 +39,11 @@ clear,clc
 
 
 % tint = irf.tint('2017-08-23T15:38:50.00Z/2017-08-23T15:39:05.00Z');
-tint = irf.tint('2021-07-21T13:19:55.00Z/2021-07-21T13:20:15.00Z');
+tint = irf.tint('2020-08-03T01:45:23.000Z/2020-08-03T01:45:38.000Z');
 ic = 2;
 
-c_eval("d=dataobj('D:\MMS\mms?\fpi\brst\l2\des-dist\2021\07\21\mms?_fpi_brst_l2_des-dist_20210721131953_v3.4.0.cdf');",ic);
-c_eval("b=dataobj('D:\MMS\mms?\fgm\brst\l2\2021\07\21\mms?_fgm_brst_l2_20210721131953_v5.304.0.cdf');",ic);
+c_eval("d=dataobj('D:\MMS\mms2\fpi\brst\l2\des-dist\2020\08\03\mms2_fpi_brst_l2_des-dist_20200803014513_v3.4.0.cdf');",ic);
+c_eval("b=dataobj('D:\MMS\mms2\fgm\brst\l2\2020\08\03\mms2_fgm_brst_l2_20200803014513_v5.256.1.cdf');",ic);
 % % tint=irf.tint('2017-07-03T22:45:20.00Z/2017-07-03T22:46:20.00Z');
 %%%%%%%%%%%%%%%%%%   ion   %%%%%%%%%%%%%%%%%%%%%%%
 % diste = get_ts(d,'mms1_dis_dist_brst');

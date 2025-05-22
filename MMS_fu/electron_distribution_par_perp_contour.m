@@ -1,13 +1,14 @@
 clear
 clc;close all
-mms.db_init('local_file_db','/Volumes/172.17.190.41/Data/MMS/')
+mms.db_init('local_file_db','D:/MMS/')
 %% Load PDist using mms.make_pdist
 %for ic = 1:3; % spacecraft id
 ic=1;
 % Time='2015-09-19T07:43:31.115Z';
 % Time='2019-08-05T16:24:34.500Z';
 % time = irf_time(Time,'utc>epochtt');
-time = irf.tint('2019-08-05T16:24:30.00Z/2019-08-05T16:24:40.00Z');
+% time = irf.tint('2019-08-05T16:24:30.00Z/2019-08-05T16:24:40.00Z');
+time = irf.tint('2017-07-12T11:54:00.000Z/2017-07-12T11:55:00.000Z');
 
 %[filepath,filename] = mms.get_filepath('mms2_fpi_brst_l2_des-dist',time);
 c_eval('filepath_and_filename = mms.get_filepath(''mms?_fpi_brst_l2_des-dist'',time);',ic);
@@ -22,12 +23,10 @@ c_eval('dslE?=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_dsl_brst_l2'
 %dmpaB1=mms.db_get_ts('mms1_fgm_brst_l2','mms1_fgm_b_dmpa_brst_l2',tint);
 
 %% plots: particle distributions
-
 for ip=1
-
 switch ip
     case 1
-Time='2019-08-05T16:24:34.500Z';
+time='2017-07-12T11:54:34.000Z';
 % Time='2015-09-19T07:43:31.115Z';
     case 2
 Time='2019-08-05T16:24:34.00Z';
@@ -41,9 +40,11 @@ end
   %D=num2str(C);
   %Time(18:22)=D;
   % time = irf_time(Time,'utc>epochtt');
-  time = irf.tint('2019-08-05T16:24:34.500Z/2019-08-05T16:24:35.000Z');
-  
-  c_eval('ePitch? = ePDist?.pitchangles(dmpaB?,[17]);',ic);
+  time = irf.tint('2017-07-12T11:54:34.000Z/2017-07-12T11:54:35.000Z');
+  % time = irf.tint('2017-07-12T11:54:33.000Z/2017-07-12T11:54:34.000Z');
+  % time = irf.tint('2017-07-12T11:54:35.500Z/2017-07-12T11:54:36.500Z');
+
+  c_eval('ePitch? = ePDist?.pitchangles(dmpaB?,[15]);',ic);
   c_eval('scpot = scPot?.resample(time);',ic);  
   c_eval('Ve= Vdbcs?.resample(time).data;',ic);
   hatVe = double(irf_norm(Ve));
@@ -57,30 +58,33 @@ end
   %perp2=cross(N,hatB0);
   %perp1=N;
   %perp2=[0.14,  0.17,  0.98];
-  %c_eval('E0 = dslE?.resample(time).data;',ic); 
-  %hatE0 = double(irf_norm(E0));
-  %hatExB0 = cross(hatE0,hatB0);
+  c_eval('E0 = dslE?.resample(time).data;',ic); 
+  hatE0 = double(irf_norm(E0));
+  hatExB0 = cross(hatE0,hatB0);
   
 
  % optional input parameters for projection plot
-  vlim = 50*1e3; % x and ylim
+  vlim = 25*1e3; % x and ylim
   elevlim = 20; % angle over plane to include in slice
   strCMap = 'jet'; % colormap
-  projclim = [-1.5 0.5]; % colorbar limit
+  projclim = [-1 1.4]; % colorbar limit
   colormap('jet')
 
-  %x = hatE0;
-  %y = hatExB0;
-  %z = hatB0;
-  x = perp1;
-  y = perp2;
-  z = para;
+  % x = hatE0;
+  % y = hatExB0;
+  % z = hatB0;
+  x = mean(cross(cross(hatB0,hatE0),hatB0),1);
+  y = mean(cross(hatB0,hatE0),1);
+  z = mean(hatB0,1);
+  % x = perp1;
+  % y = perp2;
+  % z = para;
   % % % c_eval('tInd = find(abs(ePDist?.time-time)==min(abs(ePDist?.time-time)));',ic);
 
  % Initialize figure
-hhh = figure; 
+% hhh = figure; 
   nRows = 3; nCols = 1;
-    for ii = 1:nRows*nCols;
+    for ii = 1:nRows*nCols
         h(ii) = subplot(nRows,nCols,ii); 
     end
     isub = 1;

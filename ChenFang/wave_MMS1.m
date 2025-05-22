@@ -1,11 +1,26 @@
 clear
 clc
 
-mms.db_init('local_file_db','D:\Works\mms_db\data');
-%tint = irf.tint('2018-09-11T08:05:38.00Z/2018-09-11T08:05:42.00Z');
-tint=irf.tint('2019-03-29T13:22:50.00Z/2019-03-29T13:23:30.00Z');
-%tint = irf.tint('2018-09-08T13:23:30.00Z/2018-09-08T13:24:30.00Z');
-ic=1;
+global ParentDir 
+ParentDir = 'D:/MMS/'; 
+DownloadDir = 'C:/MMS/';
+TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
+
+
+% TT = '2017-06-19T03:54:16.000Z/2017-06-19T03:54:20.000Z';
+% TT = '2017-07-06T01:44:55.000Z/2017-07-06T01:45:04.000Z';
+% % % TT = '2017-07-06T17:31:58.000Z/2017-07-06T17:31:59.500Z';
+% TT = '2019-07-29T16:06:16.000Z/2019-07-29T16:06:19.000Z';
+TT = '2017-07-12T11:54:33.600Z/2017-07-12T11:54:35.400Z';
+% TT = '2017-05-25T04:40:29.500Z/2017-05-25T04:40:33.000Z';
+
+
+tint=irf.tint(TT);
+Datelist = regexp(TT,'\d+-\d+-\d+','match');
+Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
+Date = [Datelist{1},'/',Datelist{2}];
+ic = 1;
+iic = 1:4;
 
 %% Load Data 
 c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',tint);',ic);
@@ -141,13 +156,14 @@ Fpe = Wpe/2/pi;
 Fcp = Fce/Mp_Me;
 Fpp = Wpp/2/pi;
 Flh = sqrt(Fcp.*Fce./(1+Fce.^2./Fpe.^2)+Fcp.^2);
+Fuh = sqrt(Fce.^2 + Fpe.^2);
 Fpe = irf.ts_scalar(magB.time,Fpe);
 Fce = irf.ts_scalar(magB.time,Fce);
 Flh = irf.ts_scalar(magB.time,Flh);
 Fpp = irf.ts_scalar(magB.time,Fpp);
 Fce01=irf.ts_scalar(magB.time,Fce01);
 Fce05=irf.ts_scalar(magB.time,Fce05);
-
+Fuh = irf.ts_scalar(magB.time,Fuh);
 %% Init figure
 n_subplots=3;
 i_subplot=1;
@@ -218,6 +234,7 @@ h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 [a2,b2]=irf_spectrogram(h(2),specE,'log');
 hold(h(2),'on');
 % irf_plot(h(2),Fpe,'color','k','LineWidth',1.5)
+% irf_plot(h(2),Fuh,'k--','LineWidth',1.5)
 irf_plot(h(2),Flh,'color','k','LineWidth',1.5)
 irf_plot(h(2),Fce,'color','r','LineWidth',1.5)
 irf_plot(h(2),Fce01,'color','w','LineWidth',1.5)
@@ -317,4 +334,4 @@ set(gcf,'render','painters');
 % 
  figname=['waveMP'];
 % 
- print(gcf, '-dpng', [figname '.png']);
+ % print(gcf, '-dpng', [figname '.png']);

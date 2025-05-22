@@ -1,10 +1,11 @@
 clear;
 ic = 1:4;
-tint = irf.tint('2017-07-06T17:47:00.00Z/2017-07-06T17:47:15.00Z');
+% tint = irf.tint('2017-07-06T17:47:00.00Z/2017-07-06T17:47:15.00Z');
 % tint = irf.tint('2017-07-17T07:53:00.00Z/2017-07-17T07:53:10.00Z');
+tint = irf.tint('2017-07-12T11:54:00.00Z/2017-07-12T11:55:00.00Z');
 
 %% Load datastore
-mms.db_init('local_file_db','D:\Works\mms_db\data');
+mms.db_init('local_file_db','D:\MMS\');
 db_info = datastore('mms_db');   
 
 %% Load defatt, for coordinate tranformation
@@ -59,7 +60,7 @@ disp('Loading skymaps...')
 %c_eval('iPDist? = mms.get_data(''PDi_fpi_brst_l2'',tint,?);',ic)
 
 % c_eval('tic; [iPDist?,iPDistErr?] = mms.make_pdist(mms.get_filepath(''mms?_fpi_brst_l2_dis-dist'',tint+[20 0])); toc',ic)
-c_eval('tic; [ePDist?,ePDistErr?] = mms.make_pdist(mms.get_filepath(''mms?_fpi_brst_l2_des-dist'',tint+[20 0])); toc',ic)
+c_eval('tic; [ePDist?,ePDistErr?] = mms.make_pdist(mms.get_filepath(''mms?_fpi_brst_l2_des-dist'',tint)); toc',ic)
 
 % Remove all one-count "noise"
 %c_eval('iPDist?.data(iPDist?.data<iPDistErr?.data*1.1) = 0;',ic)
