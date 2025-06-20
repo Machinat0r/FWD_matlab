@@ -1,14 +1,14 @@
 clear; close all
 clc
 
-ic=3;
+ic=2;
 
 % tint=irf.tint('2017-08-23T15:38:20Z/2017-08-23T15:39:15Z');
 % tint=irf.tint('2019-07-19T13:46:50.000Z/2019-07-19T13:47:20.000Z');
 % tint=irf.tint('2019-08-16T09:31:57.500Z/2019-08-16T09:31:59.000Z');
-tint=irf.tint('2019-08-16T09:31:45.000Z/2019-08-16T09:32:15.000Z');
+tint=irf.tint('2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.900Z');
 
-c_eval('fpiFile? = dataobj(''/Volumes/172.17.190.41/Data/MMS/mms3/fpi/brst/l2/des-dist/2019/08/16/mms3_fpi_brst_l2_des-dist_20190816093103_v3.4.0.cdf'');',ic);
+c_eval('fpiFile? = dataobj(''D:\MMS\mms2\fpi\brst\l2\des-dist\2020\08\03\mms2_fpi_brst_l2_des-dist_20200803014513_v3.4.0.cdf'');',ic);
 c_eval('diste_struct = get_variable(fpiFile?,''mms?_des_dist_brst'');',ic);
 % c_eval('diste_struct = mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
 thetae=diste_struct.DEPEND_2.data;
@@ -61,14 +61,14 @@ end
 
 timeomni=irf_time(phie.time,'epochTT>epoch');
 % time1='2019-08-16T09:31:57.500Z';
-time1='2019-08-16T09:31:45.000Z';
+time1='2020-08-03T01:45:27.500Z';
 time1=iso2epoch(time1);
 % % % 
 
 
 idt1=find(timeomni>time1);
 t=idt1(1);
-dt = 30*32;
+dt = 40;
 chan=energyspec(t,:);
 psd=mean(PSDomni(t:t+dt,:));
 psd=transpose(psd);
@@ -111,17 +111,21 @@ e=1.6e-19;
 % Te=50;
 % X1=[14.63,19.15,25.07,32.810001,42.950001,56.23,73.599998,96.339996,126.12,165.09,216.11,282.89001,370.31,484.73999,634.53998,830.63,1087.3101]%此处X1取能道在14.63eV（包含）之后
 % F1=Ne*1e24*power(m/(2*pi*k*Te*11605),3/2)*exp(-X1*e/(k*Te*11605));%此处X1取能道在14.63eV（包含）之后
-Ne=0.1151;
-Te=10;
+Ne=0.10;
+Te=15;
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);
-X1=[32.810001,42.950001,56.23,73.599998,96.339996,126.12,165.09,216.11,282.89001,370.31,484.73999];%此处X1取能道在165eV（包含）之后
+% X1=[32.810001,42.950001,56.23,73.599998,96.339996,126.12,165.09,216.11,282.89001,370.31,484.73999];%此处X1取能道在165eV（包含）之后
+X1 = energye0(6:12);
 F1=Ne*1e24*power(m/(2*pi*k*Te*11605),3/2)*exp(-X1*e/(k*Te*11605));%此处X2取能道在165eV（包含）之后
 
 %% 拟合后九点
-Ne=0.1151;
-Te=5000;
+Ne=0.23;
+Te=1500;
+% Ne=0.13;
+% Te=500;
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);
-X2=[830.63,1087.3101,1423.3199,1863.16,2438.9199,3192.6101,4179.2002,5470.6802,7161.25,9374.25,12271.12,16063.2,21027.109,27525];%此处X1取能道在165eV（包含）之后
+% X2=[830.63,1087.3101,1423.3199,1863.16,2438.9199,3192.6101,4179.2002,5470.6802,7161.25,9374.25,12271.12,16063.2,21027.109,27525];%此处X1取能道在165eV（包含）之后
+X2 = energye0(10:28);
 F2=Ne*1e24*power(m/(2*pi*k*Te*11605),3/2)*exp(-X2*e/(k*Te*11605));%此处X2取能道在165eV（包含）之后
 
 %% 画图

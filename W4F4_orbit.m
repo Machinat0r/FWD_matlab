@@ -1,22 +1,24 @@
 clear;clc
 
 global ParentDir 
-ParentDir = 'D:/MMS/'; 
+ParentDir = 'C:/MMS/'; 
 % TempDir = 'E:\MMS\temp\';mkdir(TempDir);
 % TT = '2019-08-05T16:24:00.00Z/2019-08-05T16:25:00.00Z';
 % TT = '2017-08-07T16:31:30.00Z/2017-08-07T16:33:00.00Z';
 % TT = '2017-07-06T17:31:30.000Z/2017-07-06T17:32:30.000Z';
 % TT = '2017-08-20T02:01:00.00Z/2017-08-20T02:03:00.00Z';
 % TT = '2019-01-16T04:09:00.000Z/2019-01-16T04:10:00.000Z';
-TT = '2015-09-19T07:43:31.000Z/2015-09-19T07:43:32.000Z';
+% TT = '2015-09-19T07:43:31.000Z/2015-09-19T07:43:32.000Z';
+% TT = '2020-08-03T01:45:23.000Z/2020-08-03T01:45:38.000Z';
+TT ='2021-07-17T17:25:18.000Z/2021-07-17T17:25:25.000Z';
 tint=irf.tint(TT);
 
 %%
 mms.db_init('local_file_db',ParentDir);
 % h = irf_gse2gsm(mms.mms4_pl_conf(tint));
 h = mms.mms4_pl_conf(tint);
-h = mms.mms4_pl_conf('gse');
-h = mms.mms4_pl_conf('config3D');
+h = mms.mms4_pl_conf('gsm');
+% h = mms.mms4_pl_conf('config3D');
 % h = mms.mms4_pl_eb(tint)
 %% Neutral Sheet
 % x = -25:0.1:0;

@@ -4,14 +4,15 @@
 % Written by D. B. Graham
 clear;
 clc;
-mms.db_init('local_file_db','E:\My_work\mms_db\data');
-ic = 3; % Spacecraft number
+mms.db_init('local_file_db','D:/MMS/');
+ic = 2; % Spacecraft number
 
 % Tintr = irf.tint('2019-08-16T09:31:45.0Z/2019-08-16T09:32:15.0Z');
 % 
 
-Tintr = irf.tint('2020-07-15T23:22:22.100Z/2020-07-15T23:22:22.510Z');
-Tintr = irf.tint('2020-07-15T23:22:21.100Z/2020-07-15T23:22:21.510Z');
+Tintr = irf.tint('2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.900Z');
+% Tintr = irf.tint('2020-08-03T01:45:24.000Z/2020-08-03T01:45:25.000Z');
+% Tintr = irf.tint('2020-07-15T23:22:21.100Z/2020-07-15T23:22:21.510Z');
 % Tintr = irf.tint('2020-07-15T23:22:21.800Z/2020-07-15T23:22:22.800Z');
 % Tintr = irf.tint('2019-08-16T09:31:04.700Z/2019-08-16T09:32:04.960Z');
 %% Load data
@@ -28,7 +29,7 @@ SCpot = SCpot.resample(ePDist);
 
 %% 连续时间平均分布
 
-Paddist(32,24)=0
+Paddist(32,24)=0;
 %% Produce a single PAD at a selected time
 % for ii=1:length(ePDist.time.epoch)
 time = irf_time(ePDist.time,'epochTT>utc');
@@ -132,4 +133,4 @@ set(gcf,'color','w');
 paddistsmooth2=paddistsmooth
 save energypad.mat energypad
 save thetapad.mat thetapad
-save paddist2.mat paddistsmooth2
+save paddist1.mat paddistsmooth

@@ -25,15 +25,16 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2019-08-16T08:25:06.500Z/2019-08-16T08:25:09.000Z'; %case 13
 % TT = '2021-09-05T00:43:44.700Z/2021-09-05T00:43:49.000Z'; % case 14
 % TT = '2021-07-17T17:25:19.200Z/2021-07-17T17:25:21.500Z'; % case 15 , 1
-TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'; % case 16, 1/3
+% TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'; % case 16, 1/3
+ TT = '2017-06-27T22:44:35.000Z/2017-06-27T22:44:40.000Z';
 
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 2;
-iic = 2;
+ic = 1;
+iic = 1;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms');
 % filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
@@ -139,11 +140,11 @@ Ve1 = [smooth(gsmVe1(:,1),dspan),smooth(gsmVe1(:,2),dspan),...
     smooth(gsmVe1(:,3),dspan),smooth(gsmVe1(:,4),dspan)];
 
 c_eval('gsmVe? = [smooth(gsmVe?(:,1),dspan),smooth(gsmVe?(:,2),dspan),smooth(gsmVe?(:,3),dspan),smooth(gsmVe?(:,4),dspan)];',1)
-dd=2;
+dd=5;
 xx = Ve1(1:dd:end,1);
 B1_smooth = [smooth(B1(:,1),dspan),smooth(B1(:,2),dspan),...
     smooth(B1(:,3),dspan),smooth(B1(:,4),dspan)];
-dd_B = 3;
+dd_B = 15;
 BB = B1(1:dd_B:end,1);
 % xx=xx';
 %%
@@ -181,7 +182,7 @@ plot(B1(:,1), B1(:,2), 'color','b', 'Linewidth',0.75); hold on;
 plot(B1(:,1), B1(:,3), 'color','g', 'Linewidth',0.75); hold on;
 plot(B1(:,1), B1(:,4), 'color','r', 'Linewidth',0.75); hold on;
 plot(B1(:,1), B1(:,2)*0, 'color','k', 'Linewidth',0.75); hold on;
-set(gca,'Ylim',[-10 10]);
+set(gca,'Ylim',[-10 20]);
 set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0]]);
 irf_legend(gca,{'B_x','B_y','B_z'},[0.97 0.92]);
 ylabel('B [nT]','fontsize',8);
@@ -189,12 +190,12 @@ ylabel('B [nT]','fontsize',8);
 h(2) = irf_subplot(4,1,-2);
 
 q=quiver(BB,0*BB,B1_smooth(1:dd_B:end,2),B1_smooth(1:dd_B:end,3),0.5);
-ylim([-0.08,0.08])
+ylim([-0.4 0.4])
 q.ShowArrowHead = 'off';
 
 h(3) = irf_subplot(4,1,-3);
 q=quiver(xx,0*xx,Ve1(1:dd:end,2),Ve1(1:dd:end,3),0.5);
-ylim([-0.02, 0.03])
+ylim([-0.2, 0.2])
 q.ShowArrowHead = 'off';
 
 h(4) = irf_subplot(4,1,-4);

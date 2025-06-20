@@ -26,7 +26,8 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2020-08-02T16:56:10.00Z/2020-08-02T16:56:25.00Z';
 % TT = '2017-06-25T05:06:58.00Z/2017-06-25T05:07:02.00Z';
 % TT = '2019-08-16T09:31:57.500Z/2019-08-16T09:31:58.750Z';
-TT = '2020-08-03T01:45:23.000Z/2020-08-03T01:45:38.000Z'; % case 16-short
+% TT = '2020-08-03T01:45:23.000Z/2020-08-03T01:45:38.000Z'; % case 16-short
+TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'; 
 % TT = '2017-07-18T13:04:50.00Z/2017-07-18T13:05:00.00Z';
 
 tint=irf.tint(TT);
@@ -172,8 +173,8 @@ for ii = [1:length(idx)]
 end
 specperpE=struct('t',Ewavelettimes);
 specperpE.f=Ewavelet.f;
-% specperpE.p=Ewaveletx+Ewavelety;
-specperpE.p=Ewaveletx+Ewavelety+Ewaveletz;
+specperpE.p=Ewaveletx+Ewavelety;
+% specperpE.p=Ewaveletx+Ewavelety+Ewaveletz;
 specperpE.f_label='';
 specperpE.p_label={'log_{10} E_{\perp}^2','mV^2 m^{-2} Hz^{-1}'};
 
@@ -309,7 +310,7 @@ irf_plot(h(4),Fce,'color','r','LineWidth',1.5);hold on;
 grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e1 1e2 1e3 1e4]);
-set(gca,'ylim',[2, 4000]);
+set(gca,'ylim',[2, 1e2]);
 clim(h(4),[-8 1]);
 ylabel(h(4),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
@@ -374,7 +375,7 @@ set(gca,'ytick',[1e-1 1e0 1e1 1e2 1e3 1e4]);
 set(gca,'ylim',[2 4e3]);
 % set(gca,'ylim',[50,400]);
 set(gca,'XTickLabelRotation',0)
-clim(h(7),[-8 0]);
+clim(h(7),[-8 -6]);
 ylabel(h(7),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
 poscbar(3)=poscbar(3)*0.5;

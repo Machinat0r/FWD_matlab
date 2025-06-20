@@ -4,8 +4,8 @@ close all
 
 mms.db_init('local_file_db','D:\MMS\');
 
-ic=1;
-Tintr = irf.tint('2021-07-21T13:19:55.00Z/2021-07-21T13:20:15.00Z');
+ic=2;
+Tintr = irf.tint('2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.900Z');
 % Tintr = irf.tint('2017-08-23T15:38:20Z/2017-08-23T15:39:15Z');
 % Tintr=irf.tint('2017-07-06T03:08:50.00Z/2017-07-06T03:09:23.00Z');
 % Tintr = irf.tint('2020-07-09T16:49:35.00Z/2020-07-09T16:49:50.00Z');
@@ -44,7 +44,7 @@ Bxyz=mms.get_data('B_gse_brst',Tintr,ic);
 
 %% Produce a single PAD at a selected time
 % tint1 = irf_time('2021-07-21T13:19:58.00Z','utc>epochTT');
-tint1=irf.tint('2021-07-21T13:19:59.200Z/2021-07-21T13:19:59.400Z');
+tint1=irf.tint('2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.900Z');
 [paddist01,thetapad,energypad,tintpad1] = mms_get_pitchangledist_my_change(diste,Bxyz,tint1); 
 paddist01 = paddist01*1e30; 
 % [paddist1,thetapad,energypad,tintpad1] = mms_get_pitchangledist_my_change(diste,Bxyz,tint1); 

@@ -3,14 +3,14 @@ clc;
 close all
 
 global ParentDir 
-ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
-DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+ParentDir = 'D:/MMS/'; 
+DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 mms.db_init('local_file_db', ParentDir);
 
-ic=1;
+ic=2;
 
-Tintr = irf.tint('2021-08-22T06:40:00.00Z/2021-08-22T06:42:00.00');
+Tintr = irf.tint('2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z');
 
 %% Load data
 %
@@ -46,7 +46,7 @@ Bxyz=mms.get_data('B_gse_brst',Tintr,ic);
 
 %% Produce a single PAD at a selected time
 % tint1 = irf_time('2017-06-11T01:59:25.00Z','utc>epochTT');
-tint1=irf.tint('2021-08-22T06:40:33.00Z/2021-08-22T06:40:36.00');
+tint1=irf.tint('2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.500Z');
 [paddist01,thetapad,energypad,tintpad1] = mms_get_pitchangledist_my_change(diste,Bxyz,tint1); 
 paddist01 = paddist01*1e30; 
 %
@@ -60,7 +60,7 @@ end
 
 
 % tint2 = irf_time('2017-06-19T03:52:10.00Z','utc>epochTT');
-tint2=irf.tint('2021-08-22T06:41:13.00Z/2021-08-22T06:41:16.00');
+tint2=irf.tint('2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.500Z');
 [paddist02,thetapad,energypad,tintpad2] = mms_get_pitchangledist_my_change(diste,Bxyz,tint2); 
 paddist02 = paddist02*1e30;
 %
@@ -72,7 +72,7 @@ for ii=1:32,
 end
 %
 % tint3 = irf_time('2017-06-19T03:52:15.00Z','utc>epochTT');
-tint3=irf.tint('2021-08-22T06:41:43.00Z/2021-08-22T06:41:46.00');
+tint3=irf.tint('2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.500Z');
 [paddist03,thetapad,energypad,tintpad3] = mms_get_pitchangledist_my_change(diste,Bxyz,tint3); 
 paddist03 = paddist03*1e30; 
 %
@@ -111,9 +111,9 @@ end
 %     sum_paddist5(ii,:)=nansum(paddist5(ii,:));
 % end
 
-paddist_1=paddist1(17:32,:);
+paddist_1=paddist1(10:30,:);
 paddist_2=paddist2(17:32,:);
-paddist_3=paddist3(17:32,:);
+paddist_3=paddist3(15:26,:);
 % paddist_4=paddist4(17:32,:);
 
 % paddist_5=paddist5(17:32,:);
@@ -284,20 +284,20 @@ title(h(2),strcat('MMS',num2str(ic),'-',tintutc2(23:2:38),'UT'));
 jetcolor = colormap('jet');
 hold(h(3),'on');
 %  set(h(3),'defaultLineLineWidth',1.5); 
-c_eval('plot(h(3),thetapad,paddist_3(?,:),''color'',jetcolor(15*?+12,:));',1:16);
+c_eval('plot(h(3),thetapad,paddist_3(?,:),''color'',jetcolor(15*?+12,:));',1:size(paddist_3,1));
 
 hold(h(3),'off');
 
 
-for i=1:length(energypad(17:32))
-    a=roundn(energypad(1,17:32)/1000,-3);
+for i=1:length(energypad(15:26))
+    a=roundn(energypad(1,15:26)/1000,-3);
 c_eval('irf_legend(h(3),''? keV'',[1.02 0.86-i*0.045],''color'',jetcolor(15*i+12,:));',a(i));
 end
 
 % ylabel(h(3),'f_e (s^3 km^{-6})');
 xlabel(h(3),'\theta (deg.)')
 set(h(3),'yscale','log');
-set(h(3),'Ylim',[1e-4 5*1e1]);
+set(h(3),'Ylim',[4e-2 1.5e1]);
 irf_zoom(h(3),'x',[0 180]);
 % irf_zoom(h(2),'y',yrange);
 tintutc3 = tintpad3.utc;

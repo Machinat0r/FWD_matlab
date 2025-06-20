@@ -1,11 +1,11 @@
 %% 找涡旋之速度线性
 %% 1/3程序
-clc
+clc; close all
 clear
-mms.db_init('local_file_db','D:/MMS/')
+mms.db_init('local_file_db','C:/MMS/')
 % load err_4CV2
-Tsta = '2017-07-06T17:31:58.000Z';
-Tend = '2017-07-06T17:31:59.500Z';
+Tsta = '2017-07-06T17:31:57.000Z';
+Tend = '2017-07-06T17:31:59.900Z';
 
 % Tsta = '2017-07-06T01:44:55.000Z'; 
 % Tend = '2017-07-06T01:45:04.000Z';
@@ -13,8 +13,8 @@ Tend = '2017-07-06T17:31:59.500Z';
 tint=irf.tint('2017-07-06T17:31:30.000Z/2017-07-06T17:32:30.000Z');
 
 Time = '2017-07-06T17:31:58.700Z';%别删
-T_resta = '2017-07-06T17:31:58.600Z';
-T_reend = '2017-07-06T17:31:58.800Z';
+T_resta = '2017-07-06T17:31:58.000Z';
+T_reend = '2017-07-06T17:31:59.500Z';
 
 % Time = '2017-01-27T12:05:30.99Z';%别删
 % T_resta = '2017-01-27T12:05:30.94Z';
@@ -23,8 +23,8 @@ T_reend = '2017-07-06T17:31:58.800Z';
 %--------------------------------------------
 time = irf_time(Time,'utc>epochtt');
 nh = 15;
-hh1=10;
-hh2=10;
+hh1=15;
+hh2=15;
 for ic=1:4
 c_eval('Bxyz?=mms.get_data(''B_gse_brst_l2'',tint,?);',ic);
 c_eval('Bt?=Bxyz?.abs;',ic);
@@ -228,7 +228,7 @@ for ii=idxsta:idxend
     Verror(ii,2) = 100*(Vr1(ii,5)/V1(ii,5)+Vr2(ii,5)/V2(ii,5)+Vr3(ii,5)/V3(ii,5)+Vr4(ii,5)/V4(ii,5))/4;
 end
 
-h=irf_plot(4,'newfigure');
+h=irf_plot(5,'newfigure');
 xSize=750; ySize=640;
 set(gcf,'Position',[100 100 xSize ySize]);
 mmscolors=[1 0 0; 0 1 0; 0 0 1]; %红绿蓝
@@ -383,18 +383,18 @@ hold(h(ii),'off');
 grid(h(ii),'off');
 ii=ii+1;
 % %% Error
-% h(ii)=irf_panel('error');
-% hold(h(ii),'on');
-% a2=irf_plot(h(ii),Verror(idxsta:idxend,[1,2]),'Linewidth',lnwid);
-% f2=fill([a2.XData,fliplr(a2.XData)],[zeros(1,length(a2.YData)),fliplr(a2.YData)],[0.8706 0.9216 0.9804]);
-% set(f2,'parent',h(ii))
-% hold(h(ii),'off');
-% ylabel(h(ii),{'\beta','[%]'},'Interpreter','tex');
-% set(h(ii),'ylim',[0 50],'ytick',[-20:20:40]);
-% % c_eval('set(h(ii),''ylim'',[V?(idxnull,2)-150 V?(idxnull,2)+150]);',ic);
-% irf_legend(h(ii),'(p)',[0.99 0.98],'color','k','fontsize',12)
-% grid(h(ii),'off');
-% ii=ii+1;
+h(ii)=irf_panel('error');
+hold(h(ii),'on');
+a2=irf_plot(h(ii),Verror(idxsta:idxend,[1,2]),'Linewidth',lnwid);
+f2=fill([a2.XData,fliplr(a2.XData)],[zeros(1,length(a2.YData)),fliplr(a2.YData)],[0.8706 0.9216 0.9804]);
+set(f2,'parent',h(ii))
+hold(h(ii),'off');
+ylabel(h(ii),{'\beta','[%]'},'Interpreter','tex');
+set(h(ii),'ylim',[0 100],'ytick',[-20:20:40]);
+% c_eval('set(h(ii),''ylim'',[V?(idxnull,2)-150 V?(idxnull,2)+150]);',ic);
+irf_legend(h(ii),'(p)',[0.99 0.98],'color','k','fontsize',12)
+grid(h(ii),'off');
+ii=ii+1;
 
 % %% error eigen value
 % h(ii)=irf_panel('error2');

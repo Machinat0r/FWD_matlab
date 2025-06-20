@@ -2,7 +2,7 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = 'Z:/Data/MMS/'; 
+ParentDir = 'D:/MMS/'; 
 DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 

@@ -2,7 +2,7 @@ clear
 clc
 
 %build database
-mms.db_init('local_file_db','Z:/Data/MMS/')
+mms.db_init('local_file_db','D:/MMS/')
 thresold=0.4;  
 hh1=10;
 %% load data

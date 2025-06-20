@@ -6,7 +6,8 @@ ParentDir = 'D:/MMS/';
 DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
-Date = '2019-01-06/2020-01-01';
+Date = '2016-01-24/2016-02-01';
+% Date = '2019-01-16/2019-01-17';
 splitDate = regexp(Date,'/','split');
 ic = 1:4;iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
@@ -149,13 +150,19 @@ try
 
     writematrix([irf_time(B1(1),'epoch>utc'),' ',num2str(min(meand)),' ', num2str(min(Qerror))...
         ,' ', num2str(min(LocPoint(:,4)))],[OutputDir,'DateList.txt'],'WriteMode','append','Encoding','UTF-8')
+    save([OutputDir, irf_time(B1(1),'epoch>utc'), '.mat'], 'Q', 'resQ', 'LocPoint', 'LocRes')
     
+    try
     tag = find(meand <= 66.1 & Qerror <= 100 & LocPoint(:,4) <= 3*mean(RR_mean));
     if ~isempty(tag)
     PlotFlag = 1;
     flagTime = B1(tag, 1);
     writematrix([irf_time(flagTime,'epoch>utc'),' ',num2str(meand(tag)),' ', num2str(Qerror(tag))...
     ,' ', num2str(LocPoint(tag,4))],[OutputDir,'CaseList.txt'],'WriteMode','append','Encoding','UTF-8')
+    end
+    catch
+    writematrix([NameTags{TDT}(2:end-2),'的caselist导入出现问题'],[OutputDir,'errorlog.txt'],...
+        'WriteMode','append','Encoding','UTF-8')
     end
 catch
     writematrix([NameTags{TDT}(2:end-2),'的数据导入2出现问题'],[OutputDir,'errorlog.txt'],...

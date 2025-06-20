@@ -1,4 +1,4 @@
-clc;
+clc; close all
 clear;
 %% consequence
 load('thetapad.mat','thetapad');%Í¶ÖÀ½Ç
@@ -50,8 +50,8 @@ PSDele_intp=interp2(PSD_i,Nintp);
 
 % af=0.96;
 % ab=1.15
-af=0.93;
-ab=1.15
+af=1.2;
+ab=1;
 % af=0.95;
 % ab=1.1
 %First, Fermi accleration, velocity becomes 17/16 of the original one
@@ -188,5 +188,5 @@ hold off;
   set(gcf,'render','painters');%Ê¸Á¿Í¼
 %   set(gcf,'visible','off');
   figname=['MMS3_PSDmodel_nonaver'];
- print(gcf, '-dpdf', [figname '.pdf'])
+ % print(gcf, '-dpdf', [figname '.pdf'])
 %   print(gcf, '-dpng', [figname '.png'])

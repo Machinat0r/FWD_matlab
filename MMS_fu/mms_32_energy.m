@@ -39,7 +39,7 @@ clear,clc
 
 
 % tint = irf.tint('2017-08-23T15:38:50.00Z/2017-08-23T15:39:05.00Z');
-tint = irf.tint('2020-08-03T01:45:23.000Z/2020-08-03T01:45:38.000Z');
+tint = irf.tint('2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'); 
 ic = 2;
 
 c_eval("d=dataobj('D:\MMS\mms2\fpi\brst\l2\des-dist\2020\08\03\mms2_fpi_brst_l2_des-dist_20200803014513_v3.4.0.cdf');",ic);
@@ -195,7 +195,7 @@ diste.data = diste.data*1e30; % Unit conversion
 % ifluxomni = ifluxomni/1e6/0.53707; %convert to normal units
 
 %% Compute PADS
-[paddiste,thetae,energye,tinte] = get_pitchangledist(diste,phie,thetae,stepTablee,energye0,energye1,Bxyz1,tint);
+[paddiste,thetae,energye,tinte] = mms_get_pitchangledist_my_change(diste,phie,thetae,stepTablee,energye0,energye1,Bxyz1,tint);
 % [paddiste,thetae,energye,tinte] = get_pitchangledist(diste,Bxyz1,tint);
 % [paddisti,thetai,energyi,tinti] = mms.get_pitchangledist(disti,phii,thetai,stepTablei,energyi0,energyi1,Bxyz,tint);
 
@@ -270,9 +270,16 @@ E27=[6676.62755,8562.0575];
 
 E28=[8562.0575,10979.929975];
 E29=[10979.929975,14080.6];
-E30=[14080.6,18056.875];
-E31=[18056.875,22021.05];
-E32=[22021.05,30000];
+% % % E30=[14080.6,18056.875];
+% % % E31=[18056.875,22021.05];
+% % % E32=[22021.05,30000];
+% E30=[10,200];
+% E31=[200,1041];
+% E32=[1041,30000];
+E30=[10,500];
+E31=[500,1e4];
+E32=[1e4,30000];
+
 
 idx1 = find(energye0 > E1(1) & energye0 < E1(2));
 idx2 = find(energye0 > E2(1) & energye0 < E2(2));
@@ -1441,7 +1448,7 @@ ylabel(h(1),{'B[nT]'},'fontsize',12,'Interpreter','tex');
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 % h(2)=irf_panel('epad19');
 % set(h(2),'pos',[0.17 0.875 0.73 0.057]);
-irf_spectrogram(h(2),specepad31,'log','donotfitcolorbarlabel');
+irf_spectrogram(h(2),specepad30,'log','donotfitcolorbarlabel');
 
 % hold on;
 % irf_plot([alpha(:,1) alpha(:,2)],'k--', 'Linewidth',0.75); hold on;
@@ -1451,31 +1458,37 @@ irf_legend(h(2),'(2)',[0.99 0.98],'color','k','fontsize',13);
 set(h(2),'yscale','lin');
 set(h(2),'ytick',[45 90 135],'fontsize',12,'TickDir','in');
 % caxis(gca,[5 5.8])
-ylabel(h(2),{'20039eV'},'fontsize',12,'Interpreter','tex');
+ylabel(h(2),{'10-500 eV'},'fontsize',12,'Interpreter','tex');
 % irf_legend(h(2),'55eV',[-0.04 0.7],'Rotation',90,'color','k','fontsize',13);
 
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 % h(3)=irf_panel('epad20');
 % set(h(3),'pos',[0.17 0.81 0.73 0.057]);
-irf_spectrogram(h(3),specepad32,'log','donotfitcolorbarlabel');
+irf_spectrogram(h(3),specepad31,'log','donotfitcolorbarlabel');hold on;
 
 % hold on;
 % irf_plot([alpha(:,1) alpha(:,2)],'k--', 'Linewidth',0.75); hold on;
 % irf_plot([alpha(:,1) alpha(:,3)],'k--', 'Linewidth',0.75); hold off;
 
+B01 = 16;
+alpha1 = real(asind(sqrt(Bt2(:,2)./B01)));
+irf_plot([Bt2(:,1),90-alpha1],'w--', 'Linewidth',1); hold on;
+irf_plot([Bt2(:,1),90+alpha1],'w--', 'Linewidth',1); hold on;
+
 irf_legend(h(3),'(3)',[0.99 0.98],'color','k','fontsize',13);
 set(h(3),'yscale','lin');
 set(h(3),'ytick',[45 90 135],'fontsize',12,'TickDir','in');
-% % % caxis(gca,[5.7 6.8])
-ylabel(h(3),{'26010eV'},'fontsize',12,'Interpreter','tex');
+caxis(gca,[6.7 7.6])
+ylabel(h(3),{'500-10000eV'},'fontsize',12,'Interpreter','tex');
 % irf_legend(h(3),'66eV',[-0.04 0.7],'Rotation',90,'color','k','fontsize',13);
 % % % set(h(3),'fontsize',13);
 
 
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+irf_spectrogram(h(4),specepad32,'log','donotfitcolorbarlabel');
 set(h(4),'yscale','lin');
 set(h(4),'ytick',[45 90 135],'fontsize',12,'TickDir','in');
-% ylabel(h(4),{'27637eV'},'fontsize',12,'Interpreter','tex');
+ylabel(h(4),{'10000-30000eV'},'fontsize',12,'Interpreter','tex');
 % irf_legend(h(4),'85eV',[-0.04 0.7],'Rotation',90,'color','k','fontsize',13);
 set(h(4),'fontsize',13);
 
@@ -1518,6 +1531,8 @@ colormap(h(7),'jet');
 irf_adjust_panel_position
 irf_zoom(tint,'x',h(1:7))
 
+colormap(jet)
+set(gca,"XTickLabelRotation",0)
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
 % figname=['ePAD_step_6'];

@@ -3,12 +3,12 @@ clc;close all
 mms.db_init('local_file_db','D:/MMS/')
 %% Load PDist using mms.make_pdist
 %for ic = 1:3; % spacecraft id
-ic=1;
+ic=2;
 % Time='2015-09-19T07:43:31.115Z';
 % Time='2019-08-05T16:24:34.500Z';
 % time = irf_time(Time,'utc>epochtt');
 % time = irf.tint('2019-08-05T16:24:30.00Z/2019-08-05T16:24:40.00Z');
-time = irf.tint('2017-07-12T11:54:00.000Z/2017-07-12T11:55:00.000Z');
+time = irf.tint('2020-08-03T01:45:23.000Z/2020-08-03T01:45:38.000Z');
 
 %[filepath,filename] = mms.get_filepath('mms2_fpi_brst_l2_des-dist',time);
 c_eval('filepath_and_filename = mms.get_filepath(''mms?_fpi_brst_l2_des-dist'',time);',ic);
@@ -26,7 +26,7 @@ c_eval('dslE?=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_dsl_brst_l2'
 for ip=1
 switch ip
     case 1
-time='2017-07-12T11:54:34.000Z';
+time='2020-08-03T01:45:28.000Z';
 % Time='2015-09-19T07:43:31.115Z';
     case 2
 Time='2019-08-05T16:24:34.00Z';
@@ -40,7 +40,7 @@ end
   %D=num2str(C);
   %Time(18:22)=D;
   % time = irf_time(Time,'utc>epochtt');
-  time = irf.tint('2017-07-12T11:54:34.000Z/2017-07-12T11:54:35.000Z');
+  time = irf.tint('2020-08-03T01:45:32.700Z/2020-08-03T01:45:34.700Z');
   % time = irf.tint('2017-07-12T11:54:33.000Z/2017-07-12T11:54:34.000Z');
   % time = irf.tint('2017-07-12T11:54:35.500Z/2017-07-12T11:54:36.500Z');
 
@@ -64,7 +64,7 @@ end
   
 
  % optional input parameters for projection plot
-  vlim = 25*1e3; % x and ylim
+  vlim = 30*1e3; % x and ylim
   elevlim = 20; % angle over plane to include in slice
   strCMap = 'jet'; % colormap
   projclim = [-1 1.4]; % colorbar limit

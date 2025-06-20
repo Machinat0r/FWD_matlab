@@ -6,7 +6,8 @@ ParentDir = 'D:/MMS/';
 DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
-Date = '2019-01-16/2019-01-17';
+Date = '2016-01-24/2016-02-01';
+% Date = '2019-01-16/2019-01-17';
 splitDate = regexp(Date,'/','split');
 ic = 1:4;iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
@@ -40,7 +41,8 @@ mms.db_init('local_file_db',ParentDir);
 units = irf_units;
 % parfor_progress(length(NameTags)-1);
 for TDT = 1:length(NameTags)-1 %This is a distinctive temp  (๑ˉ∀ˉ๑)
-clc;
+clc;clear B1 B2 B3 B4 R1 R2 R3 R4 Pos;
+PlotFlag = 0;
 % parfor_progress;
 % disp(['૮₍ ˃ ⤙ ˂ ₎ა',repmat('■',1,round(10*TDT/length(NameTags))),repmat('□',1,10-round(10*TDT/length(NameTags))),'正在光速检索ing...'])
 % fprintf(['当前处理时间为:',NameTags{TDT}(2:end-2),'\n'])
@@ -125,7 +127,7 @@ try
     id = nchoosek(1:6,2);
     % solve
     parfor_progress(size(B1, 1)-1);
-    parfor i =1:size(B1, 1)
+    parfor i =1:sizgfhcge(B1, 1)
     parfor_progress;
     [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
         i,i*sign(divB(i,2)),RR_mean(i),1);
@@ -148,11 +150,19 @@ try
 
     writematrix([irf_time(B1(1),'epoch>utc'),' ',num2str(min(meand)),' ', num2str(min(Qerror))...
         ,' ', num2str(min(LocPoint(:,4)))],[OutputDir,'DateList.txt'],'WriteMode','append','Encoding','UTF-8')
+    save([OutputDir, irf_time(B1(1),'epoch>utc'), '.mat'], 'Q', 'resQ', 'LocPoint', 'LocRes')
     
-    tag = find(min(meand) <= 66.1 && min(Qerror) <= 100 && min(LocPoint(:,4)) <= 3*mean(RR_mean));
+    try
+    tag = find(meand <= 66.1 & Qerror <= 100 & LocPoint(:,4) <= 3*mean(RR_mean));
     if ~isempty(tag)
+    PlotFlag = 1;
     flagTime = B1(tag, 1);
-    
+    writematrix([irf_time(flagTime,'epoch>utc'),' ',num2str(meand(tag)),' ', num2str(Qerror(tag))...
+    ,' ', num2str(LocPoint(tag,4))],[OutputDir,'CaseList.txt'],'WriteMode','append','Encoding','UTF-8')
+    end
+    catch
+    writematrix([NameTags{TDT}(2:end-2),'的caselist导入出现问题'],[OutputDir,'errorlog.txt'],...
+        'WriteMode','append','Encoding','UTF-8')
     end
 catch
     writematrix([NameTags{TDT}(2:end-2),'的数据导入2出现问题'],[OutputDir,'errorlog.txt'],...
@@ -161,19 +171,19 @@ catch
 end
 
 %% 符合判据的继续下载并出图
-% % % if flag == 1
-% % % try
-% % %     SDCFilesDownload(FileGroups{TDT},TempDir) 
-% % %     SDCDataMove(TempDir,ParentDir)
-% % %     mms.db_init('local_file_db',ParentDir);
-% % %     PlotTint = irf_time([flagTime(end)-20,flagTime(end)+20],'epoch>epochTT');
-% % %     id_flagTime = SDCPlot(PlotTint,desmoms,ic,NameTags{TDT},flagTime(end));
-% % % catch
-% % %     writematrix([irf_time(flagTime(end),'epoch>utc'),'的画图出现问题'],[OutputDir,'errorlog.txt'],...
-% % %     'WriteMode','append','Encoding','UTF-8')
-% % %     continue
-% % % end
-% % % end
+% if PlotFlag == 1
+% try
+%     SDCFilesDownload(FileGroups{TDT},TempDir) 
+%     SDCDataMove(TempDir,ParentDir)
+%     mms.db_init('local_file_db',ParentDir);
+%     PlotTint = irf_time([flagTime(end)-20,flagTime(end)+20],'epoch>epochTT');
+%     id_flagTime = SDCPlot(PlotTint,desmoms,ic,NameTags{TDT},flagTime(end));
+% catch
+%     writematrix([irf_time(flagTime(end),'epoch>utc'),'的画图出现问题'],[OutputDir,'errorlog.txt'],...
+%     'WriteMode','append','Encoding','UTF-8')
+%     continue
+% end
+% end
 %% 删除文件夹并生成记录文件
 % % % try
 % % %     cd(OutputDir)
