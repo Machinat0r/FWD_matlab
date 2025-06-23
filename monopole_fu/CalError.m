@@ -266,7 +266,7 @@ x0 = [idx_flag*1e4*MultiPower+15,LocationSkew*ones(1,3)];
 % lb = [0.1*idx_flag*1e4*MultiPower,1000*ones(1,3)*MultiPower]; ub = [ub,1000*ones(1,3)*MultiPower];
 lb = [];ub = [];
 % options = optimoptions('lsqnonlin','UseParallel',true);
-options = optimoptions('lsqnonlin');
+options = optimoptions('lsqnonlin','Display','none');
 % options = optimoptions('lsqnonlin','Algorithm','trust-region-reflective',...
     % 'OptimalityTolerance',1e-10,'FunctionTolerance',1e-10,'MaxFunctionEvaluations',1e4,'MaxIterations',1e4);
 [t1,~,residual1] = lsqnonlin(@(t)myfunc1(t,B1,B2,B3,B4,R1,R2,R3,R4),x0,lb,ub,options);

@@ -128,25 +128,26 @@ try
     id = nchoosek(1:6,2);
     % solve
     tic
-    parfor_progress(size(B1, 1)-1);
-    for i =1:size(B1, 1)
-    parfor_progress;
-    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
-        i,i*sign(divB(i,2)),RR_mean(i),1);
-    % [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalErrorFast(R1,R2,R3,R4,B1(i,:),B2(i,:),B3(i,:),B4(i,:), ...
-    %     RR_mean(i), sign(divB(i,2)), 1);
-    
-    tempd = irf_abs(LocRes{i}(id(:,1),:)-LocRes{i}(id(:,2),:));
-    tempd = tempd(:,4)/RR_mean(i);
-    tempd = tempd';
-    dLoc(i,:) = tempd * 100;
-
-    if ~isnan(resQ{i})
-        Qerror(i) = abs(100*std(resQ{i})/Q(i));
-    else
-        Qerror(i) = 1000;
-    end
-    end
+    [Q_py, Loc_py] = py.cal_error_gpu.CalError(R1_list, R2_list, R3_list, R4_list, ...
+                                                  B1_list, B2_list, B3_list, B4_list, ...
+                                                  py.None, py.None, py.None);
+    % % % parfor_progress(size(B1, 1)-1);
+    % % % parfor i =1:size(B1, 1)
+    % % % parfor_progress;
+    % % % [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
+    % % %     i,i*sign(divB(i,2)),RR_mean(i),1);
+    % % % 
+    % % % tempd = irf_abs(LocRes{i}(id(:,1),:)-LocRes{i}(id(:,2),:));
+    % % % tempd = tempd(:,4)/RR_mean(i);
+    % % % tempd = tempd';
+    % % % dLoc(i,:) = tempd * 100;
+    % % % 
+    % % % if ~isnan(resQ{i})
+    % % %     Qerror(i) = abs(100*std(resQ{i})/Q(i));
+    % % % else
+    % % %     Qerror(i) = 1000;
+    % % % end
+    % % % end
     parfor_progress(0);
     toc
     meand = mean(dLoc,2);
