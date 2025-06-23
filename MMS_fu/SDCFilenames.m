@@ -39,7 +39,7 @@ end
 sc_ids=['&sc_ids=',sc_ids(1:end-1)];
 url = ['https://lasp.colorado.edu/mms/sdc/public/files/api/v1/file_names/science?start_date=', ...
     splitDate{1},'&end_date=',splitDate{2},sc_ids,inst,drm,dpt];
-options = weboptions('Timeout',5); 
+options = weboptions('Timeout',15); 
 
 ErrorTimes = 0;
 while ErrorTimes <= 20
