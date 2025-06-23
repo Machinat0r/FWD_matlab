@@ -2,8 +2,8 @@
 clear;clc;
 global ParentDir 
 % global OutputDir
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
+ParentDir = 'D:/MMS/'; 
+DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
 % Date = '2019-09-24/2019-09-25';
@@ -68,7 +68,7 @@ while tryTimes <= 10
 try
     % B1_ts=mms.get_data('B_gsm_brst',tempTint,1);%先导入一个文件看看文件中包含的时间段
     % tint = irf.tint(B1_ts.time.epoch(1),B1_ts.time.epoch(end));  
-    mms.db_init('local_file_db','/Volumes/SPART-NAS/Data/MMS/');
+    mms.db_init('local_file_db','D:/MMS/');
     Pos = mms.get_data('R_gsm',tempTint,1);
     Pos = irf.ts2mat(Pos);
     tryTimes = 666;
