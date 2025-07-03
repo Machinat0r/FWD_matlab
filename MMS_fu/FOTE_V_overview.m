@@ -4,15 +4,18 @@
 clear;close all
 clc
 global ParentDir 
-ParentDir = 'D:/MMS/'; 
-DownloadDir = 'C:/MMS/';
+ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
+DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 %% VORTEX_9图全版
 %% load data
+iic = 1;
 ic=1:4;
-hh = 20;
-hh1= 20;
-thresold = 0.4;  
+hh = 10;
+hh1= 5;
+thresold = 0.2;  
+dspan = 3;
+dspan2 = 1;
 % Tsta = '2017-07-06T01:44:50.000Z';
 % Tend = '2017-07-06T01:45:10.000Z';
 
@@ -24,33 +27,36 @@ thresold = 0.4;
 % Tend = '2017-05-22T08:23:55.000Z';
 % Tsta = '2017-05-25T04:40:29.500Z';
 % Tend = '2017-05-25T04:40:33.000Z';
-Tsta = '2017-07-06T17:31:58.000Z';
-Tend = '2017-07-06T17:31:59.500Z';
+Tsta = '2019-08-05T16:24:00.000Z';
+Tend = '2019-08-05T16:25:00.000Z';
 tint = irf.tint(Tsta,Tend);
 % tint=irf.tint('2017-01-27T12:05:42.50Z/2017-01-27T12:05:43.80Z');
 % TT = '2017-07-12T11:54:00.000Z/2017-07-12T11:55:00.000Z';
-TT = '2017-07-06T17:31:52.000Z/2017-07-06T17:32:07.000Z';
+TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+% % % TT = '2017-07-06T17:31:52.000Z/2017-07-06T17:32:07.000Z';
 % TT = '2018-07-06T12:36:30.000Z/2018-07-06T12:38:00.000Z';
 % TT = '2017-05-22T08:23:30.000Z/2017-05-22T08:24:30.000Z';
 % TT = '2017-05-25T04:40:00.000Z/2017-05-25T04:41:00.000Z';
 
+TT3 = '2019-08-05T16:24:29.000Z/2019-08-05T16:24:33.000Z';
 tint2=irf.tint(TT);
+tint3 = irf.tint(TT3);
 
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 
-filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
-filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist');
-% filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
-filenames = [filenames1, filenames2,filenames4];
-% % % 
-[filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
-
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
+% filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
+% filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist');
+% % filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
+% filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
+% filenames = [filenames1, filenames2,filenames4];
+% % % % 
+% [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
+% 
+% SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
 SDCDataMove(TempDir,ParentDir)
-mms.db_init('local_file_db','D:/MMS/')
+mms.db_init('local_file_db','/Volumes/SPART-NAS/Data/MMS/')
 
 c_eval('e_r? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energy_brst'',tint);',ic);
 
@@ -70,9 +76,8 @@ c_eval('Bt?=Bxyz?.abs;',ic);
 c_eval('Ne?= mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',tint);',ic);
 c_eval('ne?=irf.ts2mat(Ne?);',ic);
 
-% c_eval('Ni?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_numberdensity_brst'',tint);',ic);
-% c_eval('ni?=irf.ts2mat(Ni?);',ic);
-c_eval('ni? = ne?;',ic)
+c_eval('Ni?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_numberdensity_brst'',tint);',ic);
+c_eval('ni?=irf.ts2mat(Ni?);',ic);
 c_eval('Vi? = mms.get_data(''Vi_gse_fpi_brst_l2'',tint,?);',ic); 
 % c_eval('Vi?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulkv_gse_brst'',tint);',ic);
 c_eval('vi?=irf.ts2mat(Vi?);',ic);
@@ -80,24 +85,24 @@ c_eval('vi? = irf_gse2gsm(vi?);',ic);
 %% Te
 c_eval('tic; gseB? = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gse_brst_l2'',tint); toc;',ic);%GSE坐标下的B
 c_eval('tic; gsmB? = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',tint); toc;',ic);%GSM坐标下的B
-c_eval('gseTe? = mms.get_data(''Te_gse_fpi_brst_l2'',tint,?);',ic)%GSE坐标下的Te
-c_eval('facTe? = mms.rotate_tensor(gseTe?,''fac'',gseB?);',ic)%FAC坐标下的Te
+c_eval('gseTe? = mms.get_data(''Te_gse_fpi_brst_l2'',tint,?);',iic)%GSE坐标下的Te
+c_eval('facTe? = mms.rotate_tensor(gseTe?,''fac'',gseB?);',iic)%FAC坐标下的Te
 %GSE坐标系下的等离子体温度张量数据旋转到了磁力线坐标系（FAC，Field Aligned Coordinates）
 % c_eval('matParTe? = facTe?.xx.resample(gsmB?.time).data;',ic)
 % %FAC坐标系下等离子体温度张量的平行（Parallel）分量，.xx是张量的平行分量。
 % c_eval('matPerTe?= (facTe?.yy.resample(gsmB?.time).data + facTe?.zz.resample(gsmB?.time).data)/2;',ic)
 % %FAC坐标系下等离子体温度张量的垂直（Perpendicular）分量，取yy和zz分量的平均值计算垂直分量。
 %温度先不重采样
-c_eval('matParTe?(:,2) = facTe?.xx.data;',ic)
+c_eval('matParTe?(:,2) = facTe?.xx.data;',iic)
 %FAC坐标系下等离子体温度张量的平行（Parallel）分量，.xx是张量的平行分量。
-c_eval('matPerTe?(:,2)= (facTe?.yy.data + facTe?.zz.data)/2;',ic)
-c_eval('matParTe?(:,1)= ne?(:,1);',ic)
-c_eval('matPerTe?(:,1)= ne?(:,1);',ic)
-c_eval('ne? = irf_resamp(ne?, ne1);',ic);
-c_eval('matParTe? = irf_resamp(matParTe?, matParTe1);',ic);
-c_eval('matPerTe? = irf_resamp(matPerTe?, matPerTe1);',ic);
+c_eval('matPerTe?(:,2)= (facTe?.yy.data + facTe?.zz.data)/2;',iic)
+c_eval('matParTe?(:,1)= ne?(:,1);',iic)
+c_eval('matPerTe?(:,1)= ne?(:,1);',iic)
+c_eval('ne? = irf_resamp(ne?, ne1);',iic);
+c_eval('matParTe? = irf_resamp(matParTe?, matParTe1);',iic);
+c_eval('matPerTe? = irf_resamp(matPerTe?, matPerTe1);',iic);
 %% load Ve Fields data
-c_eval('Vexyz?= mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_bulkv_gse_brst'',tint);',ic);
+c_eval('Vexyz?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulkv_gse_brst'',tint);',ic);
 c_eval('Vexyz? = irf_gse2gsm(Vexyz?);',ic);
 % L=[0.05 -0.21 0.98]; % Vi
 % M=[-0.23 0.95 0.22];
@@ -105,6 +110,9 @@ c_eval('Vexyz? = irf_gse2gsm(Vexyz?);',ic);
 L=[1,0,0];M=[0,1,0];N=[0,0,1];
 c_eval('Ve_LMN?=irf_newxyz(Vexyz?,L,M,N);',ic);
 c_eval('Ve?=irf.ts2mat(Vexyz?);',ic);
+
+c_eval('B? = irf_resamp(B?, Ve?);',ic);
+
 c_eval('Ve?=irf_resamp(Ve?,B?);',ic);
 c_eval('vi?=irf_resamp(vi?,B?);',ic);
 c_eval('VeS?=irf.ts2mat(Vexyz?);',ic);
@@ -112,38 +120,37 @@ c_eval('VeS_LMN?=irf.ts2mat(Ve_LMN?);',ic);
 c_eval('VeS? = irf_resamp(VeS?, VeS1);',ic);
 c_eval('VeS_LMN? = irf_resamp(VeS_LMN?, VeS_LMN1);',ic);
 %% smooth_step1
-kk = length (e_r1.data);
+kk = size(VeS1,1);
 if mod(kk,2) == 1
    le = kk-2; lo = kk-3;%even偶数（这里当它是奇数），odd奇数
 else
    le = kk-3; lo = kk-2;%even偶数，odd奇数
 end
-for ic =1:4
-    c_eval('e_r = e_r?;',ic)
-    if e_r.data(1)>e_r.data(2)
-        for ii = 1:2:le
-            c_eval('ne?(ii+1,2)=(ne?(ii+2,2)+ne?(ii,2))/2;',ic)
-            c_eval('matParTe?(ii+1,2)=(matParTe?(ii+2,2)+matParTe?(ii,2))/2;',ic)
-            c_eval('matPerTe?(ii+1,2)=(matPerTe?(ii+2,2)+matPerTe?(ii,2))/2;',ic)
-            c_eval('VeS?(ii+1,2:4)=(VeS?(ii+2,2:4)+VeS?(ii,2:4))/2;',ic)
-            c_eval('VeS_LMN?(ii+1,2:4)=(VeS_LMN?(ii+2,2:4)+VeS_LMN?(ii,2:4))/2;',ic)
-        end
-    else
-        for ii = 2:2:lo
-            c_eval('ne?(ii+1,2)=(ne?(ii+2,2)+ne?(ii,2))/2;',ic)
-            c_eval('matParTe?(ii+1,2)=(matParTe?(ii+2,2)+matParTe?(ii,2))/2;',ic)
-            c_eval('matPerTe?(ii+1,2)=(matPerTe?(ii+2,2)+matPerTe?(ii,2))/2;',ic)
-            c_eval('VeS?(ii+1,2:4)=(VeS?(ii+2,2:4)+VeS?(ii,2:4))/2;',ic)
-            c_eval('VeS_LMN?(ii+1,2:4)=(VeS_LMN?(ii+2,2:4)+VeS_LMN?(ii,2:4))/2;',ic)
-        end
+
+if e_r1.data(1)>e_r1.data(2)
+    for ii = 1:2:le
+        c_eval('ne?(ii+1,2)=(ne?(ii+2,2)+ne?(ii,2))/2;',ic)
+        c_eval('matParTe?(ii+1,2)=(matParTe?(ii+2,2)+matParTe?(ii,2))/2;',iic)
+        c_eval('matPerTe?(ii+1,2)=(matPerTe?(ii+2,2)+matPerTe?(ii,2))/2;',iic)
+        c_eval('VeS?(ii+1,2:4)=(VeS?(ii+2,2:4)+VeS?(ii,2:4))/2;',ic)
+        c_eval('VeS_LMN?(ii+1,2:4)=(VeS_LMN?(ii+2,2:4)+VeS_LMN?(ii,2:4))/2;',ic)
+    end
+else
+    for ii = 2:2:lo
+        c_eval('ne?(ii+1,2)=(ne?(ii+2,2)+ne?(ii,2))/2;',iic)
+        c_eval('matParTe?(ii+1,2)=(matParTe?(ii+2,2)+matParTe?(ii,2))/2;',iic)
+        c_eval('matPerTe?(ii+1,2)=(matPerTe?(ii+2,2)+matPerTe?(ii,2))/2;',iic)
+        c_eval('VeS?(ii+1,2:4)=(VeS?(ii+2,2:4)+VeS?(ii,2:4))/2;',ic)
+        c_eval('VeS_LMN?(ii+1,2:4)=(VeS_LMN?(ii+2,2:4)+VeS_LMN?(ii,2:4))/2;',ic)
     end
 end
+
 %% resample
 ic=1:4;
 c_eval('ne?=irf_resamp(ne?,B?);',ic);
 c_eval('ni?=irf_resamp(ni?,B?);',ic);
-c_eval('matParTe?=irf_resamp(matParTe?,B?);',ic);
-c_eval('matPerTe?=irf_resamp(matPerTe?,B?);',ic);
+c_eval('matParTe?=irf_resamp(matParTe?,B?);',iic);
+c_eval('matPerTe?=irf_resamp(matPerTe?,B?);',iic);
 c_eval('VeS?=irf_resamp(VeS?,B?);',ic);
 c_eval('VeS?=irf_abs(VeS?);',ic);
 Vup=max(VeS2(:,5));
@@ -159,6 +166,7 @@ c_eval('Vet?=Vexyz?.abs;',ic);
 %     c_eval('VeS?(:,4)=temp?(:,4);',ic)
 % end
 %% smooth_step2
+    c_eval('VeSS?(:,1)=VeS?(:,1);',ic);
     c_eval('VeSS?(:,2)=smooth(VeS?(:,2),hh1);',ic);
     c_eval('VeSS?(:,3)=smooth(VeS?(:,3),hh1);',ic);
     c_eval('VeSS?(:,4)=smooth(VeS?(:,4),hh1);',ic);
@@ -191,13 +199,13 @@ c_eval('Vet?=Vexyz?.abs;',ic);
     c_eval('VeSS?(:,3)=temp?(:,3);',ic)
     c_eval("temp?(:,4)=smooth(VeSS?(:,4),hh1);",ic)
     c_eval('VeSS?(:,4)=temp?(:,4);',ic)
-    
-    c_eval("temp?(:,2)=smooth(VeSS?(:,2),hh1);",ic)
-    c_eval('VeSS?(:,2)=temp?(:,2);',ic)
-    c_eval("temp?(:,3)=smooth(VeSS?(:,3),hh1);",ic)
-    c_eval('VeSS?(:,3)=temp?(:,3);',ic)
-    c_eval("temp?(:,4)=smooth(VeSS?(:,4),hh1);",ic)
-    c_eval('VeSS?(:,4)=temp?(:,4);',ic)
+    % % % 
+    % % % c_eval("temp?(:,2)=smooth(VeSS?(:,2),hh1);",ic)
+    % % % c_eval('VeSS?(:,2)=temp?(:,2);',ic)
+    % % % c_eval("temp?(:,3)=smooth(VeSS?(:,3),hh1);",ic)
+    % % % c_eval('VeSS?(:,3)=temp?(:,3);',ic)
+    % % % c_eval("temp?(:,4)=smooth(VeSS?(:,4),hh1);",ic)
+    % % % c_eval('VeSS?(:,4)=temp?(:,4);',ic)
 
 ic=1:4;    
 c_eval('Exyz?=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',tint);',ic);
@@ -211,9 +219,9 @@ c_eval('Rgse?=mms.get_data(''R_gsm'',tint2,?);',ic);
 c_eval('R?=irf.ts2mat(Rgse?);',ic);
 
 c_eval('dsp?(:,1)=B?(:,1);',ic);
-c_eval('dsp?(:,2:4)=E?(:,2:4)+cross(Ve?(:,2:4),B?(:,2:4))/1000;',ic);
+% c_eval('dsp?(:,2:4)=E?(:,2:4)+cross(Ve?(:,2:4),B?(:,2:4))/1000;',ic);
 % c_eval('dsp?=irf_resamp(dsp?,Vit?);',ic);
-c_eval('dspt?=irf_abs(dsp?);',ic);
+% c_eval('dspt?=irf_abs(dsp?);',ic);
 
 %% FOTE method
 VeS2=irf_resamp(VeS2,VeS1);
@@ -239,12 +247,12 @@ for ic=1:4
   c_eval(['R?=irf_tlim(R?,tint);'],ic);
   c_eval(['VemagC?=irf_abs(VeSS?);'],ic);
   c_eval('VeS_n?(:,1)=VeSS?(:,1);',ic);
-  c_eval('VeS_n?(:,2)=VeSS?(:,2).*ne?(:,2);',ic);
-  c_eval('VeS_n?(:,3)=VeSS?(:,3).*ne?(:,2);',ic);
-  c_eval('VeS_n?(:,4)=VeSS?(:,4).*ne?(:,2);',ic);
-  c_eval('VeS_n?(:,5)=VeSS?(:,5).*ne?(:,2);',ic);
+  c_eval('VeS_n?(:,2)=VeSS?(:,2).*ni?(:,2);',ic);
+  c_eval('VeS_n?(:,3)=VeSS?(:,3).*ni?(:,2);',ic);
+  c_eval('VeS_n?(:,4)=VeSS?(:,4).*ni?(:,2);',ic);
+  % c_eval('VeS_n?(:,5)=VeSS?(:,5).*ni?(:,2);',ic);
   c_eval('j?(:,1)=VeS?(:,1);',ic);
-  c_eval('j?(:,2:4)=(ni?(:,2).*vi?(:,2:4)-ne?(:,2).*VeS?(:,2:4))*1.6/1e10;',ic);
+  c_eval('j?(:,2:4)=(ni?(:,2).*vi?(:,2:4)-ni?(:,2).*VeS?(:,2:4))*1.6/1e10;',ic);
 end
 n1=length(j1(:,1));
 for ij=1:n1
@@ -252,7 +260,7 @@ for ij=1:n1
    jmean(ij,2)=mean(j1(ij,2)+j2(ij,2)+j3(ij,2)+j4(ij,2));
    jmean(ij,3)=mean(j1(ij,3)+j2(ij,3)+j3(ij,3)+j4(ij,3));
    jmean(ij,4)=mean(j1(ij,4)+j2(ij,4)+j3(ij,4)+j4(ij,4)); 
-end
+end 
 gradVe=c_4_grad('R?','VeSS?','grad');
 d_dot_Ve=c_4_grad('R?','VeSS?','div');
 d_cros_Ve=c_4_grad('R?','VeSS?','curl');
@@ -322,8 +330,12 @@ for ii=1:length(d_dot_Ve(:,1))
         else
             if length(find([D(1,1) D(2,2) D(3,3)]>0)) == 1
                 typeSim(ii)='^'; clrSim(ii)='r'; faceclrSim(ii)='w';
-            else
-                typeSim(ii)='s'; clrSim(ii)='k'; faceclrSim(ii)='w';
+            % else
+            %     typeSim(ii)='s'; clrSim(ii)='k'; faceclrSim(ii)='w';
+            elseif length(find([D(1,1) D(2,2) D(3,3)]>0)) == 3
+                typeSim(ii)='s'; clrSim(ii)='r'; faceclrSim(ii)='w';
+            elseif length(find([D(1,1) D(2,2) D(3,3)]>0)) == 0
+                typeSim(ii)='s'; clrSim(ii)='b'; faceclrSim(ii)='w';
             end
         end
         %------------Simplification Procedure------------------------------
@@ -345,8 +357,12 @@ for ii=1:length(d_dot_Ve(:,1))
         else
             if length(find([real(D(1,1)) real(D(2,2)) real(D(3,3))]>0)) == 1
                 typeSim(ii)='^'; clrSim(ii)='r'; faceclrSim(ii)='r';
-            else
-                typeSim(ii)='s'; clrSim(ii)='k'; faceclrSim(ii)='w';
+            % else
+            %     typeSim(ii)='s'; clrSim(ii)='k'; faceclrSim(ii)='w';
+            elseif length(find([D(1,1) D(2,2) D(3,3)]>0)) == 3
+                typeSim(ii)='s'; clrSim(ii)='r'; faceclrSim(ii)='w';
+            elseif length(find([D(1,1) D(2,2) D(3,3)]>0)) == 0
+                typeSim(ii)='s'; clrSim(ii)='b'; faceclrSim(ii)='w';
             end
         end
         %------------Simplification Procedure------------------------------
@@ -596,7 +612,7 @@ h(7)=irf_panel('d_cros_ve');
 mmscolors=[0 0 1; 0 1 0;1 0 0]; 
 set(h(7),'ColorOrder',mmscolors)
 hold(h(7),'on');
-irf_plot(h(7),[B3(:,1),d_cros_ve_LMN_abs(:,1)],'Linewidth',lnwid,'color','k');
+irf_plot(h(7),[B1(:,1),d_cros_ve_LMN_abs(:,1)],'Linewidth',lnwid,'color','k');
 % irf_plot(h(7),[d_cros_ve_LMN(:,1),d_cros_ve_LMN(:,4)],'Linewidth',lnwid);
 hold(h(7),'off');
 ylabel(h(7),{'|\nabla\timesV_{e}|','(s^-1)'},'Interpreter','tex');
@@ -620,12 +636,13 @@ grid(h(8),'off');
 
 h(9)=irf_panel('distance plot');
 hold(h(9),'on');
-irf_plot(h(9),[dRmin(:,1),dRmin(:,2)], 'color','b', 'Linewidth',lnwid); hold on;
-for ii=1:2:length(dRmin(:,1))
+dRmin(:,1) = smooth(dRmin(:,1),dspan);dRmin(:,2) = smooth(dRmin(:,2),dspan);
+irf_plot(h(9),[dRmin(1:dspan2:end,1),dRmin(1:dspan2:end,2)], 'color','b', 'Linewidth',lnwid); hold on;
+for ii=1:dspan2:length(dRmin(:,1))
      irf_plot(h(9), dRmin(ii,:), [typeSim(ii) clrSim(ii)], 'MarkerSize',mksizSim(ii),'MarkerFaceColor',faceclrSim(ii), 'Linewidth',lnwid); hold on;
 end
 % set(h(8), 'Ylim',[0 35],'Ytick',[0:10:30]);
-set(h(9), 'Ylim',[0 100]);
+set(h(9), 'Ylim',[0 1000]);
 ylabel(h(9),{'|r|','(km)'},'Interpreter','tex');
 irf_legend(h(9),'(i)',[0.99 0.25],'color','k','fontsize',12)
 grid(h(9),'off');
@@ -633,8 +650,9 @@ grid(h(9),'off');
 
 h(10)=irf_panel('error plot');
 hold(h(10),'on');
-a1=irf_plot(h(10),[err_4C(:,1) err_4C(:,2)],'k','Linewidth',lnwid);%散度/旋度
-fill(h(10), [a1.XData,fliplr(a1.XData)],[zeros(1,length(a1.YData)),fliplr(a1.YData)],[0.8706 0.9216 0.9804]);%浅灰色
+err_4C(:,1) = smooth(err_4C(:,1),dspan);err_4C(:,2) = smooth(err_4C(:,2),dspan);
+a1=irf_plot(h(10),[err_4C(1:dspan2:end,1) err_4C(1:dspan2:end,2)],'k','Linewidth',lnwid);%散度/旋度
+% fill(h(10), [a1.XData,fliplr(a1.XData)],[zeros(1,length(a1.YData)),fliplr(a1.YData)],[0.8706 0.9216 0.9804]);%浅灰色
 irf_plot(h(10),[eigVal_err(:,1) eigVal_err(:,2)*0+40], 'k--', 'Linewidth',lnwid); hold off;
 % a1=irf_plot(h(9),[err_4C(:,1) err_4C(:,2)],'k','Linewidth',lnwid);
 % a2=irf_plot(h(9), eigVal_err_v2, 'c','Linewidth',lnwid); 
@@ -660,3 +678,5 @@ colormap(jet)
 set(gca,"XTickLabelRotation",0)
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
+irf_zoom(tint3,'x',h(1:10));
+irf_plot_axis_align(h)

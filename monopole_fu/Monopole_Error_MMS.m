@@ -30,15 +30,18 @@ clear;clc;close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 global ParentDir 
-ParentDir = 'D:/MMS/'; 
-DownloadDir = 'C:/MMS/';
+ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
+DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
 % TT = '2019-01-16T04:09:55.605Z/2019-01-16T04:09:55.630Z'; %no boundary, 10,78-81
-TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
+% % % % % TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % TT = '2019-01-16T04:09:55.420Z/2019-01-16T04:09:55.800Z'; %no boundary, 10,78-81
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:15:50.00Z';
+
+TT =  '2016-01-27T03:00:00.000Z/2016-01-27T03:05:00.000Z';
+TT2 = '2016-01-27T03:03:26.000Z/2016-01-27T03:03:28.000Z';
 
 % TT = '2020-03-07T12:38:25.00Z/2020-03-07T12:38:30.00Z';
 % TT = '2020-05-03T01:58:25.00Z/2020-05-03T01:58:35.00Z';
@@ -49,7 +52,7 @@ TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 
 % TT = '2015-09-19T07:43:28.000Z/2015-09-19T07:43:33.000Z';
 
-tint=irf.tint(TT);
+tint=irf.tint(TT);tint2=irf.tint(TT2);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
@@ -58,25 +61,31 @@ filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
 [filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
 
 SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
-%% Poincare Index  
+%% Load Data
 SDCDataMove(TempDir,ParentDir); mms.db_init('local_file_db',ParentDir);
 
-c_eval("B?_ts=mms.get_data('B_gse_brst',tint,?);");
+c_eval("B?_ts=mms.get_data('B_gsm_brst',tint,?);");
 c_eval('B?_gse = irf.ts2mat(B?_ts);'); 
 c_eval('B? = irf_abs(B?_gse);');
 c_eval('B? = irf_resamp(B?,B1);',2:4);
 
+Pos = mms.get_data('R_gsm',tint);
+R_time = Pos.time.epoch;
+R1 = Pos.gsmR1;R2 = Pos.gsmR2;R3 = Pos.gsmR3;R4 = Pos.gsmR4;
+R1 = [Pos.time.epochUnix R1(:,1:3)];R2 = [Pos.time.epochUnix R2(:,1:3)];
+R3 = [Pos.time.epochUnix R3(:,1:3)];R4 = [Pos.time.epochUnix R4(:,1:3)];
+c_eval('R? = irf_resamp(R?,B1);')
+
+c_eval('B? = irf_tlim(B?,TT2);');
+c_eval('B?_gse = irf_tlim(B?_gse,TT2);');
+c_eval('R? = irf_tlim(R?,TT2);');
+%% Poincare Index 
 % PI=c_4_poincare_index(B1(:,2:4),B2(:,2:4),B3(:,2:4),B4(:,2:4));
 PI=c_fgm_poincare_index(B1(:,2:4),B2(:,2:4),B3(:,2:4),B4(:,2:4));
 PI(PI>=0.5) = 1;
 PI(PI<=-0.5) = -1;
 PI(abs(PI)<0.5) = 0;
 %% div     
-Pos = mms.get_data('R_gse',tint);
-R_time = Pos.time.epoch;
-c_eval('R? = Pos.gseR?;')
-c_eval('R? = [Pos.time.epochUnix R?(:,1:3)];')
-c_eval('R? = irf_resamp(R?,B1);')
 CenterPoint = (R1(:,2:4)+R2(:,2:4)+R3(:,2:4)+R4(:,2:4))/4;
 c_eval('R?(:,2:4) = R?(:,2:4)-CenterPoint;');
 
@@ -92,27 +101,42 @@ LocRes = cell(size(B1,1),1);
 Q = zeros(size(B1,1),1);
 resQ = cell(size(B1,1),1);
 
-for i = 1:length(PI)
+RR12 = irf_abs(R1-R2); RR13 = irf_abs(R1-R3); RR14 = irf_abs(R1-R4); 
+RR23 = irf_abs(R2-R3); RR24 = irf_abs(R2-R4); RR34 = irf_abs(R3-R4); 
+RR_mean = (RR12(:,5) + RR13(:,5) + RR14(:,5) + RR23(:,5) + RR24(:,5) + RR34(:,5))/6;
+id = nchoosek(1:6,2);
+
+parfor i = 1:length(PI)
 clc;
-disp(['current calculate:',num2str(i),'/',num2str(length(PI))]);
-RR_mean = zeros(1,4);
-for ii = 1:3 
-c_eval(['RR',num2str(ii),'?=[R',num2str(ii),'(i,2),R',num2str(ii),'(i,3),R',num2str(ii),'(i,4);',...
-    'R?(i,2),R?(i,3),R?(i,4)];'],ii+1:4);  %% ♥
-c_eval(['RR_mean=RR_mean+irf_abs(RR',num2str(ii),'?(2,:)-RR',num2str(ii),'?(1,:));'],ii+1:4);  
-end
-RR_mean = RR_mean(4)/6;
+% disp(['current calculate:',num2str(i),'/',num2str(length(PI))]);
+% RR_mean = zeros(1,4);
+% for ii = 1:3 
+% c_eval(['RR',num2str(ii),'?=[R',num2str(ii),'(i,2),R',num2str(ii),'(i,3),R',num2str(ii),'(i,4);',...
+%     'R?(i,2),R?(i,3),R?(i,4)];'],ii+1:4);  %% ♥
+% c_eval(['RR_mean=RR_mean+irf_abs(RR',num2str(ii),'?(2,:)-RR',num2str(ii),'?(1,:));'],ii+1:4);  
+% end
+% RR_mean = RR_mean(4)/6;
 % if PI(i)~=0
-    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('R?','B?',i,i*sign(divB(i,2)),10 ,1);
-    id = nchoosek(1:6,2);
-c_eval('tempd? = irf_abs(LocRes{i}(id(?,1),:)-LocRes{i}(id(?,2),:));',1:15)
-tempd = [];
-c_eval('tempd = [tempd,tempd?(4)/RR_mean];',1:15);
-dLoc(i,:) = tempd;
+    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
+        i,i*sign(divB(i,2)),RR_mean(i),1);
+
+    tempd = irf_abs(LocRes{i}(id(:,1),:)-LocRes{i}(id(:,2),:));
+    tempd = tempd(:,4)/RR_mean(i);
+    tempd = tempd';
+    dLoc(i,:) = tempd * 100;
+
+    if ~isnan(resQ{i})
+        Qerror(i) = abs(100*std(resQ{i})/Q(i));
+    else
+        Qerror(i) = 1000;
+    end
+
 % else
 %     Q(i) = nan; resQ{i} = nan; LocPoint(i,:) = [nan,nan,nan]; LocRes{i} = nan;
 % end
 end
+
+    meand = mean(dLoc,2);
 
 %% calculate error
 Qerror = zeros(length(PI),1);
@@ -232,7 +256,7 @@ h(i)=irf_subplot(n,1,-i);
 irf_plot([B1(:,1) mean(dLoc,2)], 'color','k', 'Linewidth',0.75); hold on;
 grid off;
 % set(gca,'Ylim',[0 max(Locerror)]);
-set(gca,'Ylim',[0,1], 'ytick',[0 0.5 1],'fontsize',9);
+set(gca,'Ylim',[0,120], 'ytick',[0 50 100],'fontsize',9);
 pos1=get(gca,'pos');
 ylabel('mean','fontsize',12);
 i=i+1;
@@ -287,7 +311,7 @@ grid off;
 set(gca,'Ylim',[0 100], 'ytick',[0 50 100],'fontsize',9);
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
-irf_legend(gca,{'C1','C2','C3','C4'},[0.97 0.92]);
+irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.97 0.92]);
 ylabel('B angular Error [%]','fontsize',12);
 % irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
 % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
@@ -354,8 +378,9 @@ i=i+1;
 % % % % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
 % % % i=i+1;
 %% Annotation
-irf_zoom(tint,'x',h(1:end));
+irf_zoom(tint2,'x',h(1:end));
 irf_plot_axis_align(h);
+set(gca,"XTickLabelRotation",0)
 
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
@@ -396,7 +421,7 @@ plot3(RR12(:,1),RR12(:,2),RR12(:,3),'--k');hold on;  plot3(RR13(:,1),RR13(:,2),R
 plot3(RR14(:,1),RR14(:,2),RR14(:,3),'--k');hold on;  plot3(RR23(:,1),RR23(:,2),RR23(:,3),'--k');hold on;  
 plot3(RR34(:,1),RR34(:,2),RR34(:,3),'--k');hold on;  plot3(RR24(:,1),RR24(:,2),RR24(:,3),'--k');hold on;  
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
-irf_legend(gca,{'C1','C2','C3','C4'},[0.97 0.92]);
+irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.97 0.92]);
 irf_legend(gca,{['Separation Distance:',num2str(roundn(RR_mean,-1)),'km']},[0.05 0.92])
 xlabel('e_1 [km]','fontsize',12);
 ylabel('e_2 [km]','fontsize',12);
@@ -416,9 +441,9 @@ plot3(LocPoint(tempidx_B1,1),LocPoint(tempidx_B1,2),LocPoint(tempidx_B1,3),'o','
 % plot3(LocRes{tempidx_B1}(:,1),LocRes{tempidx_B1}(:,2),LocRes{tempidx_B1}(:,3),'*','color','#FFB8CE');
 % plot3(LocRes{tempidx_B1}([1;4;5],1),LocRes{tempidx_B1}([1;4;5],2),LocRes{tempidx_B1}([1;4;5],3),'*','linewidth',1,'color','k')
 % text(LocRes{tempidx_B1}([1;4;5],1),LocRes{tempidx_B1}([1;4;5],2),LocRes{tempidx_B1}([1;4;5],3),{'(1,2)','(1,3)','(1,4)'})
-iid = [2,3,4];
-plot3(LocRes{tempidx_B1}(iid,1),LocRes{tempidx_B1}(iid,2),LocRes{tempidx_B1}(iid,3),'*','linewidth',1,'color','g')
-text(LocRes{tempidx_B1}(iid,1),LocRes{tempidx_B1}(iid,2),LocRes{tempidx_B1}(iid,3),{'(2,3)','(3,4)','(1,3)'})
+iid = [1:6];
+% plot3(LocRes{tempidx_B1}(iid,1),LocRes{tempidx_B1}(iid,2),LocRes{tempidx_B1}(iid,3),'*','linewidth',1,'color','g')
+% text(LocRes{tempidx_B1}(iid,1),LocRes{tempidx_B1}(iid,2),LocRes{tempidx_B1}(iid,3),{'(2,3)','(3,4)','(1,3)'})
 %% adjust the position
 axis equal 
 view(-16,15)

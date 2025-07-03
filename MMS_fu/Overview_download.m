@@ -6,10 +6,10 @@ ParentDir = '/Volumes/SPART-NAS/Data/MMS/';
 DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-TT = '2024-08-02T15:26:45.000Z/2024-08-02T15:28:15.000Z';
-% TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+% TT = '2024-08-02T15:26:45.000Z/2024-08-02T15:28:15.000Z';
+TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
 % % TT = '2017-06-11T17:50:00.000Z/2017-06-11T18:00:00.000Z';
-% % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57c:43.000Z';
+% % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57:43.000Z';
 % % % TT = '2015-11-19T14:07:30.000Z/2015-11-19T14:09:30.000Z';
 % % % TT = '2018-07-05T20:39:27.000Z/2018-07-05T20:39:30.000Z';
 % % % % % TT = '2017-07-12T11:54:20.000Z/2017-07-12T11:54:48.000Z';
@@ -43,6 +43,7 @@ Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 ic = 1;
 iic = 1:4;
+try
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
 filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
@@ -61,6 +62,9 @@ SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 64, 'CheckSize', 0)
 % SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 64, 'CheckSize', 0)
 % SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 64, 'CheckSize', 0)
 % % % id_flagTime = OverView_download(tint,desmoms,IC,Name,flagTime)
+catch
+    warning('no files have been downloaded')
+end
 %% load data
 SDCDataMove(TempDir,ParentDir)
 mms.db_init('local_file_db',ParentDir);
