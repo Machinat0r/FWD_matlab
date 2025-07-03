@@ -9,8 +9,8 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 ic = 1:4;iic = 1:4;
 load([pwd,'\NameTags.mat']);
 
-Date = '2019-01-01T00:00:00.000Z/2019-02-01T00:00:00.000Z';
-% Date = '2016-02-05T00:00:00.000Z/2016-03-01T00:00:00.000Z';
+% Date = '2019-09-24/2019-09-25';
+Date = '2016-01-28T00:00:00.000Z/2016-03-01T00:00:00.000Z';
 splitDate = regexp(Date,'/','split');
 startDate = splitDate{1};
 endDate   = splitDate{2};
@@ -39,11 +39,11 @@ NameTags = NameTags(mask);
 % % % FileGroups = cellfun(@cellstr,FileGroups,'UniformOutput',false);%按时间分类整理后的文件名组
 %%
 %修改文件夹时特别注意SDCFilesDownload需要datamove的文件夹必须是ParentDir，否则需要手动修改
-splitDate{1} = erase(splitDate{1},{':','.'});splitDate{2} = erase(splitDate{2},{':','.'});
+splitDate{1} = erase(splitDate{1},{':','.'});
 OutputDir = [ParentDir,'Monopole_Search/',splitDate{1},'To',splitDate{2},'/'];
-clear mask NameTagsDT
 mkdir(OutputDir)
 mms.db_init('local_file_db',ParentDir);
+
 %%
 units = irf_units;
 % parfor_progress(length(NameTags)-1);
@@ -136,10 +136,10 @@ try
     warning('off')
     % solve
     tic
-    % parfor_progress(size(B1, 1)-1);
-    parfor i =1:size(B1, 1)
-    % for i =1:20
-    % parfor_progress;
+    parfor_progress(size(B1, 1)-1);
+    % parfor i =1:size(B1, 1)
+    parfor i =1:200
+    parfor_progress;
     [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
         i,i*sign(divB(i,2)),RR_mean(i),1);
 
@@ -154,7 +154,7 @@ try
         Qerror(i) = 1000;
     end
     end
-    % parfor_progress(0);
+    parfor_progress(0);
     toc
     meand = mean(dLoc,2);
     LocPoint = irf_abs(LocPoint);
@@ -206,3 +206,4 @@ end
 % % %     writematrix(['删除文件夹',NameTags{TDT}(2:end-2),'失败'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
 % % % end
 end
+parfor_progress(0);
