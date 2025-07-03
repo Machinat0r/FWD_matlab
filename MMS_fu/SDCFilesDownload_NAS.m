@@ -95,7 +95,7 @@ while i <= length(filenames)
         if Threads == 0
             websave(output_filename,file_url,options) ; 
         else
-            command = sprintf(['python3 ' func_path(1:func_dir) 'fwd_matlab_patch/MMS_fu/download_files.py "%s" "%s" "%s" "%s"'],...
+            command = sprintf(['python ' func_path(1:func_dir) 'fwd_matlab_patch/MMS_fu/download_files.py "%s" "%s" "%s" "%s"'],...
                 file_url, output_filename, filenames{i}, num2str(Threads)); % 若电脑发生卡顿，可以下调线程数（最后一个变量）
             system(command);
         end   
@@ -143,7 +143,7 @@ file_url = ['https://lasp.colorado.edu/maven/sdc/public/files/api/v1/search/scie
 end
 
 try
-command = sprintf(['python3 ' func_path(1:func_dir) 'fwd_matlab_patch/MMS_fu/content_length.py "%s"'], file_url);
+command = sprintf(['python ' func_path(1:func_dir) 'fwd_matlab_patch/MMS_fu/content_length.py "%s"'], file_url);
 [status, cmdout] = system(command);
 
 if status == 0

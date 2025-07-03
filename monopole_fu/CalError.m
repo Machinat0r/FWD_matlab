@@ -6,6 +6,7 @@ function [Q,resQ,LocPoint,resLoc] = CalError(varargin)
 %------written by Wending Fu, May.8.2022 in Beijing------------
 % lb,ub未启用
 %% input data
+warning('off')
 if length(varargin) == 6 || length(varargin)==12
     LocationSkew = varargin{end};
     varargin = varargin(1:end-1);
@@ -42,13 +43,13 @@ else
 end
 %% resample
 % units = irf_units;
-if ~isempty(idx)
-%     c_eval('R?(:,2:4) = units.RE*R?(:,2:4);')
-    c_eval('B? = irf_resamp(B?,B1);',2:4)
-%     c_eval('R? = irf_resamp(R?,B1);')
-    c_eval('B? = B?(idx,:);')
-    c_eval('R? = R?(idx_R,:);')
-end
+% % % if ~isempty(idx)
+% % % %     c_eval('R?(:,2:4) = units.RE*R?(:,2:4);')
+% % %     c_eval('B? = irf_resamp(B?,B1);',2:4)
+% % % %     c_eval('R? = irf_resamp(R?,B1);')
+% % %     c_eval('B? = B?(idx,:);')
+% % %     c_eval('R? = R?(idx_R,:);')
+% % % end
 
 %% residual
 %% 使用2颗卫星代入模型求解
@@ -66,6 +67,7 @@ Q = mean(resQ);
 LocPoint = resLoc(1,:);
 try
     LocPoint = centroid3(resLoc);
+    % LocPoint = mean(resLoc);
     if isnan(LocPoint)
         LocPoint = mean(resLoc);
     end
@@ -265,7 +267,6 @@ x0 = [idx_flag*1e4*MultiPower+15,LocationSkew*ones(1,3)];
 % x0 = [idx_flag*1e4*MultiPower,0,0,0];
 % lb = [0.1*idx_flag*1e4*MultiPower,1000*ones(1,3)*MultiPower]; ub = [ub,1000*ones(1,3)*MultiPower];
 lb = [];ub = [];
-% options = optimoptions('lsqnonlin','UseParallel',true);
 options = optimoptions('lsqnonlin','Display','none');
 % options = optimoptions('lsqnonlin','Algorithm','trust-region-reflective',...
     % 'OptimalityTolerance',1e-10,'FunctionTolerance',1e-10,'MaxFunctionEvaluations',1e4,'MaxIterations',1e4);

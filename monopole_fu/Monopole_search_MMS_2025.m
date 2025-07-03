@@ -2,41 +2,48 @@
 clear;clc;
 global ParentDir 
 % global OutputDir
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
+ParentDir = 'D:/MMS/'; 
+DownloadDir = 'C:/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
-% Date = '2019-09-24/2019-09-25';
-Date = '2019-01-16/2019-01-17';
-splitDate = regexp(Date,'/','split');
 ic = 1:4;iic = 1:4;
-filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
+load([pwd,'\NameTags.mat']);
+
+Date = '2019-01-01T00:00:00.000Z/2019-02-01T00:00:00.000Z';
+% Date = '2016-02-05T00:00:00.000Z/2016-03-01T00:00:00.000Z';
+splitDate = regexp(Date,'/','split');
+startDate = splitDate{1};
+endDate   = splitDate{2};
+startDT = datetime(startDate, 'InputFormat', "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'TimeZone', 'UTC');
+endDT   = datetime(endDate,   'InputFormat', "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'TimeZone', 'UTC');
+NameTagsDT = datetime(NameTags, 'InputFormat', "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", 'TimeZone', 'UTC');
+mask = (NameTagsDT >= startDT) & (NameTagsDT <= endDT);
+NameTags = NameTags(mask);
+%% download data
+% % % filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 % filenames2 = SDCFilenames(Date,iic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
 % filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
 % filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
 % filenames_srvy = SDCFilenames(Date,ic,'inst','fgm','drm','srvy'); %为了知道坐标
 % filenames = [filenames1,filenames2,filenames3,filenames4];
-filenames = filenames1;
+% % % filenames = filenames1;
 
-expr = '_[0-9]+\_v';
-NameTags = regexp(filenames,expr,'match');
-NameTags = unique(cellfun(@cellstr,NameTags));
-FileGroups = cell(1,length(NameTags)); 
-for j = 1:length(NameTags)
-    % FileGroups{j} = [filenames(contains(filenames,NameTags{j})), filenames_srvy(contains(filenames_srvy,NameTags{j}(2:9)))];
-    FileGroups{j} = filenames(contains(filenames,NameTags{j}));
-end
-FileGroups = cellfun(@cellstr,FileGroups,'UniformOutput',false);%按时间分类整理后的文件名组
-
+% % % expr = '_[0-9]+\_v';
+% % % NameTags = regexp(filenames,expr,'match');
+% % % NameTags = unique(cellfun(@cellstr,NameTags));
+% % % FileGroups = cell(1,length(NameTags)); 
+% % % for j = 1:length(NameTags)
+% % %     % FileGroups{j} = [filenames(contains(filenames,NameTags{j})), filenames_srvy(contains(filenames_srvy,NameTags{j}(2:9)))];
+% % %     FileGroups{j} = filenames(contains(filenames,NameTags{j}));
+% % % end
+% % % FileGroups = cellfun(@cellstr,FileGroups,'UniformOutput',false);%按时间分类整理后的文件名组
+%%
 %修改文件夹时特别注意SDCFilesDownload需要datamove的文件夹必须是ParentDir，否则需要手动修改
+splitDate{1} = erase(splitDate{1},{':','.'});splitDate{2} = erase(splitDate{2},{':','.'});
 OutputDir = [ParentDir,'Monopole_Search/',splitDate{1},'To',splitDate{2},'/'];
+clear mask NameTagsDT
 mkdir(OutputDir)
-% if ~isfolder([OutputDir,'OverviewFig/'])
-%     mkdir([OutputDir,'OverviewFig/']);
-% end
-
 mms.db_init('local_file_db',ParentDir);
-
 %%
 units = irf_units;
 % parfor_progress(length(NameTags)-1);
@@ -47,7 +54,7 @@ PlotFlag = 0;
 % disp(['૮₍ ˃ ⤙ ˂ ₎ა',repmat('■',1,round(10*TDT/length(NameTags))),repmat('□',1,10-round(10*TDT/length(NameTags))),'正在光速检索ing...'])
 % fprintf(['当前处理时间为:',NameTags{TDT}(2:end-2),'\n'])
 
-if length(FileGroups{TDT})~=4, continue;end
+% % % if length(FileGroups{TDT})~=4, continue;end
 % % % try
 % % %     SDCFilesDownload_NAS(FileGroups{TDT},TempDir, 'Threads', 32, 'CheckSize', 0)
 % % % catch
@@ -58,9 +65,9 @@ if length(FileGroups{TDT})~=4, continue;end
 % % % SDCDataMove(TempDir,ParentDir)
 % % % 
 % % % mms.db_init('local_file_db',ParentDir);
-formatDate = @(s) [s(2:5), '-', s(6:7), '-', s(8:9), 'T', s(10:11), ':', s(12:13), ':', s(14:15), '.000Z'];
-% formatDate = @(s) [s(2:5), '-', s(6:7), '-', s(8:9), 'T00:00:00.000Z'];
-tempDate = [formatDate(NameTags{TDT}), '/', formatDate(NameTags{TDT+1})];
+% % % formatDate = @(s) [s(2:5), '-', s(6:7), '-', s(8:9), 'T', s(10:11), ':', s(12:13), ':', s(14:15), '.000Z'];
+% % % tempDate = [formatDate(NameTags{TDT}), '/', formatDate(NameTags{TDT+1})];
+tempDate = [char(NameTags(TDT)) '/' char(NameTags(TDT+1))];
 tempTint=irf.tint(tempDate);
 
 tryTimes = 0;
@@ -68,7 +75,7 @@ while tryTimes <= 10
 try
     % B1_ts=mms.get_data('B_gsm_brst',tempTint,1);%先导入一个文件看看文件中包含的时间段
     % tint = irf.tint(B1_ts.time.epoch(1),B1_ts.time.epoch(end));  
-    mms.db_init('local_file_db','/Volumes/SPART-NAS/Data/MMS/');
+    mms.db_init('local_file_db',ParentDir);
     Pos = mms.get_data('R_gsm',tempTint,1);
     Pos = irf.ts2mat(Pos);
     tryTimes = 666;
@@ -126,29 +133,28 @@ try
     if MultiPower > 3, continue; end
     
     id = nchoosek(1:6,2);
+    warning('off')
     % solve
     tic
-    [Q_py, Loc_py] = py.cal_error_gpu.CalError(R1_list, R2_list, R3_list, R4_list, ...
-                                                  B1_list, B2_list, B3_list, B4_list, ...
-                                                  py.None, py.None, py.None);
-    % % % parfor_progress(size(B1, 1)-1);
-    % % % parfor i =1:size(B1, 1)
-    % % % parfor_progress;
-    % % % [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
-    % % %     i,i*sign(divB(i,2)),RR_mean(i),1);
-    % % % 
-    % % % tempd = irf_abs(LocRes{i}(id(:,1),:)-LocRes{i}(id(:,2),:));
-    % % % tempd = tempd(:,4)/RR_mean(i);
-    % % % tempd = tempd';
-    % % % dLoc(i,:) = tempd * 100;
-    % % % 
-    % % % if ~isnan(resQ{i})
-    % % %     Qerror(i) = abs(100*std(resQ{i})/Q(i));
-    % % % else
-    % % %     Qerror(i) = 1000;
-    % % % end
-    % % % end
-    parfor_progress(0);
+    % parfor_progress(size(B1, 1)-1);
+    parfor i =1:size(B1, 1)
+    % for i =1:20
+    % parfor_progress;
+    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
+        i,i*sign(divB(i,2)),RR_mean(i),1);
+
+    tempd = irf_abs(LocRes{i}(id(:,1),:)-LocRes{i}(id(:,2),:));
+    tempd = tempd(:,4)/RR_mean(i);
+    tempd = tempd';
+    dLoc(i,:) = tempd * 100;
+
+    if ~isnan(resQ{i})
+        Qerror(i) = abs(100*std(resQ{i})/Q(i));
+    else
+        Qerror(i) = 1000;
+    end
+    end
+    % parfor_progress(0);
     toc
     meand = mean(dLoc,2);
     LocPoint = irf_abs(LocPoint);
@@ -200,4 +206,3 @@ end
 % % %     writematrix(['删除文件夹',NameTags{TDT}(2:end-2),'失败'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
 % % % end
 end
-parfor_progress(0);

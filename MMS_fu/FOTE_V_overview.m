@@ -24,12 +24,15 @@ thresold = 0.4;
 % Tend = '2017-05-22T08:23:55.000Z';
 % Tsta = '2017-05-25T04:40:29.500Z';
 % Tend = '2017-05-25T04:40:33.000Z';
-Tsta = '2017-07-06T17:31:58.000Z';
-Tend = '2017-07-06T17:31:59.500Z';
+% % % Tsta = '2017-07-06T17:31:58.000Z';
+% % % Tend = '2017-07-06T17:31:59.500Z';
+Tsta = '2019-08-05T16:24:00.000Z';
+Tend = '2019-08-05T16:25:00.000Z';
 tint = irf.tint(Tsta,Tend);
 % tint=irf.tint('2017-01-27T12:05:42.50Z/2017-01-27T12:05:43.80Z');
 % TT = '2017-07-12T11:54:00.000Z/2017-07-12T11:55:00.000Z';
-TT = '2017-07-06T17:31:52.000Z/2017-07-06T17:32:07.000Z';
+% % % TT = '2017-07-06T17:31:52.000Z/2017-07-06T17:32:07.000Z';
+TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
 % TT = '2018-07-06T12:36:30.000Z/2018-07-06T12:38:00.000Z';
 % TT = '2017-05-22T08:23:30.000Z/2017-05-22T08:24:30.000Z';
 % TT = '2017-05-25T04:40:00.000Z/2017-05-25T04:41:00.000Z';
@@ -43,12 +46,12 @@ Date = [Datelist{1},'/',Datelist{2}];
 filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist');
 % filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
-filenames = [filenames1, filenames2,filenames4];
+% filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
+filenames = [filenames1, filenames2];
 % % % 
 [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
 
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 64, 'CheckSize', 0)
 SDCDataMove(TempDir,ParentDir)
 mms.db_init('local_file_db','D:/MMS/')
 
@@ -72,7 +75,7 @@ c_eval('ne?=irf.ts2mat(Ne?);',ic);
 
 % c_eval('Ni?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_numberdensity_brst'',tint);',ic);
 % c_eval('ni?=irf.ts2mat(Ni?);',ic);
-c_eval('ni? = ne?;',ic)
+% c_eval('ni? = ne?;',ic)
 c_eval('Vi? = mms.get_data(''Vi_gse_fpi_brst_l2'',tint,?);',ic); 
 % c_eval('Vi?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulkv_gse_brst'',tint);',ic);
 c_eval('vi?=irf.ts2mat(Vi?);',ic);
@@ -81,6 +84,7 @@ c_eval('vi? = irf_gse2gsm(vi?);',ic);
 c_eval('tic; gseB? = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gse_brst_l2'',tint); toc;',ic);%GSE坐标下的B
 c_eval('tic; gsmB? = mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',tint); toc;',ic);%GSM坐标下的B
 c_eval('gseTe? = mms.get_data(''Te_gse_fpi_brst_l2'',tint,?);',ic)%GSE坐标下的Te
+gseTe4 = gseTe1;ne4 = ne1;
 c_eval('facTe? = mms.rotate_tensor(gseTe?,''fac'',gseB?);',ic)%FAC坐标下的Te
 %GSE坐标系下的等离子体温度张量数据旋转到了磁力线坐标系（FAC，Field Aligned Coordinates）
 % c_eval('matParTe? = facTe?.xx.resample(gsmB?.time).data;',ic)
@@ -97,7 +101,7 @@ c_eval('ne? = irf_resamp(ne?, ne1);',ic);
 c_eval('matParTe? = irf_resamp(matParTe?, matParTe1);',ic);
 c_eval('matPerTe? = irf_resamp(matPerTe?, matPerTe1);',ic);
 %% load Ve Fields data
-c_eval('Vexyz?= mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_bulkv_gse_brst'',tint);',ic);
+c_eval('Vexyz?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulkv_gse_brst'',tint);',ic);
 c_eval('Vexyz? = irf_gse2gsm(Vexyz?);',ic);
 % L=[0.05 -0.21 0.98]; % Vi
 % M=[-0.23 0.95 0.22];
