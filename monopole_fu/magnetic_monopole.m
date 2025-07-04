@@ -30,7 +30,7 @@ close all
 %                金光速现，覆护真人。急急如律令，bug全去除！
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% load data
-cd /Volumes/FWD-WorkDisk/Cluster
+cd /Volumes/SPART-NAS/Data/Cluster/
 ic=1:4;
 % 
 % Tsta='2002-02-18T08:41:00.00Z';
@@ -49,8 +49,10 @@ ic=1:4;
 % Tend='2004-01-03T15:54:00.00Z';
 % Tsta='2003-12-29T13:40:00.00Z';
 % Tend='2003-12-29T13:41:00.00Z';
-Tsta='2004-01-21T08:56:00.00Z';
-Tend='2004-01-21T08:58:00.00Z';
+% % % Tsta='2004-01-21T08:56:00.00Z';
+% % % Tend='2004-01-21T08:58:00.00Z';
+Tsta='2004-01-12T00:25:00.00Z';
+Tend='2004-01-12T00:28:00.00Z';
 % Tsta='2004-05-30T13:09:00.00Z';
 % Tend='2004-05-30T13:10:00.00Z';
 % Tsta='2003-10-31T10:09:00.00Z';
@@ -83,8 +85,10 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % Tend2='2003-12-29T13:40:26.600Z';
 % Tsta2='2004-01-21T08:56:57.00Z';
 % Tend2='2004-01-21T08:57:02.00Z';
-Tsta2='2004-01-21T08:56:57.750Z';
-Tend2='2004-01-21T08:57:00.500Z';
+% % % Tsta2='2004-01-21T08:56:57.750Z';
+% % % Tend2='2004-01-21T08:57:00.500Z';
+Tsta2='2004-01-12T00:26:38.00Z';
+Tend2='2004-01-12T00:26:41.00Z';
 % Tsta2='2004-05-03T05:02:28.00Z';
 % Tend2='2004-05-03T05:02:30.00Z';
 % Tsta2='2004-05-30T13:09:30.00Z';
@@ -185,7 +189,9 @@ end
 RR_mean = RR_mean(4)/6;
 % MultiPower = ceil(max([log10(abs(R1(i,2:4))),log10(abs(R2(i,2:4))),log10(abs(R3(i,2:4))),log10(abs(R4(i,2:4)))]));
 % solve
-[Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('R?','B?_gse',i,i*sign(divB(i,2)),RR_mean,10);
+% [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('R?','B?_gse',i,i*sign(divB(i,2)),RR_mean,10);
+[Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1(i,:), R2(i,:), R3(i,:), R4(i,:),...
+        B1(i,:), B2(i,:), B3(i,:), B4(i,:), i,i*sign(divB(i,2)),RR_mean,1);
 
 id = nchoosek(1:6,2);
 c_eval('tempd? = irf_abs(LocRes{i}(id(?,1),:)-LocRes{i}(id(?,2),:));',1:15)
@@ -232,7 +238,7 @@ set(gca,'Ylim',[min([min(B1(:,5)) min(B2(:,5)) min(B3(:,5)) min(B4(:,5))])-10 ..
 % pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
 irf_legend(gca,{'C1','C2','C3','C4'},[0.97 0.92]);
-ylabel('|B| [nT]','fontsize',12);
+ylabel('|B| (nT)','fontsize',12);
 % irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
 % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
 i=i+1;
@@ -252,7 +258,7 @@ set(gca,'Ylim',[min([min(B1_gse(:,2)) min(B2_gse(:,2)) min(B3_gse(:,2)) min(B4_g
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
 % irf_legend(gca,{'C1','C2','C3','C4'},[0.97 0.92]);
-ylabel('Bx [nT]','fontsize',12);
+ylabel('Bx (nT)','fontsize',12);
 % irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
 % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
 i=i+1;
@@ -272,7 +278,7 @@ set(gca,'Ylim',[min([min(B1_gse(:,3)) min(B2_gse(:,3)) min(B3_gse(:,3)) min(B4_g
 % pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
 % irf_legend(gca,{'C1','C2','C3','C4'},[0.97 0.92]);
-ylabel('By [nT]','fontsize',12);
+ylabel('By (nT)','fontsize',12);
 % irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
 % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
 i=i+1;
@@ -292,7 +298,7 @@ set(gca,'Ylim',[min([min(B1_gse(:,4)) min(B2_gse(:,4)) min(B3_gse(:,4)) min(B4_g
 % pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
 % irf_legend(gca,{'C1','C2','C3','C4'},[0.97 0.92]);
-ylabel('Bz [nT]','fontsize',12);
+ylabel('Bz (nT)','fontsize',12);
 % irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
 % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
 i=i+1;
@@ -354,7 +360,7 @@ c_eval("set(gca,'Ylim',[min(divB(:,2))-0.005 max(divB(:,2)+0.005)],'fontsize',9)
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 1];[1 0 0]]);
 % irf_legend(gca,{'B_x','B_z'},[0.97 0.92]);
-ylabel('divB [nT/km] ','fontsize',12);
+ylabel('\nabla · B (nT/km) ','fontsize',12);
 % irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
 % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
 i=i+1;
@@ -395,12 +401,12 @@ i=i+1;
 h(i)=irf_subplot(n,1,-i);
 
 irf_plot([B1(:,1) mean(dLoc,2)*100], 'color','k', 'Linewidth',0.75); hold on;
-irf_plot([B1(:,1) 0*mean(dLoc,2)+66.1], 'r-', 'Linewidth',0.75); hold on;
+% irf_plot([B1(:,1) 0*mean(dLoc,2)+66.1], 'r-', 'Linewidth',0.75); hold on;
 grid off;
 % set(gca,'Ylim',[0 max(Locerror)]);
-set(gca,'Ylim',[0,200], 'ytick',[0 100],'fontsize',9);
+set(gca,'Ylim',[0,100], 'ytick',[0 50 100],'fontsize',9);
 pos1=get(gca,'pos');
-ylabel('d Err','fontsize',12);
+ylabel('DR_{cou} (%)','fontsize',12);
 i=i+1;
 %% stddLoc Error
 % % % h(i)=irf_subplot(n,1,-i);
@@ -419,7 +425,7 @@ grid off;
 % set(gca,'Ylim',[0 max(Qerror)]);
 set(gca,'Ylim',[0,200], 'ytick',[0 100 200],'fontsize',9);
 pos1=get(gca,'pos');
-ylabel('Q Err [%]','fontsize',12);
+ylabel('DQ_{cou} (%)','fontsize',12);
 i=i+1;
 %% Q
 % % % h(i)=irf_subplot(n,1,-i);
@@ -434,6 +440,9 @@ i=i+1;
 %% Annotation
 irf_zoom(tint,'x',h(1:end));
 irf_plot_axis_align;
+tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));
+irf_pl_mark(h(1:end),B1(tempidx_B1,1),'k');
+set(gca,"XTickLabelRotation",0)
 
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
@@ -504,12 +513,12 @@ c_eval("quiver3(R?(tempidx_R,2),R?(tempidx_R,3),R?(tempidx_R,4),RR_mean*B?_gse(t
 % c_eval("quiver3(R?(tempidx_R,2),R?(tempidx_R,3),R?(tempidx_R,4),RR_mean*Bm?(tempidx_B1,2)/maxB,RR_mean*Bm?(tempidx_B1,3)/maxB,RR_mean*Bm?(tempidx_B1,4)/maxB,'color',cor(?));hold on;")
 
 %% Loc res
-plotPolyhedron(LocRes{tempidx_B1}(:,1),LocRes{tempidx_B1}(:,2),LocRes{tempidx_B1}(:,3),'#FFB8CE',0.3);
+% plotPolyhedron(LocRes{tempidx_B1}(:,1),LocRes{tempidx_B1}(:,2),LocRes{tempidx_B1}(:,3),'#FFB8CE',0.3);
 % idx = [166:198];
 % plot3(LocPoint(idx,1),LocPoint(idx,2),LocPoint(idx,3),'*','color','#FFBAF1');
 % line(LocPoint(173:195,1),LocPoint(173:195,2),LocPoint(173:195,3),'color','#FFBAF1');
-plot3(LocPoint(tempidx_B1,1),LocPoint(tempidx_B1,2),LocPoint(tempidx_B1,3),'*','color','m');
-plot3(LocRes{tempidx_B1}(:,1),LocRes{tempidx_B1}(:,2),LocRes{tempidx_B1}(:,3),'*','color','#FFB8CE');
+plot3(LocPoint(tempidx_B1,1),LocPoint(tempidx_B1,2),LocPoint(tempidx_B1,3),'*','color','m','MarkerSize',10);
+% plot3(LocRes{tempidx_B1}(:,1),LocRes{tempidx_B1}(:,2),LocRes{tempidx_B1}(:,3),'*','color','#FFB8CE');
 %% adjust the position
 axis equal 
 % axis([-3*RR_mean 3*RR_mean -3*RR_mean 3*RR_mean -3*RR_mean 3*RR_mean])

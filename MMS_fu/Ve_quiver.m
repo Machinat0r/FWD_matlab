@@ -2,8 +2,8 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-NAS/Data'; 
-DownloadDir = '/Volumes/SPART-NAS/Data';
+ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
+DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 
@@ -26,7 +26,9 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2021-09-05T00:43:44.700Z/2021-09-05T00:43:49.000Z'; % case 14
 % TT = '2021-07-17T17:25:19.200Z/2021-07-17T17:25:21.500Z'; % case 15 , 1
 % TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'; % case 16, 1/3
- TT = '2017-06-27T22:44:35.000Z/2017-06-27T22:44:40.000Z';
+ % % % TT = '2017-06-27T22:44:35.000Z/2017-06-27T22:44:40.000Z';
+
+ TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
 
 
 tint=irf.tint(TT);
@@ -115,7 +117,7 @@ c_eval(['Ne?=irf.ts2mat(Ne?_ts);'],ic);
 % % % c_eval('Nibf? = Ni?_ts.filt(0,1,dfNi?,5);',ic);
 % % % c_eval(['Nibf?=irf.ts2mat(Nibf?);'],ic);
 
-c_eval('Ve?_ts = mms.get_data(''Ve_gse_fpi_brst_l2'',tint,?);',ic)
+c_eval('Ve?_ts = mms.get_data(''Vi_gse_fpi_brst_l2'',tint,?);',ic)
 % c_eval('Ve?_ts=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_bulkv_gse_brst'',tint);',ic);
 c_eval(['Vet?_ts=Ve?_ts.abs;'],ic); 
 c_eval(['Ve?=irf.ts2mat(Ve?_ts);'],ic);
@@ -135,12 +137,12 @@ c_eval('Vebf? = gsmVe?_ts.filt(0,1,dfVe?,5);',ic);
 % c_eval('R? = irf_resamp(R?,Bt?);',1:iic)
 
 %% Smooth
-dspan = 50;
+dspan = 10;
 Ve1 = [smooth(gsmVe1(:,1),dspan),smooth(gsmVe1(:,2),dspan),...
     smooth(gsmVe1(:,3),dspan),smooth(gsmVe1(:,4),dspan)];
 
 c_eval('gsmVe? = [smooth(gsmVe?(:,1),dspan),smooth(gsmVe?(:,2),dspan),smooth(gsmVe?(:,3),dspan),smooth(gsmVe?(:,4),dspan)];',1)
-dd=1;
+dd=15;
 xx = Ve1(1:dd:end,1);
 B1_smooth = [smooth(B1(:,1),dspan),smooth(B1(:,2),dspan),...
     smooth(B1(:,3),dspan),smooth(B1(:,4),dspan)];
@@ -167,7 +169,7 @@ c_eval("irf_plot([Ve?(:,1) Ve?(:,4)], 'color','r', 'Linewidth',0.75);",ic); hold
 c_eval("irf_plot([Ve?(:,1) Ve?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
 grid off;
 % c_eval("set(gca,'Ylim',[fix(min([min(Ve?(:,2)) min(Ve?(:,3)) min(Ve?(:,4))])/10)*11 fix(max(Vet?(:,2))/10)*10.5],'fontsize',9);",ic);
-set(gca,'Ylim',[-1000 2000]);
+set(gca,'Ylim',[-250 250]);
 % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
 % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
 % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
@@ -194,8 +196,8 @@ ylim([-0.4 0.4])
 q.ShowArrowHead = 'off';
 
 h(3) = irf_subplot(4,1,-3); % Vex Vey
-q=quiver(xx,0*xx,Ve1(1:dd:end,2),Ve1(1:dd:end,3),0.5);
-ylim([-0.2, 0.2])
+q=quiver(xx,0*xx,Ve1(1:dd:end,2),Ve1(1:dd:end,3),1);
+ylim([-15 5])
 q.ShowArrowHead = 'off';
 
 h(4) = irf_subplot(4,1,-4); % Vey Vez
