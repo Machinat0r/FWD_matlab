@@ -30,8 +30,8 @@ clear;clc;close all
 %%
 
 global ParentDir 
-ParentDir = 'D:\MMS\'; 
-TempDir = 'C:\MMS\temp\';mkdir(TempDir);
+ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
+TempDir = '/Volumes/SPART-NAS/Data/MMS/';mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
 % TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
@@ -39,7 +39,7 @@ TempDir = 'C:\MMS\temp\';mkdir(TempDir);
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:15:50.00Z';
 
 % TT = '2016-01-06T00:33:07.00Z/2016-01-06T00:33:07.200Z';
-TT = '2015-09-19T07:43:28.000Z/2015-09-19T07:43:33.000Z';
+TT = '2016-01-27T03:03:24.000Z/2016-01-27T03:03:30.000Z';
 % TT = '2017-02-20T04:43:57.00Z/2017-02-20T04:43:58.00Z';
 % TT = '2021-03-30T07:58:01.00Z/2021-03-30T07:58:02.00Z';
 % TT = '2020-07-27T11:30:23.00Z/2020-07-27T11:30:24.00Z';
@@ -54,7 +54,8 @@ ic = 1:4;
 % 
 % SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
 %% Poincare Index  
-SDCDataMove(TempDir,ParentDir); mms.db_init('local_file_db',ParentDir);
+% SDCDataMove(TempDir,ParentDir); 
+mms.db_init('local_file_db',ParentDir);
 
 c_eval("B?_ts=mms.get_data('B_gse_brst',tint,?);");
 c_eval('B?_gse = irf.ts2mat(B?_ts);'); 
@@ -87,33 +88,38 @@ LocRes = cell(size(B1,1),1);
 Q = zeros(size(B1,1),1);
 resQ = cell(size(B1,1),1);
 
-for i = 1:length(PI)
-clc;
-disp(['current calculate:',num2str(i),'/',num2str(length(PI))]);
-RR_mean = zeros(1,4);
-for ii = 1:3 
-c_eval(['RR',num2str(ii),'?=[R',num2str(ii),'(i,2),R',num2str(ii),'(i,3),R',num2str(ii),'(i,4);',...
-    'R?(i,2),R?(i,3),R?(i,4)];'],ii+1:4);  %% ♥
-c_eval(['RR_mean=RR_mean+irf_abs(RR',num2str(ii),'?(2,:)-RR',num2str(ii),'?(1,:));'],ii+1:4);  
-end
-RR_mean = RR_mean(4)/6;
-% if PI(i)~=0
-    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('R?','B?',i,i*sign(divB(i,2)),10,1);
-if ~isnan(LocRes{i})
+RR12 = irf_abs(R1-R2); RR13 = irf_abs(R1-R3); RR14 = irf_abs(R1-R4); 
+RR23 = irf_abs(R2-R3); RR24 = irf_abs(R2-R4); RR34 = irf_abs(R3-R4); 
+RR_mean = (RR12(:,5) + RR13(:,5) + RR14(:,5) + RR23(:,5) + RR24(:,5) + RR34(:,5))/6;
 id = nchoosek(1:6,2);
-c_eval('tempd? = irf_abs(LocRes{i}(id(?,1),:)-LocRes{i}(id(?,2),:));',1:15)
-tempd = [];
-c_eval('tempd = [tempd,tempd?(4)/RR_mean];',1:15);
-dLoc(i,:) = tempd;
-else
-    dLoc(i,:) = 10*ones(1,15);
-end
+
+parfor i = 1:length(PI)
+clc;
+% disp(['current calculate:',num2str(i),'/',num2str(length(PI))]);
+
+% if PI(i)~=0
+    % % % [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('R?','B?',i,i*sign(divB(i,2)),10,1);
+    
+[Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
+        i,i*sign(divB(i,2)),RR_mean(i),1);
+
+    tempd = irf_abs(LocRes{i}(id(:,1),:)-LocRes{i}(id(:,2),:));
+    tempd = tempd(:,4)/RR_mean(i);
+    tempd = tempd';
+    dLoc(i,:) = tempd * 100;
+
+    if ~isnan(resQ{i})
+        Qerror(i) = abs(100*std(resQ{i})/Q(i));
+    else
+        Qerror(i) = 1000;
+    end
+
 
 % else
 %     Q(i) = nan; resQ{i} = nan; LocPoint(i,:) = [nan,nan,nan]; LocRes{i} = nan;
 % end
 end
-
+ meand = mean(dLoc,2);
 %% calculate error
 Qerror = zeros(length(PI),1);
 Locerror = zeros(length(PI),1);
@@ -163,7 +169,7 @@ grid off;
 % set(gca,'Ylim',[min([min(B1(:,5)) min(B2(:,5)) min(B3(:,5)) min(B4(:,5))])-10 ...
 %     max([max(B1(:,5)) max(B2(:,5)) max(B3(:,5)) max(B4(:,5))])+10]);
 % c_eval("set(gca,'Ylim',[min([min(B?_gse(:,2))])-100 max([max(B?_gse(:,2))])+100]);",ic);
-set(gca,'Ylim',[0 20], 'ytick',[0:10:20],'fontsize',9);
+set(gca,'Ylim',[0 25], 'ytick',[0:10:20],'fontsize',9);
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
 irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.97 0.92]);
@@ -284,11 +290,11 @@ irf_plot([divB(:,1) divB(:,2)], 'color','k', 'Linewidth',0.75); hold on;
 c_eval("irf_plot([divB(:,1) 0*divB(:,2)],'k--', 'Linewidth',0.75);",ic); hold off;
 grid off;
 % c_eval("set(gca,'Ylim',[min(divB(:,2))-0.05 max(divB(:,2))+0.05]);",ic);
-set(gca,'Ylim',[-0.5 1.5], 'ytick',[-0.5 0 0.5 1 1.5],'fontsize',9);
+set(gca,'Ylim',[-1 1], 'ytick',[-1 -0.5 0 0.5 1 1.5],'fontsize',9);
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 1];[1 0 0]]);
 % irf_legend(gca,{'B_x','B_z'},[0.97 0.92]);
-ylabel('divB [nT/km]','fontsize',12);
+ylabel('\nabla·B [nT/km]','fontsize',12);
 % irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
 % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
 i=i+1;
@@ -332,9 +338,9 @@ h(i)=irf_subplot(n,1,-i);
 irf_plot([B1(:,1) mean(dLoc,2)], 'color','k', 'Linewidth',0.75); hold on;
 grid off;
 % set(gca,'Ylim',[0 max(Locerror)]);
-set(gca,'Ylim',[0,1], 'ytick',[0 0.5 1],'fontsize',9);
+set(gca,'Ylim',[0,120], 'ytick',[0 50 100],'fontsize',9);
 pos1=get(gca,'pos');
-ylabel('mean','fontsize',12);
+ylabel('DR_{cou} [%]','fontsize',12);
 i=i+1;
 %% stddLoc Error
 % % % h(i)=irf_subplot(n,1,-i);
@@ -353,7 +359,7 @@ grid off;
 % set(gca,'Ylim',[0 1100]);
 set(gca,'Ylim',[0,200], 'ytick',[0 100 200],'fontsize',9);
 pos1=get(gca,'pos');
-ylabel('Q Err [%]','fontsize',12);
+ylabel('DQ_{cou} [%]','fontsize',12);
 i=i+1;
 %% Q
 % h(i)=irf_subplot(n,1,-i);
@@ -372,6 +378,9 @@ irf_plot_axis_align;
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
 colormap(jet)
+tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));
+c_eval("irf_pl_mark(h(?),B1(tempidx_B1,1),'k','LineStyle','-.');",1:n)
+set(gca,"XTickLabelRotation",0)
 % figname = [OutputDir,'OverviewFig\',NameTags{TDT}(2:end-2)];    
 % print(gcf, '-dpng', [figname '.png']);
 
@@ -387,8 +396,8 @@ set(gcf,'Position',[10 10 xSize*coef ySize*coef])
 % length(find(Locerror<50 & Qerror<=1000))
 % tempidx_B1 = find(PI~=0);
 % tempidx_B1 = tempidx_B1(mean(dLoc(tempidx_B1,:),2) == min(mean(dLoc(tempidx_B1,:),2)));
-% tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));
-tempidx_B1 = 398;
+tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));
+% tempidx_B1 = 398;
 % tempidx_B1 = tempidx_B1(1);
 %     [~,tempidx_B] = max(abs(divB(:,2)));
 c_eval('[~,tempidx_B?] = sort(abs(B?_gse(:,1)-B1_gse(tempidx_B1,1)));',2:4);

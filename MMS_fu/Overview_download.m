@@ -6,10 +6,10 @@ ParentDir = '/Volumes/SPART-NAS/Data/MMS/';
 DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-TT = '2024-08-02T15:26:45.000Z/2024-08-02T15:28:15.000Z';
-% TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+% TT = '2024-08-02T15:26:45.000Z/2024-08-02T15:28:15.000Z';
+TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
 % % TT = '2017-06-11T17:50:00.000Z/2017-06-11T18:00:00.000Z';
-% % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57c:43.000Z';
+% % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57:43.000Z';
 % % % TT = '2015-11-19T14:07:30.000Z/2015-11-19T14:09:30.000Z';
 % % % TT = '2018-07-05T20:39:27.000Z/2018-07-05T20:39:30.000Z';
 % % % % % TT = '2017-07-12T11:54:20.000Z/2017-07-12T11:54:48.000Z';
@@ -41,8 +41,10 @@ tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 1;
+ic = 3;
 iic = 1:4;
+try
+    adsfa
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
 filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
@@ -61,6 +63,9 @@ SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 64, 'CheckSize', 0)
 % SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 64, 'CheckSize', 0)
 % SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 64, 'CheckSize', 0)
 % % % id_flagTime = OverView_download(tint,desmoms,IC,Name,flagTime)
+catch
+    warning('no files have been downloaded')
+end
 %% load data
 SDCDataMove(TempDir,ParentDir)
 mms.db_init('local_file_db',ParentDir);
@@ -291,7 +296,7 @@ c_eval('gsmVe?_resE = irf_resamp(gsmVe?,E?);',ic)
 % c_eval('J_B = irf_resamp(J_B,E?);',ic)
 c_eval('Eplus? = [E?(:,1) E?(:,2:4) + 1e3*irf_cross(1e3*gsmVe?_resE(:,2:4),1e-9*B?_resE(:,2:4))];',ic)
 % c_eval('JdotEplus? = [Eplus?(:,1) irf_dot(J_B(:,2:4),Eplus?(:,2:4))];',ic);
-c_eval('J? = irf_resamp(J?,E?);',ic);
+c_eval('Eplus? = irf_resamp(E?,J?);',ic);
 c_eval('JdotEplus? = [Eplus?(:,1) irf_dot(J?(:,2:4),Eplus?(:,2:4))];',ic);
 c_eval('JdotEint = [JdotEplus?(:,1) cumsum(JdotEplus?(:,2))];',ic);
 
@@ -365,10 +370,10 @@ end
 % Ne_res = irf_resamp(Ne1,Bt1);
 % Va = 1e-9*Bt1(:,2)./sqrt(units.me*units.mu0*1e6*Ne_res(:,2));
 %% div and PI
-% [J_B,divB,~,jxB,divTshear,divPb] = c_4_j('R?','B?');
-% J_B(:,2:4) = 1e9*J_B(:,2:4);
-% c_eval('E_resJ = irf_resamp(E?,J_B);',ic);
-% c_eval('JdotE_B = [E_resJ(:,1) irf_dot(J_B(:,2:4),E_resJ(:,2:4))];',ic);
+[J_B,divB,~,jxB,divTshear,divPb] = c_4_j('R?','B?');
+J_B(:,2:4) = 1e9*J_B(:,2:4);
+c_eval('E_resJ = irf_resamp(E?,J_B);',ic);
+c_eval('JdotE_B = [E_resJ(:,1) irf_dot(J_B(:,2:4),E_resJ(:,2:4))];',ic);
 %% Smooth
 % % % dspan = 10;
 % % % Ve_smooth = [smooth(gsmVe1(:,1),dspan),smooth(gsmVe1(:,2),dspan),...
@@ -423,32 +428,32 @@ c_eval('lmnJ? = irf.ts2mat(lmnJ?_ts);',ic);
 % end
 
 %% KHI
-tint2 = '2017-07-06T17:31:56.000Z/2017-07-06T17:31:58.000Z';
-dspan = 1;
-c_eval('gsmVe? = smoothdata(gsmVe?,''movmean'',dspan);',ic);
-c_eval('Ne? = smoothdata(Ne?,''movmean'',dspan);',ic);
-c_eval('B? = smoothdata(B?,''movmean'',dspan);',ic);
-c_eval('Vetmp = irf_tlim(gsmVe?,tint2);',ic);
-c_eval('Netmp = irf_tlim(Ne?,tint2);',ic);
-c_eval('Btmp = irf_tlim(B?,tint2);',ic);
-
-c_eval('Vemean = mean(Vetmp(:,2:4))*1e3;',ic);
-c_eval('Nemean = mean(Netmp(:,2));',ic);
-c_eval('Bmean = mean(Btmp(:,2:4))*1e-9;',ic);
-% c_eval('k = (gsmVe1(:,2:4)*1e3-Vemean)./norm(gsmVe1(:,2:4)*1e3-Vemean);',ic);
-k = repmat([-0.8 0.6 0],size(gsmVe1,1),1);
-B1_rese = irf_resamp(B1,Vet1)*1e-9;
-rhomean = Nemean*1e6*units.me;
-c_eval('rho = Ne?(:,2)*1e6*units.me;',ic);
-rho_mean = rhomean*rho./(rho+rhomean);
-
-% Vae = Bt1_rese(:,2)*1e-9./sqrt(units.mu0*units.me*Ne1(:,2)*1e6)/1e3; %km/s
-
-left=irf_dot(k,(gsmVe1(:,2:4)*1e3-Vemean)).^2;
-right=(irf_dot(k,B1_rese(:,2:4)).^2+irf_dot(k,repmat(Bmean,size(k,1),1)).^2)./rho_mean/units.mu0;
+% % % tint2 = '2017-07-06T17:31:56.000Z/2017-07-06T17:31:58.000Z';
+% % % dspan = 1;
+% % % c_eval('gsmVe? = smoothdata(gsmVe?,''movmean'',dspan);',ic);
+% % % c_eval('Ne? = smoothdata(Ne?,''movmean'',dspan);',ic);
+% % % c_eval('B? = smoothdata(B?,''movmean'',dspan);',ic);
+% % % c_eval('Vetmp = irf_tlim(gsmVe?,tint2);',ic);
+% % % c_eval('Netmp = irf_tlim(Ne?,tint2);',ic);
+% % % c_eval('Btmp = irf_tlim(B?,tint2);',ic);
+% % % 
+% % % c_eval('Vemean = mean(Vetmp(:,2:4))*1e3;',ic);
+% % % c_eval('Nemean = mean(Netmp(:,2));',ic);
+% % % c_eval('Bmean = mean(Btmp(:,2:4))*1e-9;',ic);
+% % % % c_eval('k = (gsmVe1(:,2:4)*1e3-Vemean)./norm(gsmVe1(:,2:4)*1e3-Vemean);',ic);
+% % % k = repmat([-0.8 0.6 0],size(gsmVe1,1),1);
+% % % B1_rese = irf_resamp(B1,Vet1)*1e-9;
+% % % rhomean = Nemean*1e6*units.me;
+% % % c_eval('rho = Ne?(:,2)*1e6*units.me;',ic);
+% % % rho_mean = rhomean*rho./(rho+rhomean);
+% % % 
+% % % % Vae = Bt1_rese(:,2)*1e-9./sqrt(units.mu0*units.me*Ne1(:,2)*1e6)/1e3; %km/s
+% % % 
+% % % left=irf_dot(k,(gsmVe1(:,2:4)*1e3-Vemean)).^2;
+% % % right=(irf_dot(k,B1_rese(:,2:4)).^2+irf_dot(k,repmat(Bmean,size(k,1),1)).^2)./rho_mean/units.mu0;
 %% Init figure
 % ic = 1;
-n=11;
+n=13;
 i=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
@@ -1071,36 +1076,40 @@ i=i+1;
 % % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
 % % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
 %% JdotE
-% h(i)=irf_subplot(n,1,-i);
-% c_eval("irf_plot([JdotE?(:,1) JdotE?(:,2)], 'color','k', 'Linewidth',0.75);",ic); hold on;
-% % irf_plot(JdotE_B,['yy',2], 'color','k', 'Linewidth',0.75);
-% % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
-% % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
-% c_eval("irf_plot([JdotE?(:,1) JdotE?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
-% grid off;
-% % c_eval("set(gca,'Ylim',[fix(min(JdotE?)/10)*10-10 fix(max(JdotE?)/10)*10+10],'fontsize',9);",ic);
-% set(gca,'Ylim',[-500 300], 'ytick',[-300 0 300]);
-% % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
-% % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
-% % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
-% set(gca,'ColorOrder',[0 0 0]);
-% % irf_legend(gca,{'JdotE'},[0.97 0.92]);
-% ylabel('J\cdotE [pW/m^3] ','fontsize',10);
-% i=i+1;
+h(i)=irf_subplot(n,1,-i);
+c_eval('JdotE? = irf_resamp(JdotE?,Vi?);',ic);
+dspan = 20;
+c_eval('JdotE?(:,1) = smooth(JdotE?(:,1),dspan);',ic);c_eval('JdotE?(:,2) = smooth(JdotE?(:,2),dspan);',ic);
+c_eval("irf_plot([JdotE?(:,1) JdotE?(:,2)], 'color','k', 'Linewidth',0.75);",ic); hold on;
+% irf_plot(JdotE_B,['yy',2], 'color','k', 'Linewidth',0.75);
+% irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
+c_eval("irf_plot([JdotE?(:,1) JdotE?(:,2)*0],'k--', 'Linewidth',0.75);",ic); hold off;
+grid off;
+% c_eval("set(gca,'Ylim',[fix(min(JdotE?)/10)*10-10 fix(max(JdotE?)/10)*10+10],'fontsize',9);",ic);
+set(gca,'Ylim',[-50 50], 'ytick',[-50 0 50]);
+% irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+set(gca,'ColorOrder',[0 0 0]);
+% irf_legend(gca,{'JdotE'},[0.97 0.92]);
+ylabel('J\cdotE [pW/m^3] ','fontsize',10);
+i=i+1;
 %% J dot E' plot
-% % % h(i)=irf_subplot(n,1,-i);
-% % % c_eval("irf_plot([JdotEplus?(:,1) abs(JdotEplus?(:,2))], 'color','k', 'Linewidth',0.75); hold on;",ic)
-% % % % irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
-% % % % irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
-% % % c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
-% % % grid off;
-% % % ylabel('|J\cdotE''| [pw/m^3]','fontsize',10);
-% % % % set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
-% % % % set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
-% % % % irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
-% % % % set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
-% % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
-% % % i=i+1;
+h(i)=irf_subplot(n,1,-i);
+c_eval('JdotEplus?(:,1) = smooth(JdotEplus?(:,1),dspan);',ic);c_eval('JdotEplus?(:,2) = smooth(JdotEplus?(:,2),dspan);',ic);
+c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)], 'color','k', 'Linewidth',0.75); hold on;",ic)
+% irf_plot([Vit1(:,1) Vit1(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% irf_plot([Vexbt1(:,1) Vexbt1(:,2)*1e-3], 'color',[1 0 1], 'Linewidth',0.75); hold on;
+c_eval("irf_plot([JdotEplus?(:,1) JdotEplus?(:,2)*0],'k--', 'Linewidth',0.75); hold off;",ic)
+grid off;
+ylabel('|J\cdotE''| [pw/m^3]','fontsize',10);
+% set(gca,'Ylim',[fix(min([min(Vi1_gsm(:,2)) min(Vi1_gsm(:,3)) min(Vi1_gsm(:,4))])/10)*10-10 fix(max(Vit1(:,2))/10)*10+10]);
+% set(gca,'Ylim',[-200 400], 'ytick',[-100 0 300]);
+% irf_legend(gca,'d',[0.99 0.98],'color','k','fontsize',12);
+% set(gca,'ColorOrder',[[0 0 1];[0 1 0];[1 0 0];[0 0 0];[1 0 1]]);
+% irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
+i=i+1;
 %% Jplasma_lmn plot
 % % % h(i)=irf_subplot(n,1,-i);
 % % % c_eval("irf_plot([lmnJ?(:,1) lmnJ?(:,4)], 'color','b', 'Linewidth',0.75);",ic); hold on;

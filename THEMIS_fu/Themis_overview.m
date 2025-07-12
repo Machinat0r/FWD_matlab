@@ -47,7 +47,7 @@ Tsta = strsplit(TT,'\');
 Tend = Tsta{2};Tsta = Tsta{1};
 %% load data
 tint = [iso2epoch(Tsta),iso2epoch(Tend)];
-ic = {'a'};
+ic = {'b'};
 c_eval("THEMISDownload(strrep(TT(1:10),'-',''),'th?','scm',TempDir)",ic);
 c_eval("THEMISDownload(strrep(TT(1:10),'-',''),'th?','fgm',TempDir)",ic);
 c_eval("THEMISDownload(strrep(TT(1:10),'-',''),'th?','efi',TempDir)",ic);

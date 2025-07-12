@@ -2,7 +2,7 @@ clear
 clc
 
 %build database
-mms.db_init('local_file_db','D:/MMS/')
+mms.db_init('local_file_db','/Volumes/SPART-NAS/Data/MMS/')
 thresold=0.4;  
 hh1=10;
 %% load data
@@ -13,13 +13,18 @@ for ic=1:4
 % tint=irf.tint('2017-01-27T12:05:30.40Z/2017-01-27T12:05:32.41Z');
 
 
-Tsta = '2017-07-06T17:31:58.000Z';
-Tend = '2017-07-06T17:31:59.500Z';
-tint=irf.tint('2017-07-06T17:31:30.000Z/2017-07-06T17:32:30.000Z');
-Time='2017-07-06T17:31:58.700Z';
+% % % Tsta = '2017-07-06T17:31:58.000Z';
+% % % Tend = '2017-07-06T17:31:59.500Z';
+Tsta = '2019-08-05T16:24:00.000Z';
+Tend = '2019-08-05T16:25:00.000Z';
+% % % tint=irf.tint('2017-07-06T17:31:30.000Z/2017-07-06T17:32:30.000Z');
+tint=irf.tint('2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z');
+% % % Time='2017-07-06T17:31:58.700Z';
+Time='2019-08-05T16:24:31.137Z';
 
 time = irf_time(Time,'utc>epochtt');
-c_eval('Vegse?=mms.get_data(''Ve_dbcs_fpi_brst_l2'',tint,?);',ic);
+c_eval('Vegse?=mms.get_data(''Vi_gse_fpi_brst_l2'',tint,?);',ic);
+c_eval('Vegse?=irf_gse2gsm(Vegse?);',ic);
 % c_eval('Ve?=irf.ts2mat(Vegse?);',ic);
 c_eval('Bxyz?=mms.get_data(''B_gse_brst_l2'',tint,?);',ic);
 c_eval('B?=irf.ts2mat(Bxyz?);',ic);
@@ -34,14 +39,14 @@ c_eval('e_r? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energy_brs
 c_eval('VeS?=irf.ts2mat(Vegse?);',ic);
 end
 %% smooth_step1
-kk = length (e_r1.data);
+kk = size(VeS1,1);
 if mod(kk,2) == 1
    le = kk-2; lo = kk-3;
 else
    le = kk-3; lo = kk-2;
 end
 for ic =1:4
-    c_eval('e_r = e_r?;',ic)
+    c_eval('e_r = e_r1;',ic)
     if e_r.data(1)>e_r.data(2)
         for ii = 1:2:le
 %             c_eval('ne?(ii+1,2)=(ne?(ii+2,2)+ne?(ii,2))/2;',ic)
