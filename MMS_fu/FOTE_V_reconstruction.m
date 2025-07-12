@@ -23,7 +23,8 @@ tint=irf.tint('2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z');
 Time='2019-08-05T16:24:31.137Z';
 
 time = irf_time(Time,'utc>epochtt');
-c_eval('Vegse?=mms.get_data(''Vi_dbcs_fpi_brst_l2'',tint,?);',ic);
+c_eval('Vegse?=mms.get_data(''Vi_gse_fpi_brst_l2'',tint,?);',ic);
+c_eval('Vegse?=irf_gse2gsm(Vegse?);',ic);
 % c_eval('Ve?=irf.ts2mat(Vegse?);',ic);
 c_eval('Bxyz?=mms.get_data(''B_gse_brst_l2'',tint,?);',ic);
 c_eval('B?=irf.ts2mat(Bxyz?);',ic);

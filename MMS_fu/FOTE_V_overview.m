@@ -38,7 +38,7 @@ TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
 % TT = '2017-05-22T08:23:30.000Z/2017-05-22T08:24:30.000Z';
 % TT = '2017-05-25T04:40:00.000Z/2017-05-25T04:41:00.000Z';
 
-TT3 = '2019-08-05T16:24:31.000Z/2019-08-05T16:24:32.000Z';
+TT3 = '2019-08-05T16:24:29.000Z/2019-08-05T16:24:33.000Z';
 tint2=irf.tint(TT);
 tint3 = irf.tint(TT3);
 
@@ -476,6 +476,52 @@ for i=1:n
 j_dot_E02(i,1)=dot(j_LMN(i,2:4),E_lmn2(i,2:4));
 end
 
+%% 
+h(1) = irf_subplot(3,1,-1);
+% h(1) = irf_panel('Vx');
+irf_plot(h(1),[VeSS1(:,1),VeSS1(:,2)],'k');hold on;
+irf_plot(h(1),[VeSS2(:,1),VeSS2(:,2)],'r');hold on;
+irf_plot(h(1),[VeSS3(:,1),VeSS3(:,2)],'g');hold on;
+irf_plot(h(1),[VeSS4(:,1),VeSS4(:,2)],'b');hold on;
+hold(h(1),'off');
+ylabel(h(1),{'Vix','(km/s)'},'Interpreter','tex');
+set(h(1),'ylim',[-100 0],'ytick',[-100:50:0]);
+set(gca,'ColorOrder',[[0 0 0]; [1 0 0]; [0 1 0]; [0 0 1]]);
+irf_legend(h(1),{'MMS1 ','MMS2 ','MMS3 ','MMS4'},[0.98 0.03],'fontsize',12)
+% irf_legend(h(1),'(a)',[0.99 0.98],'color','k','fontsize',12)
+grid(h(1),'off');
+
+h(2) = irf_subplot(3,1,-2);
+irf_plot(h(2),[VeSS1(:,1),VeSS1(:,3)],'k');hold on;
+irf_plot(h(2),[VeSS2(:,1),VeSS2(:,3)],'r');hold on;
+irf_plot(h(2),[VeSS3(:,1),VeSS3(:,3)],'g');hold on;
+irf_plot(h(2),[VeSS4(:,1),VeSS4(:,3)],'b');hold on;
+hold(h(2),'off');
+ylabel(h(2),{'Viy','(km/s)'},'Interpreter','tex');
+set(h(2),'ylim',[-180 -20],'ytick',[-150:50:-50]);
+% set(gca,'ColorOrder',[[0 0 0]; [1 0 0]; [0 1 0]; [0 0 1]]);
+% irf_legend(h(2),{'MMS1 ','MMS2 ','MMS3 ','MMS4'},[0.98 0.03],'fontsize',12)
+% irf_legend(h(1),'(a)',[0.99 0.98],'color','k','fontsize',12)
+grid(h(2),'off');
+
+h(3) = irf_subplot(3,1,-3);
+irf_plot(h(3),[VeSS1(:,1),VeSS1(:,4)],'k');hold on;
+irf_plot(h(3),[VeSS2(:,1),VeSS2(:,4)],'r');hold on;
+irf_plot(h(3),[VeSS3(:,1),VeSS3(:,4)],'g');hold on;
+irf_plot(h(3),[VeSS4(:,1),VeSS4(:,4)],'b');hold on;
+hold(h(3),'off');
+ylabel(h(3),{'Viz','(km/s)'},'Interpreter','tex');
+set(h(3),'ylim',[40 110],'ytick',[50:20:100]);
+% set(gca,'ColorOrder',[[0 0 0]; [1 0 0]; [0 1 0]; [0 0 1]]);
+% irf_legend(h(3),{'MMS1 ','MMS2 ','MMS3 ','MMS4'},[0.98 0.03],'fontsize',12)
+% irf_legend(h(1),'(a)',[0.99 0.98],'color','k','fontsize',12)
+grid(h(3),'off');
+
+set(gca,"XTickLabelRotation",0)
+set(gcf,'render','painters');
+set(gcf,'paperpositionmode','auto')
+irf_zoom(tint3,'x',h(1:3));
+irf_plot_axis_align(h)
 %% plot
 h=irf_plot(10,'newfigure');
 xSize=750; ySize=900;

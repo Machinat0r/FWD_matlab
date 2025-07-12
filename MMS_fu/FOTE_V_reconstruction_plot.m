@@ -6,7 +6,7 @@ mms.db_init('local_file_db','/Volumes/SPART-NAS/Data/MMS/')
 %Tsta='2015-10-16T13:07:00Z'; 
 %Tend='2015-10-16T13:07:03Z';
 %Tnull='2015-10-16T13:07:02.250Z';
-%e1=[-0.552, 0.834, -0.008];
+% e1=[-0.552, 0.834, -0.008];
 hh1=10;
 % % % Tsta = '2017-07-06T17:31:58.000Z';
 % % % Tend = '2017-07-06T17:31:59.500Z';
@@ -19,6 +19,7 @@ Tnull='2019-08-05T16:24:31.137Z';
 % e1=[0.384889128652657 -0.890735064677563 -0.241767250054376];%30.99,别删
 % e1=[0.440732154171349 -0.213297770361358 -0.871928454311680];
 e1 = [-0.5079 0.5042 0.6984];
+% e1=[1,0,0];
 % e1 = [-0.4172 0.6567 0.3237];
 %--------------------------------------------
 
@@ -28,10 +29,12 @@ tint=irf.tint('2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z');
 %background magnetic field
 ic=1:4;
 c_eval('Vegse?=mms.get_data(''Vi_dbcs_fpi_brst_l2'',tint,?);',ic);
+% c_eval('Vegse? = irf_gse2gsm(Vegse?);',ic);
 c_eval('VeS?=irf.ts2mat(Vegse?);',ic);
 c_eval('Vet?=Vegse?.abs;',ic);
 c_eval('Bxyz?=mms.get_data(''B_gse_brst_l2'',tint,?);',ic);
 c_eval('B?=irf.ts2mat(Bxyz?);',ic);
+c_eval('B? = irf_gse2gsm(B?);',ic);
 c_eval('Bt?=Bxyz?.abs;',ic);
 c_eval('Rgse?=mms.get_data(''R_gse'',tint,?);',ic);
 c_eval('R?=irf.ts2mat(Rgse?);',ic);
@@ -128,39 +131,57 @@ Rsc2=Rsc2-R_null;
 Rsc3=Rsc3-R_null;
 Rsc4=Rsc4-R_null;
 
-% Rsc1=Rsc1-Rsc3;
-% Rsc2=Rsc2-Rsc3;
-% Rsc4=Rsc4-Rsc3;
-% Rsc3=Rsc3-Rsc3;
+c_eval('RR? = R?(:,2:end) - R_null;')
+RR_mean = 0.25*(RR1 + RR2 + RR3 + RR4);
 
-j_null=j(idxnull,2:end) .* 1e9;
+tint3 = '2019-08-05T16:24:31.000Z/2019-08-05T16:24:31.100Z';
+% c_eval('Vegse? = irf.ts2mat(Vegse?);');
+gradVe_3=c_4_grad('R?','Ve?','grad');
+gradVe_3 = irf_tlim(gradVe_3,tint3);
+Ve1_3 = irf_tlim(Ve1,tint3);
+c_eval('R? = irf_tlim(R?,tint3);')
+R_sc_all = zeros(size(gradVe_3,1),3);
+for i_grad= 1:size(gradVe_3,1)
+    dVe_null_i=reshape(gradVe_3(i_grad,2:end),3,3);
+    dR1_i=inv(dVe_null_i) * (Ve1_3(i_grad,2:4))';
+    R_sc_all(i_grad,:) = dR1_i';
+end
 %% construct B around null
 
-% % % set(0,'defaultLineLineWidth', 0.5);
-% % % set(0,'defaultAxesFontSize', 12);
-% % % set(0,'defaultTextFontSize', 12);
-% % % set(0,'defaultAxesFontUnits', 'pixels');
-% % % fig1=figure( ...
-% % %           'Name','Dataset coverage', ...
-% % %           'Tag','XYXgsm');clf;
-% % % set(fig1,'PaperUnits','centimeters')
-% % % xSize = 500; ySize = 500; coef=floor(min(1200/xSize,1200/ySize));
-% % % % xLeft = 0; yTop = -1;
-% % % % set(fig1,'PaperPosition',[xLeft yTop xSize ySize]);
-% % % set(fig1,'Position',[100 100 xSize ySize]);
+set(0,'defaultLineLineWidth', 0.5);
+set(0,'defaultAxesFontSize', 12);
+set(0,'defaultTextFontSize', 12);
+set(0,'defaultAxesFontUnits', 'pixels');
+fig1=figure( ...
+          'Name','Dataset coverage', ...
+          'Tag','XYXgsm');clf;
+set(fig1,'PaperUnits','centimeters')
+xSize = 1000; ySize = 5000; coef=floor(min(1200/xSize,1200/ySize));
+% xLeft = 0; yTop = -1;
+% set(fig1,'PaperPosition',[xLeft yTop xSize ySize]);
+set(fig1,'Position',[100 100 xSize ySize]);
 
 % h=[];
 
 % h(1)=axes('position',[0.1 0.1 0.8 0.8]); % [x y dx dy]
 aaa=1;
-BoxWid=1e3; %图坐标上下限[-100 100]
-Vup=600;
+BoxWid=3e4; %图坐标上下限[-100 100]
+Vup=500;
 
 %for Xgrid=[-40 -38 -35 -31 -26 -20 -13 -5 5 13 20 26 31 35 38 40]
 % for Xgrid=[-2 -1.3 -0.5 0.5 1.3 2 ]%三个循环，Xgrid变，theta变，X/Y/Z prev/curt变
-% for Xgrid=[-25:10:25]%31712
-for Xgrid=[-25]%31712
+i_plot = 1;
+for Xgrid=[-37.5,  -30,-25]%31712
+% for Xgrid=[-25]%31712
     for theta=[0]*pi/180
+
+    fig1=figure(i_plot);clf;
+    set(fig1,'PaperUnits','centimeters')
+    xSize = 1000; ySize = 5000; coef=floor(min(1200/xSize,1200/ySize));
+    % xLeft = 0; yTop = -1;
+    % set(fig1,'PaperPosition',[xLeft yTop xSize ySize]);
+    set(fig1,'Position',[100 100 xSize ySize]);
+
 %     for theta=[0:120:240]*pi/180
     %for theta=[0:90:270]*pi/180
 % for theta=[0:90:350]*pi/180
@@ -197,10 +218,10 @@ for Xgrid=[-25]%31712
             ii=ii+1;
         end
         if exist('Xline')
-            % % plot3(gca, Xline, Yline, Zline,'b'); hold on;
+            % plot3(gca, Xline, Yline, Zline,'b'); hold on;
             Nlin=length(Xline);
 %           cline(Xline, Yline, Zline, Bmline, 0, 1500, cool); view(3); hold on;%就是画个图，字面意思
-            % % % % cline(Xline, Yline, Zline, Bmline, 0, Vup, jet); view(3); hold on;%就是画个图，字面意思
+            % cline(Xline, Yline, Zline, Bmline, 0, Vup, jet); view(3); hold on;%就是画个图，字面意思
             arrP=fix(Nlin*0.65);%315%舍入到最接近的整数,向0取整%完全没懂，但似乎影响不大
 %             daspect([1,1,1]); 
 %              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP-1) Yline(arrP-1) Zline(arrP-1)],'r',2.5,3.5); hold on;
@@ -249,7 +270,47 @@ for Xgrid=[-25]%31712
         if exist('Xline')
             % plot3(gca, Xline, Yline, Zline,'r'); hold on;
             Nlin=length(Xline);
-          cline_arrow(Xline, Yline, Zline, Bmline, 0, Vup, jet); view(3); hold on;
+            if Xline~=0
+                % cmap = 'jet';
+                cmap = othercolor('RdYlGn11');
+                cmap = flip(cmap);
+
+            n = 256;  % 想要的渐变级数
+            
+            % 先定义那 6 个关键颜色（已从图中取近似 RGB 并归一化到 [0,1]）
+            cols = [
+                18, 128, 144;   % 深青  #128090
+                39, 167, 176;   % 青    #27A7B0
+                252,182, 41;    % 金黄  #FCB629
+                217,120,105;    % 暗粉  #D97869
+                215,142,165;    % 浅紫  #D78EA5
+                172, 59,125;    % 洋红  #AC3B7D
+            ] / 255;
+            
+            % 在位置 [0,1] 均匀布置这 6 点
+            pos = linspace(0,1,size(cols,1))';
+            
+            % 对 [0,1] 做线性插值，生成 n×3 的 cmap
+            t = linspace(0,1,n)';
+            cmap = interp1(pos, cols, t, 'linear');
+
+            % n = 256;  % 渐变级数
+            % pos = [0; 1/3; 2/3; 1];
+            % cols = [
+            %     0.6, 0.0, 0.0;   % 深红  (RGB [153, 0,   0  ]/255)
+            %     1.0, 0.6, 0.6;   % 浅红  (RGB [255,153,153]/255)
+            %     0.6, 0.8, 1.0;   % 浅蓝  (RGB [153,204,255]/255)
+            %     0.0, 0.0, 0.6;   % 深蓝  (RGB [  0,  0,153]/255)
+            % ];
+            % 
+            % t = linspace(0,1,n)';
+            % cmap = interp1(pos, cols, t, 'linear');
+            % cmap = flip(cmap);
+
+          cline_arrow(Xline, Yline, Zline, Bmline, 0, Vup, cmap);hold on;
+          i_plot=i_plot+1;
+            end
+
           % cline(Xline, Yline, Zline, Bmline, 0, Vup, jet); view(3); hold on;
             % % % % % cline(Xline, Yline, Zline, Bmline, 0, Vup, jet); view(3); hold on;
             arrP=fix(Nlin*0.55);%315
@@ -266,6 +327,18 @@ for Xgrid=[-25]%31712
         clear Zline
         clear Bmline
         clear Nlin
+        
+        box_bd1 = 1000;box_bd2 = 250;box_bd3 = 300;
+        caxis([0, Vup]);   %here is derived from minB & maxB. 【it should be consistent with cline range】
+        set(gca, 'Ylim',[-box_bd1 box_bd1], 'Ylim',[-box_bd2 box_bd2], 'Zlim',[-box_bd3 box_bd3]);
+        set(gca,'xtick',[-box_bd1:box_bd1:box_bd1], 'ytick',[-box_bd2:box_bd2:box_bd2], 'ztick',[-box_bd3:box_bd3:box_bd3],'fontsize',23);
+        set(gca,'DataAspectRatio',[5 1.0 1]);
+        set(gca,'view',[90 0])
+        set(gcf,'render','painters');
+        set(gcf,'paperpositionmode','auto')
+        print(gcf, '-dpdf', ['/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/new/打死不改了版/Ve_resconstruction/Ver2/3', ...
+            num2str(i_plot),'.pdf']);    
+
      
     end
 end
@@ -289,11 +362,11 @@ plot3(gca, [Rsc2(1)], [Rsc2(2)],[Rsc2(3)], 'rs', 'Linewidth',1, ...
 plot3(gca, [Rsc3(1)], [Rsc3(2)],[Rsc3(3)], 'gs', 'Linewidth',1, ...
            'MarkerEdgeColor','g','MarkerFaceColor','g','MarkerSize',12); hold on;
 plot3(gca, [Rsc4(1)], [Rsc4(2)],[Rsc4(3)], 'bs', 'Linewidth',1, ...
-           'MarkerEdgeColor','b','MarkerFaceColor','b','MarkerSize',12); hold off;   
+           'MarkerEdgeColor','b','MarkerFaceColor','b','MarkerSize',12); hold on;   
 RSC(1,1)=(Rsc1(1,1)+Rsc2(1,1)+Rsc3(1,1)+Rsc4(1,1))/4;
 RSC(2,1)=(Rsc1(1,2)+Rsc2(1,2)+Rsc3(1,2)+Rsc4(1,2))/4;
 RSC(3,1)=(Rsc1(1,3)+Rsc2(1,3)+Rsc3(1,3)+Rsc4(1,3))/4;
-
+plot3(R_sc_all(:,1),R_sc_all(:,2),R_sc_all(:,3));hold off;
 
 maxB=max(Bmax);
 minB=min(Bmin);
@@ -309,21 +382,21 @@ minB=min(Bmin);
 % ylabel(hcb,'|Ve|');
 
 
-box_bd = 300;box_bd2 = 3e4;
+box_bd1 = 1000;box_bd2 = 250;box_bd3 = 300;
 caxis([0, Vup]);   %here is derived from minB & maxB. 【it should be consistent with cline range】
-set(gca,'Xlim',[-box_bd2 box_bd2], 'Ylim',[-box_bd box_bd], 'Zlim',[-box_bd box_bd]);
-set(gca,'xtick',[-box_bd:box_bd:box_bd], 'ytick',[-box_bd:box_bd:box_bd], 'ztick',[-box_bd:box_bd:box_bd],'fontsize',23);
-set(gca,'DataAspectRatio',[1 1.0 1]);
+set(gca, 'Ylim',[-box_bd1 box_bd1], 'Ylim',[-box_bd2 box_bd2], 'Zlim',[-box_bd3 box_bd3]);
+set(gca,'xtick',[-box_bd1:box_bd1:box_bd1], 'ytick',[-box_bd2:box_bd2:box_bd2], 'ztick',[-box_bd3:box_bd3:box_bd3],'fontsize',23);
+% set(gca,'DataAspectRatio',[1 1.0 1]);
 % xlabel(gca,'e_{1} [km]','fontsize',20);
 % ylabel(gca,'e_{2} [km]','fontsize',20);
 % zlabel(gca,'e_{3} [km]','fontsize',20);
-xlabel(gca,'e1 [km]','fontsize',20);
-ylabel(gca,'e2 [km]','fontsize',20);
-zlabel(gca,'e3 [km]','fontsize',20);
+xlabel(gca,'x [km]','fontsize',20);
+ylabel(gca,'y [km]','fontsize',20);
+zlabel(gca,'z [km]','fontsize',20);
 %irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.98 0.26],'color','cluster')
 grid off;
 
-
+set(gca,'YTickLabel',[]);set(gca,'ZTickLabel',[])
 
 %angles=get(gca,'view');
 %set(gca,'view',angles)
@@ -337,12 +410,12 @@ grid off;
 
 % set(fig1,'renderer','opengl');
 %axis off;
-figname=['Vetopology'];
+% figname=['Vetopology'];
 % set(gca,'view',[-46.5949303652596,20.7818750000000])%31712角度
-set(gca,'view',[11.3094596268930	28.0706250000000])%3099角度
+% set(gca,'view',[11.3094596268930	28.0706250000000])%3099角度
 %  print(fig1, '-dpng','-r400',[figname '.png']);
 % set(fig1, 'Position', [100, 100, 600, 600]);
-colorbar;
+% colorbar;
 % viewInfo=get(gca,'view');
 
 % set(gca,'view',[0 90])
@@ -353,8 +426,8 @@ colorbar;
 % figname=['Vetopology_xz_33485'];
 % print(fig1, '-dpng','-r400',[figname '.png']);
 
-set(gca,'view',[-90 0])
-figname=['Vetopology'];
-set(gcf,'render','painters');
-set(gcf,'paperpositionmode','auto')
-% print(fig1, '-dpng','-r400',[figname '.png']);
+% % % set(gca,'view',[90 0])
+% % % figname=['Vetopology'];
+% % % set(gcf,'render','painters');
+% % % set(gcf,'paperpositionmode','auto')
+% % % print(gcf, '-dpdf', ['/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/new/打死不改了版/Ve_res', '.pdf']);    

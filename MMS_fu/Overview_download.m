@@ -44,6 +44,7 @@ Date = [Datelist{1},'/',Datelist{2}];
 ic = 3;
 iic = 1:4;
 try
+    adsfa
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
 filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
@@ -1076,7 +1077,8 @@ i=i+1;
 % % % % irf_legend(gca,{'Vi_N','Vi_M','Vi_L','|Vi|','|Vexb|'},[0.1 0.12]);
 %% JdotE
 h(i)=irf_subplot(n,1,-i);
-dspan = 10;
+c_eval('JdotE? = irf_resamp(JdotE?,Vi?);',ic);
+dspan = 20;
 c_eval('JdotE?(:,1) = smooth(JdotE?(:,1),dspan);',ic);c_eval('JdotE?(:,2) = smooth(JdotE?(:,2),dspan);',ic);
 c_eval("irf_plot([JdotE?(:,1) JdotE?(:,2)], 'color','k', 'Linewidth',0.75);",ic); hold on;
 % irf_plot(JdotE_B,['yy',2], 'color','k', 'Linewidth',0.75);
