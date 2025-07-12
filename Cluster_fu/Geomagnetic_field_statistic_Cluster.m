@@ -1,8 +1,8 @@
 %------written by Wending Fu, Jul.2025 in Beijing------------
 clear;clc;
-cd /Volumes/SPART-NAS/Data/Cluster/
-ParentDir = '/Volumes/SPART-NAS/Data/Cluster/';
-ic=1:4;
+cd 'E:\Cluster\'
+ParentDir = 'E:\Cluster\';
+ic=1;
 
 % TT = '2002-03-17\2003-01-01';
 TT = '2002-01-01\2002-01-02';
@@ -39,16 +39,24 @@ YY = year(d); MM = month(d); DD = day(d);
 hh = hour(d); mm = minute(d); ss = floor(second(d)); 
 
 data = [YY, MM, DD, hh, mm, ss, R(:,2:4)./units.RE*1e3,ones(1440,1), -400*ones(1440,1),zeros(1440,1),zeros(1440,1)];
-save('/Users/fwd/Documents/MATLAB/Code/fwd_matlab_patch/Cluster_fu/R.mat','data')
+func_path = mfilename("fullpath");
+func_path = strrep(func_path, '\', '/');
+func_dir = strfind(func_path,'fwd_matlab_patch') - 1;
+data_path = [func_path(1:func_dir), 'fwd_matlab_patch/Cluster_fu/R.mat'];
+save(data_path,'data')
+command = sprintf(['python ' func_path(1:func_dir) 'fwd_matlab_patch/Cluster_fu/GSE2Lm.py "%s"'], data_path);
+[status, cmdout] = system(command);
+delete(data_path)
 
 tint = [R(1,1) R(end,1)];
 Tsta = [datestr(datenum(1970,1,1,0,0,0)+mean(tint(1))/86400,'yyyy-mm-ddTHH:MM:SS.FFF') 'Z'];
 Tend = [datestr(datenum(1970,1,1,0,0,0)+mean(tint(2))/86400,'yyyy-mm-ddTHH:MM:SS.FFF') 'Z'];
 
-% if min(sqrt(R(:,2).^2+R(:,3).^2+R(:,4).^2)) < 20000+6371
-%     continue
-% end
+if min(sqrt(R(:,2).^2+R(:,3).^2+R(:,4).^2)) > 20000+6371
+    continue
+end
 errorflag = 1;
+
 try
     c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
 catch
