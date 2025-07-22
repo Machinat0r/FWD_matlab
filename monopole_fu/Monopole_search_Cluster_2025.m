@@ -2,10 +2,11 @@
 clear;clc;
 % cd E:/Cluster/
 ParentDir = 'E:/Cluster/';
+cd(ParentDir)
 ic=1:4;
 
-% TT = '2002-03-17\2003-01-01';
-TT = '2004-03-03\2005-01-01';
+% TT = '2002-05-22\2002-05-23';
+TT = '2004-08-21\2006-01-01';
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'\']; mkdir(TaskDir)
 Datelist = datenum(Datelist,'yyyy-mm-dd');

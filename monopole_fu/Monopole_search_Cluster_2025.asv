@@ -1,11 +1,11 @@
 %------written by Wending Fu, May.2025 in Beijing------------
 clear;clc;
-cd E:/Cluster/
+% cd E:/Cluster/
 ParentDir = 'E:/Cluster/';
 ic=1:4;
 
-% TT = '2002-03-17\2003-01-01';
-TT = '2004-01-21\2004-01-22';
+TT = '2002-05-22\2002-05-23';
+% TT = '2005-01-01\2007-01-01';
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'\']; mkdir(TaskDir)
 Datelist = datenum(Datelist,'yyyy-mm-dd');
@@ -89,6 +89,12 @@ try
     c_eval('R? = irf_resamp(R?,B1);')
     CenterPoint = (R1(:,2:4)+R2(:,2:4)+R3(:,2:4)+R4(:,2:4))/4;
     c_eval('R?(:,2:4) = R?(:,2:4)-CenterPoint;');
+
+    idx = checkLineIntersect(R1,R2,R3,R4, B1,B2,B3,B4, 3, 1);
+    c_eval('R?_copy = R?;');
+    c_eval('B?_copy = B?;');
+    c_eval('R? = R?(idx,:);');
+    c_eval('B? = B?(idx,:);');
     
     LocPoint = zeros(length(B1),3)*nan;
     LocRes = cell(length(B1),1);
@@ -113,17 +119,15 @@ try
     
     id = nchoosek(1:6,2);
     warning('off')
-    
-    aa = checkLineIntersect(R1,R2,R3,R4, B1,B2,B3,B4, 5, 3);
 
     % solve
     tic
-    % parfor_progress(size(B1, 1)-1);
-    % parfor i =1:size(B1, 1)
-    parfor i =1:200
-    % parfor_progress;
-    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
-        i,i*sign(divB(i,2)),RR_mean(i),1);
+    parfor_progress(size(B1, 1)-1);
+    parfor i =1:size(B1, 1)
+    % parfor i =1:200
+    parfor_progress;
+    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1(i,:), R2(i,:), R3(i,:), R4(i,:),...
+        B1(i,:), B2(i,:), B3(i,:), B4(i,:), i,i*sign(divB(i,2)),RR_mean(i),1);
 
     tempd = irf_abs(LocRes{i}(id(:,1),:)-LocRes{i}(id(:,2),:));
     tempd = tempd(:,4)/RR_mean(i);
@@ -136,7 +140,7 @@ try
         Qerror(i) = 1000;
     end
     end
-    % parfor_progress(0);
+    parfor_progress(0);
     toc
 
     meand = mean(dLoc,2);
