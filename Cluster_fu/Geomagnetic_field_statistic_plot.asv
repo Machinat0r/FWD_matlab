@@ -1,0 +1,82 @@
+clear;clc;close all
+cd '/Volumes/SPART-NAS/Data/Cluster/'
+ParentDir = '/Volumes/SPART-NAS/Data/Cluster/';
+ic=2;
+
+% TT = '2002-03-17\2003-01-01';
+TT = '2002-01-01\2003-01-01';
+Datelist = regexp(TT,'\d+-\d+-\d+','match');
+TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'/']; mkdir(TaskDir)
+
+load([TaskDir,'BRdata.mat'], 'all_MLT','all_MLat','all_L');
+
+%% 
+L_edges    = [1.5 2.5 3.5 4.5 5.5 6.5];
+MLT_edges  = linspace(0,24,25);
+MLat_edges = linspace(-45,45,31);
+
+%% 
+bin_L    = discretize(all_L,    L_edges);
+bin_MLT  = discretize(all_MLT,  MLT_edges);
+bin_MLat = discretize(all_MLat, MLat_edges);
+
+%% 按 (L,MLT) 和 (L,MLat) 分别统计计数
+counts_MLT  = accumarray([bin_L, bin_MLT],  1, [numel(L_edges)-1, numel(MLT_edges)-1]);
+counts_MLat = accumarray([bin_L, bin_MLat], 1, [numel(L_edges)-1, numel(MLat_edges)-1]);
+
+%% 计算 bin 的中心值
+L_centers    = (L_edges(1:end-1)   + L_edges(2:end))   / 2;
+MLT_centers  = (MLT_edges(1:end-1) + MLT_edges(2:end)) / 2;
+MLat_centers = (MLat_edges(1:end-1)+ MLat_edges(2:end))/ 2;
+
+%% 绘图
+figure('Position',[100 100 1200 500]);
+colormap(parula);  % 你也可以换成 hot、jet 等
+
+% === 左：MLT–L 极坐标柱状图 ===
+subplot(1,2,1);
+% 构造网格点
+[TH, R] = meshgrid(MLT_centers/24*2*pi, L_centers);
+X = R .* cos(TH);
+Y = R .* sin(TH);
+% 画填色
+pcolor(X', Y', counts_MLT);  
+shading flat; 
+axis equal off;
+caxis([0 max(counts_MLT(:))]);
+title('MLT–L 分布');
+
+% 画同心圆和刻度
+hold on;
+theta_line = linspace(0,2*pi,25);
+for r = L_edges
+    plot(r*cos(theta_line), r*sin(theta_line), 'k--', 'LineWidth',0.5);
+end
+% 四个正方向标注
+text(0, L_edges(end)+0.2,  '12:00','HorizontalAlignment','center');
+text(L_edges(end)+0.2, 0,   '06:00','HorizontalAlignment','center');
+text(0, -L_edges(end)-0.2,'00:00','HorizontalAlignment','center');
+text(-L_edges(end)-0.2,0,  '18:00','HorizontalAlignment','center');
+colorbar('Location','eastoutside');
+
+
+% === 右：MLat–L 楔形柱状图 ===
+subplot(1,2,2);
+[TH2, R2] = meshgrid(deg2rad(MLat_centers), L_centers);
+X2 = R2 .* cos(TH2);
+Y2 = R2 .* sin(TH2);
+pcolor(X2', Y2', counts_MLat);
+shading flat;
+axis equal off;
+caxis([0 max(counts_MLat(:))]);
+title('MLat–L 分布');
+
+% 画楔形边界：两条  ±45° 线和同心圆
+hold on;
+theta_wedge = deg2rad(linspace(-45,45,31));
+for r = L_edges
+    plot(r*cos(theta_wedge), r*sin(theta_wedge), 'k-', 'LineWidth',1);
+end
+plot([0 L_edges(end)*cos(deg2rad(-45))], [0 L_edges(end)*sin(deg2rad(-45))], 'k-', 'LineWidth',1);
+plot([0 L_edges(end)*cos(deg2rad(45))],  [0 L_edges(end)*sin(deg2rad(45))],  'k-', 'LineWidth',1);
+colorbar('Location','eastoutside');

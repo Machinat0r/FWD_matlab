@@ -51,8 +51,10 @@ ic=1:4;
 % Tend='2003-12-29T13:41:00.00Z';
 % % % Tsta='2004-01-21T08:56:00.00Z';
 % % % Tend='2004-01-21T08:58:00.00Z';
-Tsta='2004-01-12T00:25:00.00Z';
-Tend='2004-01-12T00:28:00.00Z';
+% % % Tsta='2004-01-12T00:25:00.00Z';
+% % % Tend='2004-01-12T00:28:00.00Z';
+Tsta='2002-05-22T09:46:00.00Z';
+Tend='2002-05-22T09:48:00.00Z';
 % Tsta='2004-05-30T13:09:00.00Z';
 % Tend='2004-05-30T13:10:00.00Z';
 % Tsta='2003-10-31T10:09:00.00Z';
@@ -87,8 +89,8 @@ tint=[iso2epoch(Tsta) iso2epoch(Tend)]; %ISO time to ISDAT EPOCH
 % Tend2='2004-01-21T08:57:02.00Z';
 % % % Tsta2='2004-01-21T08:56:57.750Z';
 % % % Tend2='2004-01-21T08:57:00.500Z';
-Tsta2='2004-01-12T00:26:38.00Z';
-Tend2='2004-01-12T00:26:41.00Z';
+Tsta2='2002-05-22T09:47:02.00Z';
+Tend2='2002-05-22T09:47:05.00Z';
 % Tsta2='2004-05-03T05:02:28.00Z';
 % Tend2='2004-05-03T05:02:30.00Z';
 % Tsta2='2004-05-30T13:09:30.00Z';
@@ -509,7 +511,7 @@ zlabel('e_3 [km]','fontsize',12);
 %% Quiver
 c_eval('B?_gse = irf_abs(B?_gse);');
 maxB = max([B1_gse(tempidx_B1,5),B2_gse(tempidx_B1,5),B3_gse(tempidx_B1,5),B4_gse(tempidx_B1,5)]);
-c_eval("quiver3(R?(tempidx_R,2),R?(tempidx_R,3),R?(tempidx_R,4),RR_mean*B?_gse(tempidx_B1,2)/maxB,RR_mean*B?_gse(tempidx_B1,3)/maxB,RR_mean*B?_gse(tempidx_B1,4)/maxB,'color',cor(?));hold on;")
+c_eval("quiver3(R?(tempidx_R,2),R?(tempidx_R,3),R?(tempidx_R,4),RR_mean*B?_gse(tempidx_B1,2)/4/maxB,RR_mean*B?_gse(tempidx_B1,3)/4/maxB,RR_mean*B?_gse(tempidx_B1,4)/4/maxB,'color',cor(?));hold on;")
 % c_eval("quiver3(R?(tempidx_R,2),R?(tempidx_R,3),R?(tempidx_R,4),RR_mean*Bm?(tempidx_B1,2)/maxB,RR_mean*Bm?(tempidx_B1,3)/maxB,RR_mean*Bm?(tempidx_B1,4)/maxB,'color',cor(?));hold on;")
 
 %% Loc res

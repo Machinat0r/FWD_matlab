@@ -1,22 +1,42 @@
 %------written by Wending Fu, Jul.2025 in Beijing------------
-clear;clc;
-cd 'E:\Cluster\'
-ParentDir = 'E:\Cluster\';
-ic=1;
+clear;clc;close all
+cd '/Volumes/SPART-NAS/Data/Cluster/'
+ParentDir = '/Volumes/SPART-NAS/Data/Cluster/';
+ic=2;
 
 % TT = '2002-03-17\2003-01-01';
-TT = '2002-01-01\2002-01-02';
+TT = '2003-01-01\2006-01-01';
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
-TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'\']; mkdir(TaskDir)
+TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'/']; mkdir(TaskDir)
 Datelist = datenum(Datelist,'yyyy-mm-dd');
 Datelist = datestr(Datelist(1):Datelist(2),'yyyy-mm-dd');
 
 mms.db_init('local_file_db',ParentDir);
 %%
 units = irf_units;
-% parfor_progress(length(NameTags)-1);
+all_MLT  = []; all_MLat = []; all_Bphi = []; all_L = [];
+
+% dir path
+func_path = mfilename("fullpath");
+func_path = strrep(func_path, '\', '/');
+func_dir = strfind(func_path,'fwd_matlab_patch') - 1;
+
+% load all Kp
+Kp_file = dataobj([func_path(1:func_dir) 'fwd_matlab_patch/Cluster_fu/omni2_h0s_mrg1hr_20010101003000_20250101003000_cdaweb.cdf']);
+Kp_time = get_variable(Kp_file,'Epoch_1800'); Kp_time = Kp_time.data;
+Kp_data = get_variable(Kp_file,'KP1800'); Kp_data = Kp_data.data;
+Kp_edges = [0,   5,   15,   25,   35,   45,   55,  Inf ];
+Kp_par = discretize(Kp_data, Kp_edges);
+
+% load all Vi gse
+Vi_file = dataobj([func_path(1:func_dir) 'fwd_matlab_patch/Cluster_fu/omni_hro2s_5min_20010101000000_20250101000000_cdaweb.cdf']);
+Vi_time = get_variable(Vi_file,'Epoch'); Vi_time = Vi_time.data;
+Vx_data = get_variable(Vi_file,'Vx'); Vx_data = Vx_data.data;
+Vy_data = get_variable(Vi_file,'Vy'); Vy_data = Vy_data.data;
+Vz_data = get_variable(Vi_file,'Vz'); Vz_data = Vz_data.data;
+
 for tempDate = 1:size(Datelist,1)-1 %This is a distinctive temp  (๑ˉ∀ˉ๑)
-clc;clear B1 B2 B3 B4 R1 R2 R3 R4;
+clc;clear B1 B2 B3 B4 R1 R2 R3 R4 Kp Vi;
 
 Tsta = [Datelist(tempDate,:) 'T00:00:000Z'];
 Tend = [Datelist(tempDate+1,:) 'T00:00:000Z'];
@@ -31,71 +51,112 @@ catch
 end
 
 R = c_caa_var_get('sc_r_xyz_gse__CL_SP_AUX','mat');
-TT = irf_time(R(:,1),'epoch>utc');
-d = datetime(TT, ...
-    'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSSSSSSSS''Z''', ...
-    'TimeZone','UTC');
-YY = year(d); MM = month(d); DD = day(d);
-hh = hour(d); mm = minute(d); ss = floor(second(d)); 
-
-data = [YY, MM, DD, hh, mm, ss, R(:,2:4)./units.RE*1e3,ones(1440,1), -400*ones(1440,1),zeros(1440,1),zeros(1440,1)];
-func_path = mfilename("fullpath");
-func_path = strrep(func_path, '\', '/');
-func_dir = strfind(func_path,'fwd_matlab_patch') - 1;
-data_path = [func_path(1:func_dir), 'fwd_matlab_patch/Cluster_fu/R.mat'];
-save(data_path,'data')
-command = sprintf(['python ' func_path(1:func_dir) 'fwd_matlab_patch/Cluster_fu/GSE2Lm.py "%s"'], data_path);
-[status, cmdout] = system(command);
-delete(data_path)
-
 tint = [R(1,1) R(end,1)];
 Tsta = [datestr(datenum(1970,1,1,0,0,0)+mean(tint(1))/86400,'yyyy-mm-ddTHH:MM:SS.FFF') 'Z'];
 Tend = [datestr(datenum(1970,1,1,0,0,0)+mean(tint(2))/86400,'yyyy-mm-ddTHH:MM:SS.FFF') 'Z'];
 
-if min(sqrt(R(:,2).^2+R(:,3).^2+R(:,4).^2)) > 20000+6371
+% if min(sqrt(R(:,2).^2+R(:,3).^2+R(:,4).^2)) > 7*units.RE/1e3
+%     continue
+% end
+
+try
+    c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
+    c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
+catch
+    writematrix(['Data incompleted at: ',datestr(datenum(1970,1,1,0,0,0)+R(1,1)/86400,'yyyymmdd HH:MM:SS.FFF')],[TaskDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
     continue
 end
-errorflag = 1;
 
 try
-    c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
-catch
-    try
-    %    Magnetic fields
-    c_eval("caa_download(tint,'C*_CP_FGM_FULL')",ic);
-    c_eval("caa_load_changed_by_fwd('C?_CP_FGM_FULL',Tsta,Tend);",ic);
-    catch
-        errorflag = 666;
-    end
-end
-
-try
-    c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
-catch 
-    try
-    c_eval("caa_download(tint,'C*_CP_AUX_POSGSE_1M')",ic);  % position & velocity for each sc
-    c_eval("caa_load_changed_by_fwd('C?_CP_AUX_POSGSE_1M',Tsta,Tend);",ic);
-    catch
-    errorflag = 666;
-    end
-end
-  
-if errorflag == 666
-    writematrix(['Data incompleted at: ',datestr(datenum(1970,1,1,0,0,0)+R(1,1)/86400,'yyyymmdd HH:MM:SS.FFF')],[TaskDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
-continue
-end
-
-try
+%% load R & B
 % % % dobjname=irf_ssub('C?_CP_FGM_FULL',ic); 
 % % % varname=irf_ssub('B_vec_xyz_gse__C?_CP_FGM_FULL',ic); 
 c_eval('B?_gse=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'',''mat'');',ic); 
 c_eval('B? = irf_gse2gsm(B?_gse);',ic);
-% c_eval('B?=irf_abs(B?_gsm);',ic);
-% c_eval('B? = irf_resamp(B?,B1);',2:4);
-c_eval('B? = irf_resamp(B?,B1);',2:4);
+c_eval('R?_gse = c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');',ic);
+c_eval('R? = irf_gse2gsm(R?_gse);',ic);
+% c_eval('R? = irf_resamp(R?,B1);',ic)
+c_eval('B? = irf_resamp(B?,R?);',ic);
+%% calculate L
+c_eval("tempTT = irf_time(R?(:,1),'epoch>utc');",ic);
+d = datetime(tempTT, ...
+    'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSSSSSSSS''Z''', ...
+    'TimeZone','UTC');
+YY = year(d); MM = month(d); DD = day(d);
+hh = hour(d); mm = minute(d); ss = floor(second(d)); 
+stTime = [tempTT(1,1:23), 'Z'];
+edTime = [tempTT(end,1:23), 'Z'];
+
+% Kp
+Kp = irf_tlim([Kp_time, Kp_par], [stTime,'/',edTime]);
+c_eval('Kp = irf_resamp(Kp, R?);',ic);
+Kp(:,2) = round(Kp(:,2));
+
+% Vi gse
+Vi = irf_tlim([Vi_time, Vx_data, Vy_data, Vz_data], [stTime,'/',edTime]);
+c_eval('Vi = irf_resamp(Vi, R?);',ic);
+
+% year, month, day, hour, minute, second, RxGSM(Re), RyGSM(Re), RzGSM(Re),
+% Kp,  VxGSE, VyGSE, VzGSE
+c_eval(['data = [YY, MM, DD, hh, mm, ss, R?(:,2:4)./units.RE*1e3,' ...
+    'Kp(:,2), Vi(:,2:4)];'],ic);
+data_path = [TaskDir, 'R.mat'];
+save(data_path,'data')
+command = sprintf(['python3 ' func_path(1:func_dir) 'fwd_matlab_patch/Cluster_fu/GSM2Lshell.py "%s"'], data_path);
+[status, cmdout] = system(command);
+delete(data_path)
+
+load([func_path(1:func_dir), 'fwd_matlab_patch/Cluster_fu/L.mat'])
+L = L';
+%% hist bins
+c_eval('phi  = atan2(R?(:,3), R?(:,2));',ic)
+MLT  = mod(phi * (12/pi) + 12, 24); 
+c_eval('R? = irf_abs(R?);',ic)
+c_eval('MLat = asind(R?(:,4) ./ R?(:,5));',ic)
+
+e_phi = [-sin(phi), cos(phi), zeros(size(phi))];
+c_eval('Bphi  = sum(B?(:,2:4) .* e_phi, 2); ',ic);
+
+all_MLT  = [all_MLT;  MLT];
+all_MLat = [all_MLat; MLat];
+all_Bphi = [all_Bphi; Bphi];
+all_L    = [all_L;    L];
+
+save([TaskDir, 'BRdata.mat'], 'all_MLT','all_MLat','all_Bphi','all_L')
+
 catch
-        writematrix(['Data incompleted at: ',datestr(datenum(1970,1,1,0,0,0)+R(1,1)/86400,'yyyymmdd HH:MM:SS.FFF')],...
+        writematrix(['Data reading failure at: ',datestr(datenum(1970,1,1,0,0,0)+R(1,1)/86400,'yyyymmdd HH:MM:SS.FFF')],...
                     [TaskDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
         continue
 end
 end
+%% plot
+edges = [1.5 2.5 3.5 4.5 5.5 6.5];
+% edges = [0 5 10 15 20 25];
+grp   = discretize(all_L, edges);
+
+n_half = 128;
+neg = [linspace(0,1,n_half)' linspace(0,1,n_half)' ones(n_half,1)];
+pos = [ones(n_half,1) linspace(1,0,n_half)' linspace(1,0,n_half)'];
+cmap = [neg; pos];
+cmax = max(abs(all_Bphi));
+
+figure('Position',[100 100 1200 800]);
+colormap(cmap);
+
+for k = 1:numel(edges)-1
+    subplot(2,3,k);
+    sel = grp == k;
+    scatter(all_MLT(sel), all_MLat(sel), 10, all_Bphi(sel), 'filled');
+    xlabel('MLT (h)');
+    ylabel('MLat (°)');
+    title(sprintf('L = %.1f–%.1f', edges(k), edges(k+1)));
+    axis([0 24 -90 90]);
+    caxis([-100 100]);
+    colorbar('Ticks',[-100 0 100], 'TickLabels',{'-100','0','100'});
+    % clabel('B_\phi (nT)')
+    grid on;
+end
+
+subplot(2,3,6); axis off;
+text(0.1,0.5,'Color: B_\phi (red = CW, blue = CCW)','FontSize',12);

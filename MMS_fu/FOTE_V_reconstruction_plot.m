@@ -7,7 +7,7 @@ mms.db_init('local_file_db','/Volumes/SPART-NAS/Data/MMS/')
 %Tend='2015-10-16T13:07:03Z';
 %Tnull='2015-10-16T13:07:02.250Z';
 % e1=[-0.552, 0.834, -0.008];
-hh1=10;
+hh=10;hh1=5;
 % % % Tsta = '2017-07-06T17:31:58.000Z';
 % % % Tend = '2017-07-06T17:31:59.500Z';
 Tsta = '2019-08-05T16:24:00.000Z';
@@ -18,29 +18,56 @@ Tnull='2019-08-05T16:24:31.137Z';
 % e1=[0.928580204157578 -0.145037102078109 -0.341618271565582];%31.712，别删
 % e1=[0.384889128652657 -0.890735064677563 -0.241767250054376];%30.99,别删
 % e1=[0.440732154171349 -0.213297770361358 -0.871928454311680];
-e1 = [-0.5079 0.5042 0.6984];
-% e1=[1,0,0];
+% % % e1 = [-0.2411 -0.0065 0.9705];
+e1=[1,0,0];
 % e1 = [-0.4172 0.6567 0.3237];
 %--------------------------------------------
-
+ic = 1:4;
 tint=irf.tint('2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z');
 
 %--------------------------------------------
-%background magnetic field
-ic=1:4;
-c_eval('Vegse?=mms.get_data(''Vi_dbcs_fpi_brst_l2'',tint,?);',ic);
-% c_eval('Vegse? = irf_gse2gsm(Vegse?);',ic);
-c_eval('VeS?=irf.ts2mat(Vegse?);',ic);
-c_eval('Vet?=Vegse?.abs;',ic);
-c_eval('Bxyz?=mms.get_data(''B_gse_brst_l2'',tint,?);',ic);
-c_eval('B?=irf.ts2mat(Bxyz?);',ic);
-c_eval('B? = irf_gse2gsm(B?);',ic);
-c_eval('Bt?=Bxyz?.abs;',ic);
-c_eval('Rgse?=mms.get_data(''R_gse'',tint,?);',ic);
-c_eval('R?=irf.ts2mat(Rgse?);',ic);
-c_eval('R? = R?(:,1:4);',ic);
 c_eval('e_r? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energy_brst'',tint);',ic);
 
+%% load B Fields data
+c_eval('Bxyz?=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',tint);',ic);
+c_eval('B?=irf.ts2mat(Bxyz?);',ic);
+c_eval('B? = irf_resamp(B?, B1);',ic);
+c_eval('Bt?=Bxyz?.abs;',ic);
+
+%% smooth
+    c_eval('BS?(:,2)=smooth(B?(:,2),hh);',ic);
+    c_eval('BS?(:,3)=smooth(B?(:,3),hh);',ic);
+    c_eval('BS?(:,4)=smooth(B?(:,4),hh);',ic);
+    c_eval('BS?(:,1)=smooth(B?(:,1),hh);',ic);
+    c_eval('BS?=irf_abs(BS?);',ic);
+
+c_eval('Ne?= mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',tint);',ic);
+c_eval('ne?=irf.ts2mat(Ne?);',ic);
+
+c_eval('Ni?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_numberdensity_brst'',tint);',ic);
+c_eval('ni?=irf.ts2mat(Ni?);',ic);
+c_eval('Vi? = mms.get_data(''Vi_gse_fpi_brst_l2'',tint,?);',ic); 
+% c_eval('Vi?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulkv_gse_brst'',tint);',ic);
+c_eval('vi?=irf.ts2mat(Vi?);',ic);
+c_eval('vi? = irf_gse2gsm(vi?);',ic);
+%% load Ve Fields data
+c_eval('Vexyz?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_bulkv_gse_brst'',tint);',ic);
+c_eval('Vexyz? = irf_gse2gsm(Vexyz?);',ic);
+% L=[0.05 -0.21 0.98]; % Vi
+% M=[-0.23 0.95 0.22];
+% N=[-0.97 -0.24 -0.01];
+L=[1,0,0];M=[0,1,0];N=[0,0,1];
+c_eval('Ve_LMN?=irf_newxyz(Vexyz?,L,M,N);',ic);
+c_eval('Ve?=irf.ts2mat(Vexyz?);',ic);
+
+c_eval('B? = irf_resamp(B?, Ve?);',ic);
+
+c_eval('Ve?=irf_resamp(Ve?,B?);',ic);
+c_eval('vi?=irf_resamp(vi?,B?);',ic);
+c_eval('VeS?=irf.ts2mat(Vexyz?);',ic);
+c_eval('VeS_LMN?=irf.ts2mat(Ve_LMN?);',ic);
+c_eval('VeS? = irf_resamp(VeS?, VeS1);',ic);
+c_eval('VeS_LMN? = irf_resamp(VeS_LMN?, VeS_LMN1);',ic);
 %% smooth_step1
 kk = size(VeS1,1);
 if mod(kk,2) == 1
@@ -48,49 +75,76 @@ if mod(kk,2) == 1
 else
    le = kk-3; lo = kk-2;%even偶数，odd奇数
 end
-for ic =1:4
-    c_eval('e_r = e_r1;',ic)
-    if e_r.data(1)>e_r.data(2)
-        for ii = 1:2:le
-            c_eval('VeS?(ii+1,2:4)=(VeS?(ii+2,2:4)+VeS?(ii,2:4))/2;',ic)
-        end
-    else
-        for ii = 2:2:lo
-            c_eval('VeS?(ii+1,2:4)=(VeS?(ii+2,2:4)+VeS?(ii,2:4))/2;',ic)
-        end
+
+if e_r1.data(1)>e_r1.data(2)
+    for ii = 1:2:le
+        c_eval('VeS?(ii+1,2:4)=(VeS?(ii+2,2:4)+VeS?(ii,2:4))/2;',ic)
+        c_eval('VeS_LMN?(ii+1,2:4)=(VeS_LMN?(ii+2,2:4)+VeS_LMN?(ii,2:4))/2;',ic)
+    end
+else
+    for ii = 2:2:lo
+        c_eval('VeS?(ii+1,2:4)=(VeS?(ii+2,2:4)+VeS?(ii,2:4))/2;',ic)
+        c_eval('VeS_LMN?(ii+1,2:4)=(VeS_LMN?(ii+2,2:4)+VeS_LMN?(ii,2:4))/2;',ic)
     end
 end
 
+%% resample
+ic=1:4;
+c_eval('VeS?=irf_resamp(VeS?,B?);',ic);
+c_eval('VeS?=irf_abs(VeS?);',ic);
+Vup=max(VeS2(:,5));
+c_eval('VeS_LMN?=irf_resamp(VeS_LMN?,B?);',ic);
+c_eval('Vet?=Vexyz?.abs;',ic);
 
-VeS1=irf_resamp(VeS1,B1);
+%% smooth_step2
+    c_eval('VeSS?(:,1)=VeS?(:,1);',ic);
+    c_eval('VeSS?(:,2)=smooth(VeS?(:,2),hh1);',ic);
+    c_eval('VeSS?(:,3)=smooth(VeS?(:,3),hh1);',ic);
+    c_eval('VeSS?(:,4)=smooth(VeS?(:,4),hh1);',ic);
+    c_eval('VeSS?(:,5)=smooth(VeS?(:,5),hh1);',ic);
+    
+    c_eval('VeSS?(:,1)=VeS?(:,1);',ic);
+    c_eval("temp?(:,2)=smooth(VeSS?(:,2),hh1);",ic)
+    c_eval('VeSS?(:,2)=temp?(:,2);',ic)
+    c_eval("temp?(:,3)=smooth(VeSS?(:,3),hh1);",ic)
+    c_eval('VeSS?(:,3)=temp?(:,3);',ic)
+    c_eval("temp?(:,4)=smooth(VeSS?(:,4),hh1);",ic)
+    c_eval('VeSS?(:,4)=temp?(:,4);',ic)
+
+    c_eval("temp?(:,2)=smooth(VeSS?(:,2),hh1);",ic)
+    c_eval('VeSS?(:,2)=temp?(:,2);',ic)
+    c_eval("temp?(:,3)=smooth(VeSS?(:,3),hh1);",ic)
+    c_eval('VeSS?(:,3)=temp?(:,3);',ic)
+    c_eval("temp?(:,4)=smooth(VeSS?(:,4),hh1);",ic)
+    c_eval('VeSS?(:,4)=temp?(:,4);',ic)
+    % % % 
+    % % % c_eval("temp?(:,2)=smooth(VeSS?(:,2),hh1);",ic)
+    % % % c_eval('VeSS?(:,2)=temp?(:,2);',ic)
+    % % % c_eval("temp?(:,3)=smooth(VeSS?(:,3),hh1);",ic)
+    % % % c_eval('VeSS?(:,3)=temp?(:,3);',ic)
+    % % % c_eval("temp?(:,4)=smooth(VeSS?(:,4),hh1);",ic)
+    % % % c_eval('VeSS?(:,4)=temp?(:,4);',ic)
+
+ic=1:4;    
+c_eval('Rgse?=mms.get_data(''R_gsm'',tint,?);',ic);
+c_eval('R?=irf.ts2mat(Rgse?);',ic);
+
+%% FOTE method
 VeS2=irf_resamp(VeS2,VeS1);
 VeS3=irf_resamp(VeS3,VeS1);
 VeS4=irf_resamp(VeS4,VeS1);
-%% smooth_step2
-for ic =1:4
-    c_eval('VeS?(:,2)=smooth(VeS?(:,2),hh1);',ic);
-    c_eval('VeS?(:,3)=smooth(VeS?(:,3),hh1);',ic);
-    c_eval('VeS?(:,4)=smooth(VeS?(:,4),hh1);',ic);
-    c_eval('VeS?(:,2)=smooth(VeS?(:,2),hh1);',ic);
-    c_eval('VeS?(:,3)=smooth(VeS?(:,3),hh1);',ic);
-    c_eval('VeS?(:,4)=smooth(VeS?(:,4),hh1);',ic);
-    c_eval('VeS?(:,2)=smooth(VeS?(:,2),hh1);',ic);
-    c_eval('VeS?(:,3)=smooth(VeS?(:,3),hh1);',ic);
-    c_eval('VeS?(:,4)=smooth(VeS?(:,4),hh1);',ic);
-    c_eval('VeS?(:,2)=smooth(VeS?(:,2),hh1);',ic);
-    c_eval('VeS?(:,3)=smooth(VeS?(:,3),hh1);',ic);
-    c_eval('VeS?(:,4)=smooth(VeS?(:,4),hh1);',ic);
-    c_eval('Ve?(:,1:4)=VeS?(:,1:4);',ic);
-end
+VeSS2=irf_resamp(VeSS2,VeSS1);
+VeSS3=irf_resamp(VeSS3,VeSS1);
+VeSS4=irf_resamp(VeSS4,VeSS1);
 
 tint=[iso2epoch(Tsta) iso2epoch(Tend)];
 for ic=1:4
-  c_eval(['R?=irf_resamp(R?,Ve?);'],ic);
-  c_eval(['Ve?=irf_tlim(Ve?,tint);'],ic);
+  c_eval(['R?=irf_resamp(R?,VeSS?);'],ic);
+  c_eval(['VeSS?=irf_tlim(VeSS?,tint);'],ic);
   c_eval(['R?=irf_tlim(R?,tint);'],ic);
 end
 
-
+c_eval('Ve? = VeSS?;',ic);
 %--------------------------------------------
 % change the coordinates to eigen vector corrdinate
 e1=irf_norm(e1);
@@ -121,20 +175,20 @@ dVe_null=reshape(gradVe(idxnull,2:end),3,3);%选定零点时刻的Ve梯度矩阵
 dR1=inv(dVe_null) * (Ve1(idxnull,2:4))';% '为转置，inv为逆矩阵，dR1为卫星距离磁零点的距离【null速度为0＋一阶泰勒展开假设】
 R_null=R1(idxnull,2:4)-dR1';%R1=R_null+dR1
 
-Rsc1=R1(idxnull,2:end);%磁零点时刻卫星的位置——绝对
-Rsc2=R2(idxnull,2:end);
-Rsc3=R3(idxnull,2:end);
-Rsc4=R4(idxnull,2:end);
+Rsc1=R1(idxnull,2:4);%磁零点时刻卫星的位置——绝对
+Rsc2=R2(idxnull,2:4);
+Rsc3=R3(idxnull,2:4);
+Rsc4=R4(idxnull,2:4);
 
 Rsc1=Rsc1-R_null;%磁零点时刻卫星的位置——相对磁零点
 Rsc2=Rsc2-R_null;
 Rsc3=Rsc3-R_null;
 Rsc4=Rsc4-R_null;
 
-c_eval('RR? = R?(:,2:end) - R_null;')
+c_eval('RR? = R?(:,2:4) - R_null;')
 RR_mean = 0.25*(RR1 + RR2 + RR3 + RR4);
 
-tint3 = '2019-08-05T16:24:31.000Z/2019-08-05T16:24:31.100Z';
+tint3 = '2019-08-05T16:24:31.000Z/2019-08-05T16:24:31.200Z';
 % c_eval('Vegse? = irf.ts2mat(Vegse?);');
 gradVe_3=c_4_grad('R?','Ve?','grad');
 gradVe_3 = irf_tlim(gradVe_3,tint3);
@@ -173,14 +227,14 @@ Vup=500;
 i_plot = 1;
 for Xgrid=[-37.5,  -30,-25]%31712
 % for Xgrid=[-25]%31712
-    for theta=[0]*pi/180
+    for theta=[0,150]*pi/180
 
-    fig1=figure(i_plot);clf;
-    set(fig1,'PaperUnits','centimeters')
-    xSize = 1000; ySize = 5000; coef=floor(min(1200/xSize,1200/ySize));
-    % xLeft = 0; yTop = -1;
-    % set(fig1,'PaperPosition',[xLeft yTop xSize ySize]);
-    set(fig1,'Position',[100 100 xSize ySize]);
+    % % % fig1=figure(i_plot);clf;
+    % % % set(fig1,'PaperUnits','centimeters')
+    % % % xSize = 1000; ySize = 5000; coef=floor(min(1200/xSize,1200/ySize));
+    % % % % xLeft = 0; yTop = -1;
+    % % % % set(fig1,'PaperPosition',[xLeft yTop xSize ySize]);
+    % % % set(fig1,'Position',[100 100 xSize ySize]);
 
 %     for theta=[0:120:240]*pi/180
     %for theta=[0:90:270]*pi/180
@@ -218,7 +272,7 @@ for Xgrid=[-37.5,  -30,-25]%31712
             ii=ii+1;
         end
         if exist('Xline')
-            % plot3(gca, Xline, Yline, Zline,'b'); hold on;
+            plot3(gca, Xline, Yline, Zline,'b'); hold on;
             Nlin=length(Xline);
 %           cline(Xline, Yline, Zline, Bmline, 0, 1500, cool); view(3); hold on;%就是画个图，字面意思
             % cline(Xline, Yline, Zline, Bmline, 0, Vup, jet); view(3); hold on;%就是画个图，字面意思
@@ -268,16 +322,14 @@ for Xgrid=[-37.5,  -30,-25]%31712
             ii=ii+1;
         end
         if exist('Xline')
-            % plot3(gca, Xline, Yline, Zline,'r'); hold on;
+            plot3(gca, Xline, Yline, Zline,'r'); hold on;
             Nlin=length(Xline);
             if Xline~=0
                 % cmap = 'jet';
                 cmap = othercolor('RdYlGn11');
                 cmap = flip(cmap);
 
-            n = 256;  % 想要的渐变级数
-            
-            % 先定义那 6 个关键颜色（已从图中取近似 RGB 并归一化到 [0,1]）
+            n = 256;
             cols = [
                 18, 128, 144;   % 深青  #128090
                 39, 167, 176;   % 青    #27A7B0
@@ -286,28 +338,11 @@ for Xgrid=[-37.5,  -30,-25]%31712
                 215,142,165;    % 浅紫  #D78EA5
                 172, 59,125;    % 洋红  #AC3B7D
             ] / 255;
-            
-            % 在位置 [0,1] 均匀布置这 6 点
             pos = linspace(0,1,size(cols,1))';
-            
-            % 对 [0,1] 做线性插值，生成 n×3 的 cmap
             t = linspace(0,1,n)';
             cmap = interp1(pos, cols, t, 'linear');
 
-            % n = 256;  % 渐变级数
-            % pos = [0; 1/3; 2/3; 1];
-            % cols = [
-            %     0.6, 0.0, 0.0;   % 深红  (RGB [153, 0,   0  ]/255)
-            %     1.0, 0.6, 0.6;   % 浅红  (RGB [255,153,153]/255)
-            %     0.6, 0.8, 1.0;   % 浅蓝  (RGB [153,204,255]/255)
-            %     0.0, 0.0, 0.6;   % 深蓝  (RGB [  0,  0,153]/255)
-            % ];
-            % 
-            % t = linspace(0,1,n)';
-            % cmap = interp1(pos, cols, t, 'linear');
-            % cmap = flip(cmap);
-
-          cline_arrow(Xline, Yline, Zline, Bmline, 0, Vup, cmap);hold on;
+          % cline_arrow(Xline, Yline, Zline, Bmline, 0, Vup, 'jet');hold on;
           i_plot=i_plot+1;
             end
 
@@ -328,15 +363,15 @@ for Xgrid=[-37.5,  -30,-25]%31712
         clear Bmline
         clear Nlin
         
-        box_bd1 = 1000;box_bd2 = 250;box_bd3 = 300;
+        box_bd1 = 1000;box_bd2 = 300;box_bd3 = 300;
         caxis([0, Vup]);   %here is derived from minB & maxB. 【it should be consistent with cline range】
         set(gca, 'Ylim',[-box_bd1 box_bd1], 'Ylim',[-box_bd2 box_bd2], 'Zlim',[-box_bd3 box_bd3]);
         set(gca,'xtick',[-box_bd1:box_bd1:box_bd1], 'ytick',[-box_bd2:box_bd2:box_bd2], 'ztick',[-box_bd3:box_bd3:box_bd3],'fontsize',23);
-        set(gca,'DataAspectRatio',[5 1.0 1]);
+        set(gca,'DataAspectRatio',[1 1.0 1]);
         set(gca,'view',[90 0])
         set(gcf,'render','painters');
         set(gcf,'paperpositionmode','auto')
-        print(gcf, '-dpdf', ['/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/new/打死不改了版/Ve_resconstruction/Ver2/3', ...
+        print(gcf, '-dpdf', ['/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/new/打死不改了版/Ve_resconstruction/Ver3/', ...
             num2str(i_plot),'.pdf']);    
 
      
@@ -382,7 +417,7 @@ minB=min(Bmin);
 % ylabel(hcb,'|Ve|');
 
 
-box_bd1 = 1000;box_bd2 = 250;box_bd3 = 300;
+box_bd1 = 1000;box_bd2 = 300;box_bd3 = 300;
 caxis([0, Vup]);   %here is derived from minB & maxB. 【it should be consistent with cline range】
 set(gca, 'Ylim',[-box_bd1 box_bd1], 'Ylim',[-box_bd2 box_bd2], 'Zlim',[-box_bd3 box_bd3]);
 set(gca,'xtick',[-box_bd1:box_bd1:box_bd1], 'ytick',[-box_bd2:box_bd2:box_bd2], 'ztick',[-box_bd3:box_bd3:box_bd3],'fontsize',23);

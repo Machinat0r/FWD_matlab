@@ -285,6 +285,8 @@ d_cros_B_mag=temp(:,[1 5]);
 err_curlmeter=irf_multiply(1,d_dot_Ve,1,d_cros_B_mag,-1);
 err_curlmeter(:,2)=abs(err_curlmeter(:,2))*100;
 
+V_all = cell(length(d_dot_Ve(:,1)),1);
+D_all = zeros(length(d_dot_Ve(:,1)),3);
 
 %Null type identification
 for ii=1:length(d_dot_Ve(:,1))
@@ -292,6 +294,9 @@ for ii=1:length(d_dot_Ve(:,1))
     
     deltB_null=reshape(gradVe(ii,2:end),3,3);
     [V,D] = eig(deltB_null);
+    V_all{ii} = V;
+    D_all(ii,:) = [D(1,1) D(2,2) D(3,3)];
+
     
     %=========================================================
     if max(abs([imag(D(1,1)) imag(D(2,2)) imag(D(3,3))])) == 0

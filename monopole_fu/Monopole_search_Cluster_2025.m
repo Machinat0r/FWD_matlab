@@ -1,12 +1,21 @@
 %------written by Wending Fu, May.2025 in Beijing------------
 clear;clc;
 % cd E:/Cluster/
+<<<<<<< Updated upstream
 ParentDir = 'E:/Cluster/';
 cd(ParentDir)
 ic=1:4;
 
 % TT = '2002-05-22\2002-05-23';
 TT = '2004-08-21\2006-01-01';
+=======
+ParentDir = '/Volumes/SPART-NAS/Data/Cluster/';
+cd /Volumes/SPART-NAS/Data/Cluster/
+ic=1:4;
+
+TT = '2002-05-22\2002-05-23';
+% TT = '2004-03-03\2005-01-01';
+>>>>>>> Stashed changes
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'\']; mkdir(TaskDir)
 Datelist = datenum(Datelist,'yyyy-mm-dd');
@@ -126,9 +135,9 @@ try
     parfor_progress(size(B1, 1)-1);
     parfor i =1:size(B1, 1)
     % parfor i =1:200
-    parfor_progress;
-    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1(i,:), R2(i,:), R3(i,:), R4(i,:),...
-        B1(i,:), B2(i,:), B3(i,:), B4(i,:), i,i*sign(divB(i,2)),RR_mean(i),1);
+    % parfor_progress;
+    % % % [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1(i,:), R2(i,:), R3(i,:), R4(i,:),...
+    % % %     B1(i,:), B2(i,:), B3(i,:), B4(i,:), i,i*sign(divB(i,2)),RR_mean(i),1);
 
     tempd = irf_abs(LocRes{i}(id(:,1),:)-LocRes{i}(id(:,2),:));
     tempd = tempd(:,4)/RR_mean(i);
