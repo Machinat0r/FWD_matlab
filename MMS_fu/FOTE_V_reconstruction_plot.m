@@ -2,7 +2,7 @@
 clear ;close all;clc
 Tcomputsta=clock; 
 %--------------------------------------------
-mms.db_init('local_file_db','/Volumes/SPART-NAS/Data/MMS/')
+mms.db_init('local_file_db','/Users/fwd/Documents/MATLAB/MMS/')
 %Tsta='2015-10-16T13:07:00Z'; 
 %Tend='2015-10-16T13:07:03Z';
 %Tnull='2015-10-16T13:07:02.250Z';

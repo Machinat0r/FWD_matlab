@@ -7,18 +7,18 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = 'D:/MMS/'; 
-DownloadDir = 'C:/MMS/';
+ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
+DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-% TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
-TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.900Z';
+TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+% TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.900Z';
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 2;
+ic = 1;
 filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,des-dist');
 filenames = [filenames1, filenames2];
@@ -26,18 +26,18 @@ filenames = [filenames1, filenames2];
 [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
 SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 64, 'CheckSize', 0)
 %% Load data
-% % % Bxyz1=mms.get_data('B_gse_brst',tint,ic);
-% % % 
-% % % c_eval('Ne_ts = mms.get_data(''Ne_fpi_brst_l2'',tint,?);',ic);
-% % % c_eval(['Ne=irf.ts2mat(Ne_ts);'],ic);
-% % % Ne = mean(Ne(:,2));
-% % % 
-% % % % c_eval('diste1 = mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
-% % % c_eval('diste1 = mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
-% % % % theta1=diste1.DEPEND_2.data;
-% % % % length_diste1=length(diste1.time.epoch);
-% % % % length_diste1 = size(diste1.data,1);
-% % % % timeUTC1=irf_time(diste1.time,'epochtt>utc');
+Bxyz1=mms.get_data('B_gse_brst',tint,ic);
+
+c_eval('Ne_ts = mms.get_data(''Ne_fpi_brst_l2'',tint,?);',ic);
+c_eval(['Ne=irf.ts2mat(Ne_ts);'],ic);
+Ne = mean(Ne(:,2));
+
+% c_eval('diste1 = mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
+c_eval('diste1 = mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
+% theta1=diste1.DEPEND_2.data;
+% length_diste1=length(diste1.time.epoch);
+% length_diste1 = size(diste1.data,1);
+% timeUTC1=irf_time(diste1.time,'epochtt>utc');
 %% Produce PAD at all selected time
 % % % % tint1 = irf_time(timeUTC1(1,:),'utc>epochTT');
 % % % tint1 = tint;
@@ -54,7 +54,7 @@ SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 64, 'CheckSize', 0)
 % % % psd2 = psd1_par;
 % % % psd3 = psd1_antipar;
 %%
-c_eval('fpiFile? = dataobj(''D:\MMS\mms2\fpi\brst\l2\des-dist\2020\08\03\mms2_fpi_brst_l2_des-dist_20200803014513_v3.4.0.cdf'');',ic);
+c_eval('fpiFile? = dataobj(''/Volumes/SPART-NAS/Data/MMS/mms1/fpi/brst/l2/des-dist/2019/08/05/mms1_fpi_brst_l2_des-dist_20190805162313_v3.4.0.cdf'');',ic);
 c_eval('diste_struct = get_variable(fpiFile?,''mms?_des_dist_brst'');',ic);
 % c_eval('diste_struct = mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
 thetae=diste_struct.DEPEND_2.data;
@@ -106,41 +106,57 @@ for ii = 1:length(diste.time)
 end
 
 timeomni=irf_time(phie.time,'epochTT>epoch');
-% time1='2019-08-16T09:31:57.500Z';
-time1='2020-08-03T01:45:27.500Z';
+time1='2019-08-05T16:24:31.000Z';
+% time1='2020-08-03T01:45:27.500Z';
 time1=iso2epoch(time1);
 % % % 
 
 
 idt1=find(timeomni>time1);
 t=idt1(1);
-dt = 40;
+dt = 66 ;
 chan=energyspec(t,:);
 psd=mean(PSDomni(t:t+dt,:));
 psd1=transpose(psd);
 % loglog(chan,psd,'b+');
 hold on;
 
+
+timeomni=irf_time(phie.time,'epochTT>epoch');
+time2='2019-08-05T16:24:10.000Z';
+% time1='2020-08-03T01:45:27.500Z';
+time2=iso2epoch(time2);
+% % % 
+
+
+idt2=find(timeomni>time2);
+t=idt2(1);
+dt = 66 ;
+chan2=energyspec(t,:);
+psd2=mean(PSDomni(t:t+dt,:));
+psd2=transpose(psd2);
+% loglog(chan,psd,'b+');
+hold on;
 %% parameters
 m=9.1*10^-31;
 k=1.38e-23; 
 e=1.6e-19;
 %% curve fitting function
-energy_section = {6:10;10:25;25:32};
+energy_section = {6:9;10:25;26:32};
 % low energy electron maxwell
 energypad1 = double(energye1);
 X1=energypad1(energy_section{1});
-Y1=double(psd1(energy_section{1}));
+Y1=double(psd2(energy_section{1}));
 p01 = [1,5];
 
 % mid energy electron maxwell
 X2=energypad1(energy_section{2});
-Y2=double(psd1(energy_section{2}));
+Y2=double(psd2(energy_section{2}));
 p02 = [0.1,4000];
 
 % high energy electron maxwell
 X3=energypad1(energy_section{3});
-Y3=double(psd1(energy_section{3}));
+Y3=double(psd2(energy_section{3}));
 p03 = [1e-6,-4];
 
 % constraint condition
@@ -155,13 +171,13 @@ kk=polyfit(log(X3'),log(Y3),1);
 
 % maxwell function ouput
 X1=energypad1(min(energy_section{1}):32);
-p1(1)=0.10;
-p1(2)=15;
+p1(1)=0.28;
+p1(2)=8.5;
 F1=p1(1)*1e24*power(m/(2*pi*k*p1(2)*11605),3/2)*exp(-X1*e/(k*p1(2)*11605));
 
-X2=energypad1(10:32);
-p2(3) = 0.2503;
-p2(4) = 1200;
+X2=energypad1(12:32);
+p2(3) = 0.28;
+p2(4) = 500;
 F2=p2(3)*1e24*power(m/(2*pi*k*p2(4)*11605),3/2)*exp(-X2*e/(k*p2(4)*11605));
 
 X3=energypad1(min(energy_section{3}):32);
@@ -184,7 +200,7 @@ yrange=[10^-4 10^4];
 
 
 plot(h(1),energypad1,psd1,'k.-','LineWidth',1);hold on;
-% plot(h(1),energypad1,psd2,'b.-','LineWidth',1);hold on;
+plot(h(1),energypad1,psd2,'b.-','LineWidth',1);hold on;
 % plot(h(1),energypad1,psd3,'r.-','LineWidth',1);hold on;
 
 plot(h(1),X1,F1,'-.m','LineWidth',1);hold on;

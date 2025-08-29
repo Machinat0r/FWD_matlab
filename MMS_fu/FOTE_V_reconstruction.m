@@ -2,8 +2,8 @@
 clear;close all
 clc
 global ParentDir 
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
+ParentDir = '/Users/fwd/Documents/MATLAB/MMS/'; 
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 %% VORTEX_9图全版
 %% load data
@@ -54,7 +54,7 @@ Date = [Datelist{1},'/',Datelist{2}];
 % 
 % SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
 SDCDataMove(TempDir,ParentDir)
-mms.db_init('local_file_db','/Volumes/SPART-NAS/Data/MMS/')
+mms.db_init('local_file_db',ParentDir)
 Time='2019-08-05T16:24:31.137Z';
 time = irf_time(Time,'utc>epochtt');
 c_eval('e_r? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energy_brst'',tint);',ic);

@@ -4,14 +4,15 @@ ParentDir = '/Volumes/SPART-NAS/Data/Cluster/';
 ic=2;
 
 % TT = '2002-03-17\2003-01-01';
-TT = '2001-01-01\2006-01-01';
+TT = '2003-01-01\2006-01-01';
+% % % TT = '2002-01-01\2003-01-01';
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'/']; mkdir(TaskDir)
 
-load([TaskDir,'BRdata.mat'], 'all_MLT','all_MLat','all_Bphi','all_L');
-
+% load([TaskDir,'BRdata.mat'], 'all_MLT','all_MLat','all_Bphi','all_L');
+load(['/Volumes/SPART-NAS/Data/Cluster/Geomagnetic_Field_Statistic/2001-01-01T2004-06-02/','BRdata.mat'], 'all_MLT','all_MLat','all_Bphi','all_L');
 %% Counts
-L_edges    = [1.5 2.5 3.5 4.5 5.5 6.5];
+L_edges    = [1.5 2.5 3.5 4.5 5.5 6.5 7.5];
 MLT_edges  = linspace(0.5,24.5,25);
 MLat_edges = linspace(-60,60,31);
 
@@ -25,19 +26,19 @@ valid_MLat = ~isnan(bin_L)  & ~isnan(bin_MLat);
 counts_MLT = accumarray(...
     [ bin_L(valid_MLT), bin_MLT(valid_MLT) ], ...
     1, ...
-    [ numel(L_edges)-1, numel(MLT_edges)-1 ] ...
-);
+    [ numel(L_edges)-1, numel(MLT_edges)-1 ], ...
+    @sum, NaN);
 
 counts_MLat = accumarray(...
     [ bin_L(valid_MLat), bin_MLat(valid_MLat) ], ...
     1, ...
-    [ numel(L_edges)-1, numel(MLat_edges)-1 ] ...
-);
+    [ numel(L_edges)-1, numel(MLat_edges)-1 ], ...
+    @sum, NaN);
 
-L_centers    = (L_edges(1:end-1)   + L_edges(2:end))   / 2;
+L_centers    = -0.5 + (L_edges(1:end-1)   + L_edges(2:end))   / 2;
 MLT_centers  = (MLT_edges(1:end-1) + MLT_edges(2:end)) / 2;
 MLat_centers = (MLat_edges(1:end-1)+ MLat_edges(2:end))/ 2;
-
+L_centers = [L_centers, L_edges(end)];
 %% Bphi
 valid_Bphi_MLT  = ~isnan(bin_L) & ~isnan(bin_MLT) & ~isnan(all_Bphi);
 valid_Bphi_MLat = ~isnan(bin_L) & ~isnan(bin_MLat) & ~isnan(all_Bphi);
@@ -54,7 +55,7 @@ count_Bphi_MLT = accumarray(...
     [ numel(L_edges)-1, numel(MLT_edges)-1 ], ...
     @sum, NaN);
 
-mean_Bphi_MLT = sum_Bphi_MLT ./ count_Bphi_MLT;
+mean_Bphi_MLT = sum_Bphi_MLT ./ counts_MLT;
 
 sum_Bphi_MLat = accumarray(...
     [ bin_L(valid_Bphi_MLat), bin_MLat(valid_Bphi_MLat) ], ...
@@ -68,12 +69,16 @@ count_Bphi_MLat = accumarray(...
     [ numel(L_edges)-1, numel(MLat_edges)-1 ], ...
     @sum, NaN);
 
-mean_Bphi_MLat = sum_Bphi_MLat ./ count_Bphi_MLat;
-
+mean_Bphi_MLat = sum_Bphi_MLat ./ counts_MLat;
 mean_Bphi_MLT = [mean_Bphi_MLT, mean_Bphi_MLT(:,1)];
+
 counts_MLT = [counts_MLT, counts_MLT(:,1)];
 MLT_centers   = [MLT_centers, 25];
 
+counts_MLT = [counts_MLT; counts_MLT(end,:)];
+counts_MLat = [counts_MLat; counts_MLat(end,:)];
+mean_Bphi_MLT = [mean_Bphi_MLT; mean_Bphi_MLT(end,:)];
+mean_Bphi_MLat = [mean_Bphi_MLat; mean_Bphi_MLat(end,:)];
 %% counts plot
 max_counts = max(counts_MLat(:));
 figure('Position',[100 100 1200 500]);
@@ -95,15 +100,30 @@ caxis([0 max_counts]);
 
 hold on;
 theta_line = linspace(0,2*pi,25);
-for r = 1:6
+for r = 1:L_edges(end)+0.5
     plot(r*cos(theta_line), r*sin(theta_line), 'k--', 'LineWidth',0.5);
 end
 
-text(0, L_edges(end),  '12','HorizontalAlignment','center');
-text(L_edges(end), 0,   '06','HorizontalAlignment','center');
-text(0, -L_edges(end),'00','HorizontalAlignment','center');
-text(-L_edges(end),0,  '18','HorizontalAlignment','center');
+text(0, L_edges(end)+0.4,  '12','HorizontalAlignment','center');
+text(L_edges(end)+0.4, 0,   '06','HorizontalAlignment','center');
+text(0, -L_edges(end)-0.4,'00','HorizontalAlignment','center');
+text(-L_edges(end)-0.4,0,  '18','HorizontalAlignment','center');
 % colorbar('Location','eastoutside');
+
+
+% Earth
+theta_fill = linspace(0, 2*pi, 100);
+x_fill = 1 * cos(theta_fill);
+y_fill = 1 * sin(theta_fill);
+fill(x_fill, y_fill,[0.75 0.75 0.75]);
+
+% Lshell
+for r = 1:L_edges(end)+0.5
+    text(r * cos(pi/4), r * sin(pi/4), num2str(r), ...
+        'HorizontalAlignment', 'center', ...
+        'VerticalAlignment', 'middle', ...
+        'FontSize', 10, 'FontWeight', 'bold', 'Color', 'w');
+end
 
 
 % === 右：MLat–L 楔形柱状图 ===
@@ -120,15 +140,37 @@ caxis([0 max_counts]);
 
 hold on;
 theta_wedge = deg2rad(linspace(-55,55,31));
-for r = 1:6
-    plot(r*cos(theta_wedge), r*sin(theta_wedge), 'k-', 'LineWidth',1);
+for r = 1:L_edges(end)+0.5
+    plot(r*cos(theta_wedge), r*sin(theta_wedge), 'k--', 'LineWidth',1);
 end
-plot([0 L_edges(end)*cos(deg2rad(-60))], [0 L_edges(end)*sin(deg2rad(-55))], 'k-', 'LineWidth',1);
-plot([0 L_edges(end)*cos(deg2rad(60))],  [0 L_edges(end)*sin(deg2rad(55))],  'k-', 'LineWidth',1);
+plot([0 r*cos(deg2rad(-60))], [0 r*sin(deg2rad(-55))], 'k-', 'LineWidth',1);
+plot([0 r*cos(deg2rad(60))],  [0 r*sin(deg2rad(55))],  'k-', 'LineWidth',1);
 colorbar('Location','eastoutside');
 
+% Earth
+theta_fill = linspace(-60, 60, 100);
+x_fill = 1 * cosd(theta_fill);
+y_fill = 1 * sind(theta_fill);
+fill([0, x_fill, 0], [0, y_fill, 0], [0.75 0.75 0.75]);
+
+% Lshell
+L_labels = 1:L_edges(end)+0.5;
+theta_deg = 58;
+x_offset = 0.4;
+y_offset = 0.2;
+
+for r = L_labels
+    x_r = (r) * cosd(theta_deg) - x_offset;
+    y_r = (r) * sind(theta_deg) + y_offset;
+    text(x_r, y_r, num2str(r), ...
+        'HorizontalAlignment', 'left', ...
+        'VerticalAlignment', 'middle', ...
+        'FontSize', 10, 'FontWeight', 'bold');
+end
+
+
 %% Bphi plot
-max_Bphi = 100;
+max_Bphi = 120;
 
 figure('Position',[100 100 1200 500]);
 n_half = 128;
@@ -147,19 +189,33 @@ pcolor(X', Y', mean_Bphi_MLT');
 shading flat; 
 axis equal off;
 % title('B_\phi in MLT–L');
-caxis([-max_Bphi max_Bphi]); % 对称颜色条
+caxis([-max_Bphi max_Bphi]); 
 % colorbar('Location','eastoutside');
 
 hold on;
 theta_line = linspace(0,2*pi,25);
-for r = 1:6
+for r = 1:L_edges(end)+0.5
     plot(r*cos(theta_line), r*sin(theta_line), 'k--', 'LineWidth',0.5);
 end
-text(0, L_edges(end),  '12','HorizontalAlignment','center');
-text(L_edges(end), 0,   '06','HorizontalAlignment','center');
-text(0, -L_edges(end),'00','HorizontalAlignment','center');
-text(-L_edges(end),0,  '18','HorizontalAlignment','center');
+text(0, L_edges(end)+0.4,  '12','HorizontalAlignment','center');
+text(L_edges(end)+0.4, 0,   '06','HorizontalAlignment','center');
+text(0, -L_edges(end)-0.4,'00','HorizontalAlignment','center');
+text(-L_edges(end)-0.4,0,  '18','HorizontalAlignment','center');
 
+
+% Earth
+theta_fill = linspace(0, 2*pi, 100);
+x_fill = 1 * cos(theta_fill);
+y_fill = 1 * sin(theta_fill);
+fill(x_fill, y_fill,[0.75 0.75 0.75]);
+
+% Lshell
+for r = 1:L_edges(end)+0.5
+    text(r * cos(pi/4), r * sin(pi/4), num2str(r), ...
+        'HorizontalAlignment', 'center', ...
+        'VerticalAlignment', 'middle', ...
+        'FontSize', 10, 'FontWeight', 'bold', 'Color', 'w');
+end
 
 % === 右：MLat–L 楔形图（Bphi） ===
 subplot(1,2,2);
@@ -176,9 +232,30 @@ colorbar('Ticks',[-max_Bphi 0 max_Bphi], 'TickLabels',{num2str(-max_Bphi),'0',nu
 
 hold on;
 theta_wedge = deg2rad(linspace(-55,55,31));
-for r = 1:6
-    plot(r*cos(theta_wedge), r*sin(theta_wedge), 'k-', 'LineWidth',1);
+for r = 1:L_edges(end)+0.5
+    plot(r*cos(theta_wedge), r*sin(theta_wedge), 'k--', 'LineWidth',1);
 end
-plot([0 L_edges(end)*cos(deg2rad(-60))], [0 L_edges(end)*sin(deg2rad(-45))], 'k-', 'LineWidth',1);
-plot([0 L_edges(end)*cos(deg2rad(60))],  [0 L_edges(end)*sin(deg2rad(45))],  'k-', 'LineWidth',1);
+plot([0 r*cos(deg2rad(-60))], [0 r*sin(deg2rad(-55))], 'k-', 'LineWidth',1);
+plot([0 r*cos(deg2rad(60))],  [0 r*sin(deg2rad(55))],  'k-', 'LineWidth',1);
+colorbar('Location','eastoutside');
 
+% Earth
+theta_fill = linspace(-60, 60, 100);
+x_fill = 1 * cosd(theta_fill);
+y_fill = 1 * sind(theta_fill);
+fill([0, x_fill, 0], [0, y_fill, 0], [0.75 0.75 0.75]);
+
+% Lshell
+L_labels = 1:L_edges(end)+0.5;
+theta_deg = 58;
+x_offset = 0.4;
+y_offset = 0.2;
+
+for r = L_labels
+    x_r = (r) * cosd(theta_deg) - x_offset;
+    y_r = (r) * sind(theta_deg) + y_offset;
+    text(x_r, y_r, num2str(r), ...
+        'HorizontalAlignment', 'left', ...
+        'VerticalAlignment', 'middle', ...
+        'FontSize', 10, 'FontWeight', 'bold');
+end

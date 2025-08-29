@@ -5,7 +5,7 @@ ParentDir = '/Volumes/SPART-NAS/Data/Cluster/';
 ic=2;
 
 % TT = '2002-03-17\2003-01-01';
-TT = '2003-01-01\2006-01-01';
+TT = '2001-01-01\2010-01-01';
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'/']; mkdir(TaskDir)
 Datelist = datenum(Datelist,'yyyy-mm-dd');
