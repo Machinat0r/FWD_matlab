@@ -2,10 +2,10 @@
 clear;clc;
 global ParentDir OutputDir
 ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-Date = '2015-09-01/2016-01-01';
+Date = '2017-07-23/2017-07-24';
 splitDate = regexp(Date,'/','split');
 ic = 1;iic = 1;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
@@ -35,8 +35,8 @@ units = irf_units;
 for TDT = 1:length(NameTags)-1 %This is a distinctive temp  (๑ˉ∀ˉ๑)
 tempDir = [OutputDir,NameTags{TDT}(2:end-2),'/'];
 clc;fprintf(['当前处理时间为:',NameTags{TDT}(2:end-2),'\n'])
-SDCFilesDownload_NAS(FileGroups{TDT},tempDir)
-SDCDataMove(tempDir,ParentDir)
+SDCFilesDownload_NAS(FileGroups{TDT},TempDir, 'Threads', 64, 'CheckSize', 0)
+SDCDataMove(TempDir,ParentDir)
 
 formatDate = @(s) [s(2:5), '-', s(6:7), '-', s(8:9), 'T', s(10:11), ':', s(12:13), ':', s(14:15), '.000Z'];
 tempDate = [formatDate(NameTags{TDT}), '/', formatDate(NameTags{TDT+1})];
@@ -46,8 +46,8 @@ tempTint=irf.tint(tempDate);
 try
     B1_ts=mms.get_data('B_gsm_brst',tempTint,ic);%先导入一个文件看看文件中包含的时间段
     tint = irf.tint(B1_ts.time.epoch(1),B1_ts.time.epoch(end));    
-    Pos = mms.get_data('R_gsm',tint);
-    Pos = Pos.gsmR1;
+    Pos = mms.get_data('R_gsm',tint,ic);
+    Pos = Pos.data;
 catch
     writematrix([NameTags{TDT}(2:end-2),'的数据导入出现问题'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
     continue
@@ -72,49 +72,32 @@ try
     c_eval(['E?_ts = irf_gse2gsm(E?_ts);'],ic);
     c_eval('E? = irf.ts2mat(E?_ts);',ic);
     c_eval(['Efac=irf_convert_fac(E?,B?,[1,0,0]);'],ic);
+    Efre = 1/median(diff(Efac(:,1)));
+
+    Efac = irf_filt(Efac, 10, 0, Efre, 3);
 
     Ecri = Efac(1:end-1,4) .* Efac(2:end,4); 
     index_Ezero = find(Ecri <= 0);  % E过零点
 
-    Efre = 1/median(diff(Efac(:,1)));
-    index_Elen = index_Ezero + [-1 * Efre, 1 * Efre];
+    index_Elen = index_Ezero + [-round(0.2 * Efre), round(0.2 * Efre)];
     index_Elen(index_Elen(:,1) < 1 , 1) = 1;
-    index_Elen(index_Elen(:,2) > size(index_Elen,1) , 2) = size(index_Elen,1);
-
-    for i_indexE = 1:size(index_Elen, 1)
-        tempE = Efac(index_Elen(i_indexE , 1):index_Elen(i_indexE,2),4);
+    index_Elen(index_Elen(:,2) > size(Efac,1) , 2) = size(Efac,1);
+    
+    flagTime = []; i_indexE = 1;
+    while i_indexE <= size(index_Elen, 1)
+        tempE = Efac(index_Elen(i_indexE, 1):index_Elen(i_indexE, 2), 4);
         if max(tempE) >= 10
-            flag = 2;
-            break
+            flag = 2; 
+            flagTime(end+1) = Efac(index_Ezero(i_indexE), 1);
+            writematrix([irf_time(flagTime(end),'epoch>utc'),'找到了ESW, Emax=', num2str(max(tempE))],...
+                [OutputDir,'caselist.txt'],'WriteMode','append','Encoding','UTF-8')
+            i_indexE = find(index_Ezero>index_Ezero(i_indexE)+Efre, 1);
         else
+            i_indexE = i_indexE+1;
             continue
         end
     end
-
-    flagTime = []; tempB = 1; flag = 0;
-    deltaTime = 128*5; % frequency 128Hz * duration 5s
-    disp(['□□□□□□□□□□','开始检索✧(≖ ◡ ≖✿)'])
-while tempB <= size(B1,1) - deltaTime %如果没有用到B1，该数据名需修改；检测5s间隔
-    NeTime = irf_time(Ne1_ts.time,'epochTT>epoch');
-    ViTime = irf_time(Vi1_ts.time,'epochTT>epoch');
-    [~,tempNeTime1] = min(abs(NeTime-B1(tempB,1))); [~,tempNeTime2] = min(abs(NeTime-B1(tempB+deltaTime,1)));
-    [~,tempViTime1] = min(abs(ViTime-B1(tempB,1))); [~,tempViTime2] = min(abs(ViTime-B1(tempB+deltaTime,1)));
-
-    if abs(B1(tempB+deltaTime,4)) - abs(B1(tempB,4)) >= 5 && max(abs(B1(tempB:tempB+deltaTime,4))./Bt1(tempB:tempB+deltaTime,2)) >= 0.5 ...
-            && Ne1(tempNeTime1,2) >= Ne1(tempNeTime2,2) ...
-            && mean(Vit1(tempViTime1:tempViTime2,2)) >= 100 ...
-            && min(beta1(tempB:tempB+deltaTime,2)) >= 0.5
-
-            flagTime(end+1) = B1(tempB,1);
-            writematrix([irf_time(flagTime(end),'epoch>utc'),'找到了DF'],...
-                [OutputDir,'caselist.txt'],'WriteMode','append','Encoding','UTF-8')
-
-            tempB = tempB + deltaTime;
-            flag = 1;
-    end
-    tempB = tempB + 1;
-    clc; disp(['૮₍ ˃ ⤙ ˂ ₎ა',repmat('■',1,round(10*tempB/size(B1,1))),repmat('□',1,10-round(10*tempB/size(B1,1))),'正在光速检索ing...'])
-end
+  
 catch
     writematrix([NameTags{TDT}(2:end-2),'的数据导入出现问题'],[OutputDir,'errorlog.txt'],...
         'WriteMode','append','Encoding','UTF-8')
@@ -123,22 +106,14 @@ end
 else
     continue
 end
-%% 获得des-moms的文件名
-for tempnum = 1:length(FileGroups{TDT})
-    if strfind(FileGroups{TDT}{tempnum},'des-moms') > 0
-        desmoms = [ParentDir,'mms1/fpi/brst/l2/des-moms/',...
-            NameTags{TDT}(2:5),'/',NameTags{TDT}(6:7),'/',...
-            NameTags{TDT}(8:9),'/',FileGroups{TDT}{tempnum}];
-    end
-end
 %% 符合判据的继续下载并出图
-if flag == 1
+if flag == 2
 try
-    SDCFilesDownload(FileGroups{TDT},tempDir) 
-    SDCDataMove(tempDir,ParentDir)
     mms.db_init('local_file_db',ParentDir);
-    PlotTint = irf_time([flagTime(end)-20,flagTime(end)+20],'epoch>epochTT');
-    id_flagTime = SDCPlot(PlotTint,desmoms,ic,NameTags{TDT},flagTime(end));
+    for i_plot = 1:length(flagTime)
+    PlotTint = irf_time([flagTime(i_plot)-0.4,flagTime(i_plot)+0.4],'epoch>epochTT');
+    ESWPlot(PlotTint,ic,[NameTags{TDT}(2:end-1),num2str(i_plot)]);
+    end
 catch
     writematrix([irf_time(flagTime(end),'epoch>utc'),'的画图出现问题'],[OutputDir,'errorlog.txt'],...
     'WriteMode','append','Encoding','UTF-8')
@@ -146,10 +121,10 @@ catch
 end
 end
 %% 删除文件夹并生成记录文件
-try
-    cd(OutputDir)
-    rmdir(tempDir,'s');    
-catch
-    writematrix(['删除文件夹',NameTags{TDT}(2:end-2),'失败'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
-end
+% % % try
+% % %     cd(OutputDir)
+% % %     rmdir(tempDir,'s');    
+% % % catch
+% % %     writematrix(['删除文件夹',NameTags{TDT}(2:end-2),'失败'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
+% % % end
 end
