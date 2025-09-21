@@ -2,34 +2,15 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+DownloadDir = '/Volumes/SPART-WORK/Data/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 % TT = '2024-08-02T15:26:45.000Z/2024-08-02T15:28:15.000Z';
-TT = '2019-08-05T16:23:43.000Z/2019-08-05T16:25:13.000Z';
-% % TT = '2017-06-11T17:50:00.000Z/2017-06-11T18:00:00.000Z';
-% % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57:43.000Z';
-% % % TT = '2015-11-19T14:07:30.000Z/2015-11-19T14:09:30.000Z';
-% % % TT = '2018-07-05T20:39:27.000Z/2018-07-05T20:39:30.000Z';
-% % % % % TT = '2017-07-12T11:54:20.000Z/2017-07-12T11:54:48.000Z';
-% % % TT = '2017-07-06T17:47:05.000Z/2017-07-06T17:47:17.000Z';
-% TT = '2017-05-19T03:06:30.000Z/2017-05-19T03:07:10.000Z'; % x-y direction N
-% TT = '2017-06-25T04:39:20.000Z/2017-06-25T04:39:42.000Z';
-% TT = '2017-06-25T05:39:53.000Z/2017-06-25T05:40:05.000Z';
-% TT = '2017-06-19T03:54:05.000Z/2017-06-19T03:54:30.000Z';
-% TT = '2017-07-06T01:44:35.000Z/2017-07-06T01:45:40.000Z';
-% % % % % TT = '2017-07-06T17:31:52.000Z/2017-07-06T17:32:07.000Z';
-% % % TT = '2017-07-06T17:31:14.000Z/2017-07-06T17:32:07.000Z';
-% TT = '2017-07-06T17:31:58.000Z/2017-07-06T17:31:59.500Z';
-% TT = '2019-07-20T10:55:20.000Z/2019-07-20T'10:55:25.000Z';
-% TT= '2022-12-27T12:04:13.000Z/2022-12-27T12:04:213.000Z'
-% TT = '2017-07-06T15:28:24.000Z/2017-07-06T15:28:26.000Z';
-% TT = '2017-05-25T04:40:15.000Z/2017-05-25T04:40:50.000Z';
-% TT = '2017-07-12T11:54:33.600Z/2017-07-12T11:54:35.400Z';
-% TT = '2017-07-06T01:32:35.000Z/2017-07-06T01:32:50.000Z';
-% TT = '2017-07-17T09:43:50.000Z/2017-07-17T09:44:05.000Z';
-% % % TT = '2019-07-29T16:06:13.000Z/2019-07-29T16:06:20.000Z';
+% % % TT = '2019-08-05T16:23:43.000Z/2019-08-05T16:25:13.000Z';
+% TT = '2017-07-23T19:49:00.125Z/2017-07-23T19:49:00.129Z';
+tint2 = irf.tint('2017-07-23T19:49:36.116Z/2017-07-23T19:49:36.117Z');
+TT = '2017-07-23T19:49:00.000/2017-07-23T19:50:00.000Z';
 % TT = '2020-08-03T01:45:23.000Z/2020-08-03T01:45:38.000Z'; % case 16-long
 % % % TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.900Z'; 
 % TT = '2021-07-17T17:25:18.000Z/2021-07-17T17:25:25.000Z'; % case 15
@@ -47,19 +28,19 @@ try
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
 filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
-filenames5 = SDCFilenames(Date,ic,'inst','feeps','drm','brst','dpt','electron');
-filenames_srvy = SDCFilenames(Date,ic,'inst','fgm','drm','srvy'); 
+filenames4 = SDCFilenames(Date,iic,'inst','edp','drm','brst','dpt','dce');
+% filenames5 = SDCFilenames(Date,ic,'inst','feeps','drm','brst','dpt','electron');
+filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
 % filenames_fast1 = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms');
 % filenames_fast2 = SDCFilenames(Date,ic,'inst','edp','drm','fast');
-filenames = [filenames1, filenames2, filenames3, filenames4,filenames5];
+filenames = [filenames1, filenames2, filenames3, filenames4];
 % filenames_fast = [filenames_fast1, filenames_fast2];
 % % % 
 [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
 % [fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
-% [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',ic);
+[filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
 
-SDCFilesDownload_NAS(filenames,TempDir, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'CheckSize', 0, 'Threads', 16)
 % SDCFilesDownload(filenames,TempDir)
 % % % 
 % SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 64, 'CheckSize', 0)
@@ -80,9 +61,9 @@ c_eval(['B?=irf.ts2mat(B?_ts);'],iic);
  % c_eval(['B?=irf_gse2gsm(B?);'],ic);
 c_eval(['Bt?=irf.ts2mat(Bt?_ts);'],iic);
 % lvbo
-c_eval('dfB? = 1/median(diff(B?_ts.time.epochUnix));',iic);
-c_eval('Bbf? = B?_ts.filt(0.8,1.1,dfB?,3);',iic);
-c_eval(['Bbf?=irf.ts2mat(Bbf?);'],iic);
+% c_eval('dfB? = 1/median(diff(B?_ts.time.epochUnix));',iic);
+% c_eval('Bbf? = B?_ts.filt(0.8,1.1,dfB?,3);',iic);
+% c_eval(['Bbf?=irf.ts2mat(Bbf?);'],iic);
 
 % c_eval('Bbff? = B?_ts.filt(0,0.8,dfB?,3);',ic);
 % c_eval(['Bbff?=irf.ts2mat(Bbff?);'],ic);
@@ -91,20 +72,20 @@ c_eval(['Bbf?=irf.ts2mat(Bbf?);'],iic);
 
 
 % load E
-c_eval(['E?_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],ic);
+c_eval(['E?_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],iic);
 %%%%%c_eval(['E?_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],ic);
-c_eval(['Et?_ts=E?_ts.abs;'],ic); 
-c_eval(['E?=irf_gse2gsm(E?_ts);'],ic);
-c_eval(['E?=irf.ts2mat(E?);'],ic);
-c_eval(['Et?=irf.ts2mat(Et?_ts);'],ic);
-c_eval(['E?_resamp=irf_resamp(E?,B?);'],ic);
+c_eval(['Et?_ts=E?_ts.abs;'],iic); 
+c_eval(['E?=irf_gse2gsm(E?_ts);'],iic);
+c_eval(['E?=irf.ts2mat(E?);'],iic);
+c_eval(['Et?=irf.ts2mat(Et?_ts);'],iic);
+c_eval(['E?_resamp=irf_resamp(E?,B?);'],iic);
 
-c_eval(['Bt?_res=irf_resamp(Bt?,Et?);'],ic);
+c_eval(['Bt?_res=irf_resamp(Bt?,Et?);'],iic);
 
-c_eval(['Efac?=irf_convert_fac(E?,B?,[1,0,0]);'],ic);
+c_eval(['Efac?=irf_convert_fac(E?,B?,[1,0,0]);'],iic);
 
-c_eval('E?_err_ts=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_par_epar_brst_l2'',tint);',ic);
-c_eval('E?_err=irf.ts2mat(E?_err_ts);',ic);
+c_eval('E?_err_ts=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_par_epar_brst_l2'',tint);',iic);
+c_eval('E?_err=irf.ts2mat(E?_err_ts);',iic);
 
 % c_eval(['Vexb?=irf_cross(E?,B?);'],ic);
 % c_eval(['Vexb?(:,2:4)=1e3*Vexb?(:,2:4)./[Bt?_res(:,2).^2 Bt?_res(:,2).^2 Bt?_res(:,2).^2];'],ic);%km/s
@@ -204,7 +185,7 @@ units = irf_units;
 Pos = mms.get_data('R_gsm',tint);
 c_eval('R? = Pos.gsmR?;')
 c_eval('R? = [Pos.time.epochUnix R?(:,1:3)];')
-c_eval('R? = irf_resamp(R?,Bt?);',1:iic)
+c_eval('R? = irf_resamp(R?,Bt?);',iic)
 %% pressure & entropy (old)
 %Pressure
 %Pm

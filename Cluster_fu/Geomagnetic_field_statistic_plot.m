@@ -1,10 +1,10 @@
 clear;clc;close all
-cd '/Volumes/192.168.1.101/SPART-WORK/Data/Cluster/'
-ParentDir = '/Volumes/192.168.1.101/SPART-WORK/Data/Cluster/';
+cd '/Volumes/SPART-WORK/Data/Cluster/'
+ParentDir = '/Volumes/SPART-WORK/Data/Cluster/';
 ic=1;
 
 % TT = '2002-03-17\2003-01-01';
-TT = '2006-01-01\2006-01-02';
+TT = '2001-07-21\2008-01-01';
 % % % TT = '2002-01-01\2003-01-01';
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'/']; mkdir(TaskDir)
@@ -79,6 +79,11 @@ counts_MLT = [counts_MLT; counts_MLT(end,:)];
 counts_MLat = [counts_MLat; counts_MLat(end,:)];
 mean_Bphi_MLT = [mean_Bphi_MLT; mean_Bphi_MLT(end,:)];
 mean_Bphi_MLat = [mean_Bphi_MLat; mean_Bphi_MLat(end,:)];
+%%
+mean_Bphi_MLat(counts_MLat <= 1e4) = nan;
+mean_Bphi_MLT(counts_MLT <= 1e4) = nan;
+counts_MLat(counts_MLat <= 1e4) = nan;
+counts_MLT(counts_MLT <= 1e4) = nan;
 %% counts plot
 max_counts = max(counts_MLat(:));
 figure('Position',[100 100 1200 500]);
@@ -170,7 +175,7 @@ end
 
 
 %% Bphi plot
-max_Bphi = 120;
+max_Bphi = 15;
 
 figure('Position',[100 100 1200 500]);
 n_half = 128;

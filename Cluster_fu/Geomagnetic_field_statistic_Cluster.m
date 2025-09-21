@@ -1,11 +1,11 @@
 %------written by Wending Fu, Jul.2025 in Beijing------------
 clear;clc;close all
-cd '/Volumes/192.168.1.101/SPART-WORK/Data/Cluster/'
-ParentDir = '/Volumes/192.168.1.101/SPART-WORK/Data/Cluster/';
-ic=1;
+cd '/Volumes/SPART-WORK/Data/Cluster/'
+ParentDir = '/Volumes/SPART-WORK/Data/Cluster/';
+ic=2;
 
 % TT = '2002-03-17\2003-01-01';
-TT = '2006-01-01\2006-01-02';
+TT = '2001-07-21\2008-01-01';
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'/']; mkdir(TaskDir)
 Datelist = datenum(Datelist,'yyyy-mm-dd');
@@ -73,6 +73,11 @@ try
 % % % varname=irf_ssub('B_vec_xyz_gse__C?_CP_FGM_FULL',ic); 
 c_eval('B?_gse=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'',''mat'');',ic); 
 c_eval('B? = irf_gse2gsm(B?_gse);',ic);
+c_eval('B?(:,1) = movmean(B?(:,1), 45);',ic);
+c_eval('B?(:,2) = movmean(B?(:,2), 45);',ic);
+c_eval('B?(:,3) = movmean(B?(:,3), 45);',ic);
+c_eval('B?(:,4) = movmean(B?(:,4), 45);',ic);
+c_eval('B? = B?(1:45:end,:);',ic);
 c_eval('R?_gse = c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');',ic);
 c_eval('R? = irf_gse2gsm(R?_gse);',ic);
 % c_eval('R? = irf_resamp(R?,B1);',ic)
