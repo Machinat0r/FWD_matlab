@@ -105,7 +105,7 @@ end
 %% 平滑磁场
 Bav = irf.ts_vec_xyz(B1.time,(B1.data+B2.data+B3.data+B4.data)/4); % 直流 磁场平均
 % Bav=Bav.filt(0,0.05,128,5);% 滤波 低通 (0,0.05)hz 0.05hz以上都算波 0.05hz以下当做背景磁场
-Bav=Bav.filt(0,0.1,128,5); %20170619
+% Bav=Bav.filt(0,0.1,128,5); %20170619
 
 idx = tlim(E1.time,Tint);  %idx 为T2的时间序列个数
 
