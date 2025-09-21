@@ -2,12 +2,13 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
+ParentDir = 'Z:\SPART-WORK\Data\MMS\'; 
+DownloadDir = 'Z:\SPART-WORK\Data\MMS\';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 % TT = '2024-08-02T15:26:45.000Z/2024-08-02T15:28:15.000Z';
-TT = '2019-08-05T16:23:43.000Z/2019-08-05T16:25:13.000Z';
+% % % TT = '2019-08-05T16:23:43.000Z/2019-08-05T16:25:13.000Z';
+TT = '2023-08-05T07:18:00.000Z/2023-08-05T07:20:30.000Z';
 % % TT = '2017-06-11T17:50:00.000Z/2017-06-11T18:00:00.000Z';
 % % % TT = '2020-08-02T16:57:37.000Z/2020-08-02T16:57:43.000Z';
 % % % TT = '2015-11-19T14:07:30.000Z/2015-11-19T14:09:30.000Z';
@@ -59,7 +60,7 @@ filenames = [filenames1, filenames2, filenames3, filenames4,filenames5];
 % [fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
 % [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',ic);
 
-SDCFilesDownload_NAS(filenames,TempDir, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'CheckSize', 0, 'Threads', 64)
 % SDCFilesDownload(filenames,TempDir)
 % % % 
 % SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 64, 'CheckSize', 0)
