@@ -1,11 +1,11 @@
 %------written by Wending Fu, July.2025 in Singapore------------
 clear;clc;
 global ParentDir OutputDir
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+ParentDir = 'D:\MMS/'; 
+DownloadDir = 'C:\MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-Date = '2017-07-23/2017-07-24';
+Date = '2019-01-01/2025+--01-01';
 splitDate = regexp(Date,'/','split');
 ic = 1;iic = 1;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
@@ -26,7 +26,7 @@ end
 FileGroups = cellfun(@cellstr,FileGroups,'UniformOutput',false);%按时间分类整理后的文件名组
 
 %修改文件夹时特别注意SDCFilesDownload需要datamove的文件夹必须是ParentDir，否则需要手动修改
-OutputDir = [ParentDir,'ESWSearch/',splitDate{1},'To',splitDate{2},'/'];
+OutputDir = [DownloadDir,'ESWSearch/',splitDate{1},'To',splitDate{2},'/'];
 if ~isfolder([OutputDir,'OverviewFig/'])
     mkdir([OutputDir,'OverviewFig/']);
 end
@@ -35,24 +35,28 @@ units = irf_units;
 for TDT = 1:length(NameTags)-1 %This is a distinctive temp  (๑ˉ∀ˉ๑)
 tempDir = [OutputDir,NameTags{TDT}(2:end-2),'/'];
 clc;fprintf(['当前处理时间为:',NameTags{TDT}(2:end-2),'\n'])
-SDCFilesDownload_NAS(FileGroups{TDT},TempDir, 'Threads', 64, 'CheckSize', 0)
-SDCDataMove(TempDir,ParentDir)
+% SDCFilesDownload_NAS(FileGroups{TDT},TempDir, 'Threads', 64, 'CheckSize', 0)
+% SDCDataMove(TempDir,ParentDir)
 
 formatDate = @(s) [s(2:5), '-', s(6:7), '-', s(8:9), 'T', s(10:11), ':', s(12:13), ':', s(14:15), '.000Z'];
 tempDate = [formatDate(NameTags{TDT}), '/', formatDate(NameTags{TDT+1})];
 % tempDate = [char(NameTags(TDT)) '/' char(NameTags(TDT+1))];
 tempTint=irf.tint(tempDate);
 
+mms.db_init('local_file_db',ParentDir);
 try
     B1_ts=mms.get_data('B_gsm_brst',tempTint,ic);%先导入一个文件看看文件中包含的时间段
     tint = irf.tint(B1_ts.time.epoch(1),B1_ts.time.epoch(end));    
     Pos = mms.get_data('R_gsm',tint,ic);
     Pos = Pos.data;
+    if isempty(Pos)
+    writematrix([NameTags{TDT}(2:end-2),'无位置数据'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
+    continue
+    end
 catch
     writematrix([NameTags{TDT}(2:end-2),'的数据导入出现问题'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
     continue
 end
-
 
 %% lobe location
 flag = 0;

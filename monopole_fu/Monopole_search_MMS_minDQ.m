@@ -2,12 +2,12 @@
 clear;clc;
 global ParentDir 
 % global OutputDir
-ParentDir = '/Volumes/192.168.1.101/SPART-WORK/Data/MMS/'; 
-DownloadDir = '/Volumes/192.168.1.101/SPART-WORK/Data/MMS/';
+ParentDir = 'D:\MMS/'; 
+DownloadDir = 'D:\MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
 % Date = '2019-09-24/2019-09-25';
-Date = '2019-01-16/2019-01-17';
+Date = '2020-01-21/2023-01-01';
 splitDate = regexp(Date,'/','split');
 ic = 1:4;iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
@@ -44,8 +44,8 @@ for TDT = 1:length(NameTags)-1 %This is a distinctive temp  (๑ˉ∀ˉ๑)
 clc;clear B1 B2 B3 B4 R1 R2 R3 R4 Pos;
 PlotFlag = 0;
 % parfor_progress;
-% disp(['૮₍ ˃ ⤙ ˂ ₎ა',repmat('■',1,round(10*TDT/length(NameTags))),repmat('□',1,10-round(10*TDT/length(NameTags))),'正在光速检索ing...'])
-% fprintf(['当前处理时间为:',NameTags{TDT}(2:end-2),'\n'])
+disp(['૮₍ ˃ ⤙ ˂ ₎ა',repmat('■',1,round(10*TDT/length(NameTags))),repmat('□',1,10-round(10*TDT/length(NameTags))),'正在光速检索ing...'])
+fprintf(['当前处理时间为:',NameTags{TDT}(2:end-2),'\n'])
 
 if length(FileGroups{TDT})~=4, continue;end
 % % % try
@@ -136,7 +136,7 @@ try
     id = nchoosek(1:6,2);
     % solve
     tic
-    parfor_progress(size(PI_id, 1));
+    parfor_progress(size(PI_id, 2));
     parfor i =PI_id
     parfor_progress;
     [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
