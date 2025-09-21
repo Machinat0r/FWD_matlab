@@ -43,15 +43,27 @@ def calculate_lshell(pos_gsm_re):
             )
         except Exception:
             continue
+        
+        xs = np.asarray(xs, dtype=float)
+        ys = np.asarray(ys, dtype=float)
+        zs = np.asarray(zs, dtype=float)
+        try:
+            # 大多数 geopack 版本支持数组输入
+            xsm, ysm, zsm = geopack.gsm2sm(xs, ys, zs)
+        except Exception:
+            # 若你的版本仅支持标量，退化为逐点转换
+            xsm = np.empty_like(xs); ysm = np.empty_like(ys); zsm = np.empty_like(zs)
+            for k in range(xs.size):
+                xsm[k], ysm[k], zsm[k] = geopack.gsm2sm(xs[k], ys[k], zs[k])
 
-        idx = np.where(np.diff(np.sign(zs)) != 0)[0]
+        idx = np.where(np.diff(np.sign(zsm)) != 0)[0]
         if idx.size == 0:
             continue
         j = idx[0]
 
-        z1, z2 = zs[j], zs[j+1]
-        x1, x2 = xs[j], xs[j+1]
-        y1, y2 = ys[j], ys[j+1]
+        z1, z2 = zsm[j], zsm[j+1]
+        x1, x2 = xsm[j], xsm[j+1]
+        y1, y2 = ysm[j], ysm[j+1]
         t = -z1 / (z2 - z1)
         xe = x1 + t * (x2 - x1)
         ye = y1 + t * (y2 - y1)

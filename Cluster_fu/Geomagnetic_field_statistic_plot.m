@@ -1,16 +1,16 @@
 clear;clc;close all
-cd '/Volumes/SPART-NAS/Data/Cluster/'
-ParentDir = '/Volumes/SPART-NAS/Data/Cluster/';
-ic=2;
+cd '/Volumes/SPART-WORK/Data/Cluster/'
+ParentDir = '/Volumes/SPART-WORK/Data/Cluster/';
+ic=1;
 
 % TT = '2002-03-17\2003-01-01';
-TT = '2003-01-01\2006-01-01';
+TT = '2001-07-21\2008-01-01';
 % % % TT = '2002-01-01\2003-01-01';
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'/']; mkdir(TaskDir)
 
-% load([TaskDir,'BRdata.mat'], 'all_MLT','all_MLat','all_Bphi','all_L');
-load(['/Volumes/SPART-NAS/Data/Cluster/Geomagnetic_Field_Statistic/2001-01-01T2004-06-02/','BRdata.mat'], 'all_MLT','all_MLat','all_Bphi','all_L');
+load([TaskDir,'BRdata.mat'], 'all_MLT','all_MLat','all_Bphi','all_L');
+% load(['/Volumes/SPART-NAS/Data/Cluster/Geomagnetic_Field_Statistic/2001-01-01T2004-06-02/','BRdata.mat'], 'all_MLT','all_MLat','all_Bphi','all_L');
 %% Counts
 L_edges    = [1.5 2.5 3.5 4.5 5.5 6.5 7.5];
 MLT_edges  = linspace(0.5,24.5,25);
@@ -79,6 +79,11 @@ counts_MLT = [counts_MLT; counts_MLT(end,:)];
 counts_MLat = [counts_MLat; counts_MLat(end,:)];
 mean_Bphi_MLT = [mean_Bphi_MLT; mean_Bphi_MLT(end,:)];
 mean_Bphi_MLat = [mean_Bphi_MLat; mean_Bphi_MLat(end,:)];
+%%
+mean_Bphi_MLat(counts_MLat <= 1e4) = nan;
+mean_Bphi_MLT(counts_MLT <= 1e4) = nan;
+counts_MLat(counts_MLat <= 1e4) = nan;
+counts_MLT(counts_MLT <= 1e4) = nan;
 %% counts plot
 max_counts = max(counts_MLat(:));
 figure('Position',[100 100 1200 500]);
@@ -170,7 +175,7 @@ end
 
 
 %% Bphi plot
-max_Bphi = 120;
+max_Bphi = 15;
 
 figure('Position',[100 100 1200 500]);
 n_half = 128;
@@ -230,6 +235,7 @@ caxis([-max_Bphi max_Bphi]);
 colorbar('Location','eastoutside');
 colorbar('Ticks',[-max_Bphi 0 max_Bphi], 'TickLabels',{num2str(-max_Bphi),'0',num2str(max_Bphi)});
 
+% red: 逆时针， blue: 顺时针
 hold on;
 theta_wedge = deg2rad(linspace(-55,55,31));
 for r = 1:L_edges(end)+0.5

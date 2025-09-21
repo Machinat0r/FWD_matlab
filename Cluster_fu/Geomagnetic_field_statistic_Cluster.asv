@@ -1,11 +1,11 @@
 %------written by Wending Fu, Jul.2025 in Beijing------------
 clear;clc;close all
-cd '/Volumes/SPART-WORK/Data/Cluster/'
-ParentDir = '/Volumes/SPART-WORK/Data/Cluster/';
-ic=2;
+cd '/Volumes/192.168.1.101/SPART-WORK/Data/Cluster/'
+ParentDir = '/Volumes/192.168.1.101/SPART-WORK/Data/Cluster/';
+ic=1;
 
 % TT = '2002-03-17\2003-01-01';
-TT = '2001-07-21\2008-01-01';
+TT = '2006-01-01\2006-01-02';
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'/']; mkdir(TaskDir)
 Datelist = datenum(Datelist,'yyyy-mm-dd');
@@ -73,15 +73,10 @@ try
 % % % varname=irf_ssub('B_vec_xyz_gse__C?_CP_FGM_FULL',ic); 
 c_eval('B?_gse=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'',''mat'');',ic); 
 c_eval('B? = irf_gse2gsm(B?_gse);',ic);
-c_eval('B?(:,1) = movmean(B?(:,1), 45);',ic);
-c_eval('B?(:,2) = movmean(B?(:,2), 45);',ic);
-c_eval('B?(:,3) = movmean(B?(:,3), 45);',ic);
-c_eval('B?(:,4) = movmean(B?(:,4), 45);',ic);
-c_eval('B? = B?(1:45:end,:);',ic);
 c_eval('R?_gse = c_caa_var_get(''sc_r_xyz_gse__C?_CP_AUX_POSGSE_1M'',''mat'');',ic);
 c_eval('R? = irf_gse2gsm(R?_gse);',ic);
 % c_eval('R? = irf_resamp(R?,B1);',ic)
-c_eval('R? = irf_resamp(R?,B?);',ic);
+c_eval('B? = irf_resamp(B?,R?);',ic);
 %% calculate L -old (by python-geopack)
 % % % c_eval("tempTT = irf_time(R?(:,1),'epoch>utc');",ic);
 % % % d = datetime(tempTT, ...
@@ -113,20 +108,15 @@ c_eval('R? = irf_resamp(R?,B?);',ic);
 % % % 
 % % % load([func_path(1:func_dir), 'fwd_matlab_patch/Cluster_fu/L.mat'])
 % % % L = L';
-%% calculate L -new (by dipole filed approximation)
-c_eval('BL_struct = GSM2SM_BR(B?, R?);',ic);
-L = BL_struct.L;
-MLT = BL_struct.MLT;
-MLat = BL_struct.MLat;
-Bphi = BL_struct.Bphi;
+%% calculate L -new (by dipole filed)
 %% hist bins
-% % % c_eval('phi  = atan2(R?(:,3), R?(:,2));',ic)
-% % % MLT  = mod(phi * (12/pi) + 12, 24); 
-% % % c_eval('R? = irf_abs(R?);',ic)
-% % % c_eval('MLat = asind(R?(:,4) ./ R?(:,5));',ic)
-% % % 
-% % % e_phi = [-sin(phi), cos(phi), zeros(size(phi))];
-% % % c_eval('Bphi  = sum(B?(:,2:4) .* e_phi, 2); ',ic);
+c_eval('phi  = atan2(R?(:,3), R?(:,2));',ic)
+MLT  = mod(phi * (12/pi) + 12, 24); 
+c_eval('R? = irf_abs(R?);',ic)
+c_eval('MLat = asind(R?(:,4) ./ R?(:,5));',ic)
+
+e_phi = [-sin(phi), cos(phi), zeros(size(phi))];
+c_eval('Bphi  = sum(B?(:,2:4) .* e_phi, 2); ',ic);
 
 all_MLT  = [all_MLT;  MLT];
 all_MLat = [all_MLat; MLat];
