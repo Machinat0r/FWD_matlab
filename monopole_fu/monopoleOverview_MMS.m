@@ -30,11 +30,11 @@ clear;clc;close all
 %%
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-TempDir = '/Volumes/SPART-NAS/Data/MMS/';mkdir(TempDir);
+ParentDir = 'D:\MMS/'; 
+TempDir = 'D:\MMS/';mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
-TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
+% % % TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % TT = '2019-01-16T04:09:55.420Z/2019-01-16T04:09:55.800Z'; %no boundary, 10,78-81
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:15:50.00Z';
 
@@ -43,6 +43,7 @@ TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % TT = '2017-02-20T04:43:57.00Z/2017-02-20T04:43:58.00Z';
 % TT = '2021-03-30T07:58:01.00Z/2021-03-30T07:58:02.00Z';
 % TT = '2020-07-27T11:30:23.00Z/2020-07-27T11:30:24.00Z';
+TT = '2015-09-11T13:05:30.000Z/2015-09-11T13:05:35.000Z';
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
@@ -87,6 +88,7 @@ LocPoint = zeros(size(B1,1),3);
 LocRes = cell(size(B1,1),1);
 Q = zeros(size(B1,1),1);
 resQ = cell(size(B1,1),1);
+dLoc = 1000*ones(size(B1,1),15);
 
 RR12 = irf_abs(R1-R2); RR13 = irf_abs(R1-R3); RR14 = irf_abs(R1-R4); 
 RR23 = irf_abs(R2-R3); RR24 = irf_abs(R2-R4); RR34 = irf_abs(R3-R4); 
@@ -97,8 +99,9 @@ parfor i = 1:length(PI)
 clc;
 % disp(['current calculate:',num2str(i),'/',num2str(length(PI))]);
 
-% if PI(i)~=0
-    % % % [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('R?','B?',i,i*sign(divB(i,2)),10,1);
+if PI(i)~=0
+    % [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
+    %     i,i*sign(divB(i,2)),10,1);
     
 [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
         i,i*sign(divB(i,2)),RR_mean(i),1);
@@ -115,9 +118,9 @@ clc;
     end
 
 
-% else
-%     Q(i) = nan; resQ{i} = nan; LocPoint(i,:) = [nan,nan,nan]; LocRes{i} = nan;
-% end
+else
+    Q(i) = nan; resQ{i} = nan; LocPoint(i,:) = [nan,nan,nan]; LocRes{i} = nan;
+end
 end
  meand = mean(dLoc,2);
 %% calculate error
@@ -338,7 +341,7 @@ h(i)=irf_subplot(n,1,-i);
 irf_plot([B1(:,1) mean(dLoc,2)], 'color','k', 'Linewidth',0.75); hold on;
 grid off;
 % set(gca,'Ylim',[0 max(Locerror)]);
-set(gca,'Ylim',[0,120], 'ytick',[0 50 100],'fontsize',9);
+set(gca,'Ylim',[0,240], 'ytick',[0 100 200],'fontsize',9);
 pos1=get(gca,'pos');
 ylabel('DR_{cou} [%]','fontsize',12);
 i=i+1;
@@ -357,7 +360,7 @@ h(i)=irf_subplot(n,1,-i);
 irf_plot([B1(:,1) Qerror], 'color','k', 'Linewidth',0.75); hold on;
 grid off;
 % set(gca,'Ylim',[0 1100]);
-set(gca,'Ylim',[0,200], 'ytick',[0 100 200],'fontsize',9);
+set(gca,'Ylim',[0,1000], 'ytick',[0 500 1000],'fontsize',9);
 pos1=get(gca,'pos');
 ylabel('DQ_{cou} [%]','fontsize',12);
 i=i+1;
@@ -379,7 +382,7 @@ set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
 colormap(jet)
 tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));
-c_eval("irf_pl_mark(h(?),B1(tempidx_B1,1),'k','LineStyle','-.');",1:n)
+% c_eval("irf_pl_mark(h(?),B1(tempidx_B1,1),'k','LineStyle','-.');",1:n)
 set(gca,"XTickLabelRotation",0)
 % figname = [OutputDir,'OverviewFig\',NameTags{TDT}(2:end-2)];    
 % print(gcf, '-dpng', [figname '.png']);

@@ -7,8 +7,8 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
+ParentDir = 'Z:\SPART-WORK\Data\MMS\';
+DownloadDir = 'Z:\SPART-WORK\Data\MMS\';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
@@ -24,7 +24,8 @@ filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,des-
 filenames = [filenames1, filenames2];
 % % % 
 [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 64, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+SDCDataMove(TempDir,ParentDir)
 %% Load data
 Bxyz1=mms.get_data('B_gse_brst',tint,ic);
 
@@ -54,6 +55,7 @@ c_eval('diste1 = mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brs
 % % % psd2 = psd1_par;
 % % % psd3 = psd1_antipar;
 %%
+
 c_eval('fpiFile? = dataobj(''/Volumes/SPART-NAS/Data/MMS/mms1/fpi/brst/l2/des-dist/2019/08/05/mms1_fpi_brst_l2_des-dist_20190805162313_v3.4.0.cdf'');',ic);
 c_eval('diste_struct = get_variable(fpiFile?,''mms?_des_dist_brst'');',ic);
 % c_eval('diste_struct = mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
@@ -137,6 +139,7 @@ psd2=mean(PSDomni(t:t+dt,:));
 psd2=transpose(psd2);
 % loglog(chan,psd,'b+');
 hold on;
+
 %% parameters
 m=9.1*10^-31;
 k=1.38e-23; 

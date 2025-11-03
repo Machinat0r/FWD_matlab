@@ -2,18 +2,18 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-WORK/Data/MMS/';
+ParentDir = 'Z:\SPART-WORK\Data\MMS/'; 
+DownloadDir = 'Z:\SPART-WORK\Data\MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 % TT = '2024-08-02T15:26:45.000Z/2024-08-02T15:28:15.000Z';
 % % % TT = '2019-08-05T16:23:43.000Z/2019-08-05T16:25:13.000Z';
 % TT = '2017-07-23T19:49:00.125Z/2017-07-23T19:49:00.129Z';
-tint2 = irf.tint('2017-07-23T19:49:36.116Z/2017-07-23T19:49:36.117Z');
-TT = '2017-07-23T19:49:00.000/2017-07-23T19:50:00.000Z';
+% % % tint2 = irf.tint('2017-07-23T19:49:36.116Z/2017-07-23T19:49:36.117Z');
+% % % TT = '2019-08-16T09:29:35.000/2019-08-16T09:29:43.000';
 % TT = '2020-08-03T01:45:23.000Z/2020-08-03T01:45:38.000Z'; % case 16-long
 % % % TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.900Z'; 
-% TT = '2021-07-17T17:25:18.000Z/2021-07-17T17:25:25.000Z'; % case 15
+TT = '2021-07-17T17:25:18.000Z/2021-07-17T17:25:25.000Z'; % case 15
 % TT = '2019-08-16T08:25:00.000Z/2019-08-16T08:25:15.000Z'; % case 13
 % TT = '2017-06-17T10:36:45.000Z/2017-06-17T10:37:00.000Z'; % case 17
 % TT = '2017-06-27T22:44:30.000Z/2017-06-27T22:44:45.000Z';
@@ -22,7 +22,7 @@ tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 1;
+ic = 1:4;
 iic = 1:4;
 try
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
@@ -40,7 +40,7 @@ filenames = [filenames1, filenames2, filenames3, filenames4];
 % [fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
 [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
 
-SDCFilesDownload_NAS(filenames,TempDir, 'CheckSize', 0, 'Threads', 16)
+SDCFilesDownload_NAS(filenames,TempDir, 'CheckSize', 1, 'Threads', 64)
 % SDCFilesDownload(filenames,TempDir)
 % % % 
 % SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 64, 'CheckSize', 0)
@@ -51,6 +51,7 @@ catch
 end
 %% load data
 SDCDataMove(TempDir,ParentDir)
+
 mms.db_init('local_file_db',ParentDir);
 
 % load B

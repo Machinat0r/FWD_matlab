@@ -176,7 +176,7 @@ elseif (tmpnargin==7 || tmpnargin==8)
     irf.log('notice','Angles passed; using these to calculate PAD.');
 else
     irf.log('critical','Input not recognized.');
-    return;
+    ret0urn;
 end
 
 % Check size of energy
