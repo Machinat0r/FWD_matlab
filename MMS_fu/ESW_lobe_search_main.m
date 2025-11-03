@@ -5,7 +5,7 @@ ParentDir = 'D:\MMS/';
 DownloadDir = 'C:\MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-Date = '2019-01-01/2025+--01-01';
+Date = '2019-01-01/2025-01-01';
 splitDate = regexp(Date,'/','split');
 ic = 1;iic = 1;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');

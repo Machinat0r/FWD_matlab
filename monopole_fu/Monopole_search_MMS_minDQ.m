@@ -7,7 +7,7 @@ DownloadDir = 'D:\MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
 % Date = '2019-09-24/2019-09-25';
-Date = '2020-01-21/2023-01-01';
+Date = '2017-01-21/2018-01-01';
 splitDate = regexp(Date,'/','split');
 ic = 1:4;iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
@@ -137,10 +137,10 @@ try
     % solve
     tic
     parfor_progress(size(PI_id, 2));
-    parfor i =PI_id
-    parfor_progress;
-    [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
-        i,i*sign(divB(i,2)),RR_mean(i),1);
+    for i =PI_id
+    % % % parfor_progress;
+    % % % [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
+    % % %     i,i*sign(divB(i,2)),RR_mean(i),1);
     % [Q,resQ,LocPoint,LocRes] = CalErrorFast(R1,R2,R3,R4,B1,B2,B3,B4, ...
     %     RR_mean, sign(divB(:,2)), 1);
     
@@ -154,7 +154,7 @@ try
     else
         Qerror(i) = 1000;
     end
-    end
+    end    
     parfor_progress(0);
     toc
     meand = mean(dLoc,2);

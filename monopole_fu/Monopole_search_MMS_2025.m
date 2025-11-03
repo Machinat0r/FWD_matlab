@@ -137,7 +137,7 @@ try
     % solve
     tic
     % parfor_progress(size(B1, 1)-1);
-    parfor i =1:size(B1, 1)
+    for i =1:size(B1, 1)
     % for i =1:20
     % parfor_progress;
     [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
