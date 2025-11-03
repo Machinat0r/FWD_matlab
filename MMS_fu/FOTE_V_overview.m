@@ -4,8 +4,8 @@
 clear;close all
 clc
 global ParentDir 
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 %% VORTEX_9图全版
 %% load data
@@ -19,6 +19,9 @@ dspan2 = 1;
 % Tsta = '2017-07-06T01:44:50.000Z';
 % Tend = '2017-07-06T01:45:10.000Z';
 
+Tsta = '2017-06-27T22:44:30.000Z';
+Tend = '2017-06-27T22:44:45.000Z';
+
 % Tsta = '2017-07-12T11:54:33.600Z';
 % Tend = '2017-07-12T11:54:35.400Z';
 % Tsta = '2018-07-06T12:37:04.500Z';
@@ -27,36 +30,38 @@ dspan2 = 1;
 % Tend = '2017-05-22T08:23:55.000Z';
 % Tsta = '2017-05-25T04:40:29.500Z';
 % Tend = '2017-05-25T04:40:33.000Z';
-Tsta = '2019-08-05T16:24:00.000Z';
-Tend = '2019-08-05T16:25:00.000Z';
+% % % Tsta = '2019-08-05T16:24:00.000Z';
+% % % Tend = '2019-08-05T16:25:00.000Z';
 tint = irf.tint(Tsta,Tend);
 % tint=irf.tint('2017-01-27T12:05:42.50Z/2017-01-27T12:05:43.80Z');
 % TT = '2017-07-12T11:54:00.000Z/2017-07-12T11:55:00.000Z';
-TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+% % % TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
 % % % TT = '2017-07-06T17:31:52.000Z/2017-07-06T17:32:07.000Z';
 % TT = '2018-07-06T12:36:30.000Z/2018-07-06T12:38:00.000Z';
 % TT = '2017-05-22T08:23:30.000Z/2017-05-22T08:24:30.000Z';
 % TT = '2017-05-25T04:40:00.000Z/2017-05-25T04:41:00.000Z';
+TT = '2017-06-27T22:44:30.000Z/2017-06-27T22:44:45.000Z';
 
-TT3 = '2019-08-05T16:24:29.000Z/2019-08-05T16:24:33.000Z';
+% TT3 = '2019-08-05T16:24:29.000Z/2019-08-05T16:24:33.000Z';
 tint2=irf.tint(TT);
-tint3 = irf.tint(TT3);
+% tint3 = irf.tint(TT3);
+tint3 = tint2;
 
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 
-% filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
-% filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist');
-% % filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-% filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
-% filenames = [filenames1, filenames2,filenames4];
-% % % % 
-% [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
-% 
-% SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
+filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
+filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist');
+% filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
+filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
+filenames = [filenames1, filenames2,filenames4];
+% % % 
+[filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
+
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
 SDCDataMove(TempDir,ParentDir)
-mms.db_init('local_file_db','/Volumes/SPART-NAS/Data/MMS/')
+mms.db_init('local_file_db',ParentDir)
 
 c_eval('e_r? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energy_brst'',tint);',ic);
 

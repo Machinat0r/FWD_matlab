@@ -7,8 +7,8 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+DownloadDir = '/Volumes/SPART-WORK/Data/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
@@ -19,13 +19,15 @@ Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 ic = 1;
-filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
-filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,des-dist');
-filenames = [filenames1, filenames2];
-% % % 
-[filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 64, 'CheckSize', 0)
+% % % filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
+% % % filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,des-dist');
+% % % filenames = [filenames1, filenames2];
+% % % % % % 
+% % % [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
+% % % SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
 %% Load data
+SDCDataMove(TempDir,ParentDir)
+mms.db_init('local_file_db',ParentDir);
 Bxyz1=mms.get_data('B_gse_brst',tint,ic);
 
 c_eval('Ne_ts = mms.get_data(''Ne_fpi_brst_l2'',tint,?);',ic);
@@ -33,7 +35,7 @@ c_eval(['Ne=irf.ts2mat(Ne_ts);'],ic);
 Ne = mean(Ne(:,2));
 
 % c_eval('diste1 = mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
-c_eval('diste1 = mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
+% c_eval('diste1 = mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
 % theta1=diste1.DEPEND_2.data;
 % length_diste1=length(diste1.time.epoch);
 % length_diste1 = size(diste1.data,1);
@@ -54,7 +56,7 @@ c_eval('diste1 = mms.db_get_ts(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brs
 % % % psd2 = psd1_par;
 % % % psd3 = psd1_antipar;
 %%
-c_eval('fpiFile? = dataobj(''/Volumes/SPART-NAS/Data/MMS/mms1/fpi/brst/l2/des-dist/2019/08/05/mms1_fpi_brst_l2_des-dist_20190805162313_v3.4.0.cdf'');',ic);
+c_eval('fpiFile? = dataobj(''/Volumes/SPART-WORK/Data/MMS/mms1/fpi/brst/l2/des-dist/2019/08/05/mms1_fpi_brst_l2_des-dist_20190805162313_v3.3.0.cdf'');',ic);
 c_eval('diste_struct = get_variable(fpiFile?,''mms?_des_dist_brst'');',ic);
 % c_eval('diste_struct = mms.db_get_variable(''mms?_fpi_brst_l2_des-dist'',''mms?_des_dist_brst'',tint);',ic);
 thetae=diste_struct.DEPEND_2.data;
@@ -123,7 +125,7 @@ hold on;
 
 
 timeomni=irf_time(phie.time,'epochTT>epoch');
-time2='2019-08-05T16:24:10.000Z';
+time2='2019-08-05T16:24:31.000Z';
 % time1='2020-08-03T01:45:27.500Z';
 time2=iso2epoch(time2);
 % % % 
@@ -171,13 +173,13 @@ kk=polyfit(log(X3'),log(Y3),1);
 
 % maxwell function ouput
 X1=energypad1(min(energy_section{1}):32);
-p1(1)=0.28;
-p1(2)=8.5;
+p1(1)=0.13;
+p1(2)=8;
 F1=p1(1)*1e24*power(m/(2*pi*k*p1(2)*11605),3/2)*exp(-X1*e/(k*p1(2)*11605));
 
-X2=energypad1(12:32);
-p2(3) = 0.28;
-p2(4) = 500;
+X2=energypad1(8:32);
+p2(3) = 0.08;
+p2(4) = 1200;
 F2=p2(3)*1e24*power(m/(2*pi*k*p2(4)*11605),3/2)*exp(-X2*e/(k*p2(4)*11605));
 
 X3=energypad1(min(energy_section{3}):32);

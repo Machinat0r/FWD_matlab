@@ -30,11 +30,11 @@ clear;clc;close all
 %%
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-TempDir = '/Volumes/SPART-NAS/Data/MMS/';mkdir(TempDir);
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+TempDir = '/Volumes/SPART-WORK/Data/MMS/temp/';mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
-TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
+% % % % % TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % TT = '2019-01-16T04:09:55.420Z/2019-01-16T04:09:55.800Z'; %no boundary, 10,78-81
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:15:50.00Z';
 
@@ -43,18 +43,25 @@ TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % TT = '2017-02-20T04:43:57.00Z/2017-02-20T04:43:58.00Z';
 % TT = '2021-03-30T07:58:01.00Z/2021-03-30T07:58:02.00Z';
 % TT = '2020-07-27T11:30:23.00Z/2020-07-27T11:30:24.00Z';
+% TT = '2016-01-10T09:09:38.000Z/2016-01-10T09:09:45.000Z';
+% TT = '2017-07-06T22:13:05.00Z/2017-07-06T22:13:20.00Z';
+% % % TT = '2016-01-06T00:32:36.000Z/2016-01-06T00:32:37.000Z';
+% TT = '2016-01-08T03:25:20.000Z/2016-01-08T03:25:30.000Z';
+% TT = '2016-03-07T00:38:52.000Z/2016-03-07T00:38:52.500Z';
+
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
+
 ic = 1:4;
-% filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
-% [filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
-% 
-% SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
+[filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
+
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
 %% Poincare Index  
-% SDCDataMove(TempDir,ParentDir); 
+SDCDataMove(TempDir,ParentDir); 
 mms.db_init('local_file_db',ParentDir);
 
 c_eval("B?_ts=mms.get_data('B_gse_brst',tint,?);");
@@ -87,19 +94,20 @@ LocPoint = zeros(size(B1,1),3);
 LocRes = cell(size(B1,1),1);
 Q = zeros(size(B1,1),1);
 resQ = cell(size(B1,1),1);
+dLoc = zeros(size(B1,1),15);
 
 RR12 = irf_abs(R1-R2); RR13 = irf_abs(R1-R3); RR14 = irf_abs(R1-R4); 
 RR23 = irf_abs(R2-R3); RR24 = irf_abs(R2-R4); RR34 = irf_abs(R3-R4); 
 RR_mean = (RR12(:,5) + RR13(:,5) + RR14(:,5) + RR23(:,5) + RR24(:,5) + RR34(:,5))/6;
 id = nchoosek(1:6,2);
 
-parfor i = 1:length(PI)
+for i = find(PI~=0)'
 clc;
 % disp(['current calculate:',num2str(i),'/',num2str(length(PI))]);
 
 % if PI(i)~=0
     % % % [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError('R?','B?',i,i*sign(divB(i,2)),10,1);
-    
+
 [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
         i,i*sign(divB(i,2)),RR_mean(i),1);
 
@@ -169,7 +177,7 @@ grid off;
 % set(gca,'Ylim',[min([min(B1(:,5)) min(B2(:,5)) min(B3(:,5)) min(B4(:,5))])-10 ...
 %     max([max(B1(:,5)) max(B2(:,5)) max(B3(:,5)) max(B4(:,5))])+10]);
 % c_eval("set(gca,'Ylim',[min([min(B?_gse(:,2))])-100 max([max(B?_gse(:,2))])+100]);",ic);
-set(gca,'Ylim',[0 25], 'ytick',[0:10:20],'fontsize',9);
+% set(gca,'Ylim',[0 25], 'ytick',[0:10:20],'fontsize',9);
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
 irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.97 0.92]);
@@ -189,7 +197,7 @@ grid off;
 % set(gca,'Ylim',[min([min(B1_gse(:,2)) min(B2_gse(:,2)) min(B3_gse(:,2)) min(B4_gse(:,2))])-10 ...
 %     max([max(B1_gse(:,2)) max(B2_gse(:,2)) max(B3_gse(:,2)) max(B4_gse(:,2))])+10]);
 % c_eval("set(gca,'Ylim',[min([min(B?_gse(:,2))])-100 max([max(B?_gse(:,2))])+100]);",ic);
-set(gca,'Ylim',[-15 15], 'ytick',[-10 0 10],'fontsize',9);
+% set(gca,'Ylim',[-15 15], 'ytick',[-10 0 10],'fontsize',9);
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
 % irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.97 0.92]);
@@ -378,7 +386,8 @@ irf_plot_axis_align;
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
 colormap(jet)
-tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));
+tempidx_B1 = 30;
+% tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));
 c_eval("irf_pl_mark(h(?),B1(tempidx_B1,1),'k','LineStyle','-.');",1:n)
 set(gca,"XTickLabelRotation",0)
 % figname = [OutputDir,'OverviewFig\',NameTags{TDT}(2:end-2)];    
@@ -396,7 +405,8 @@ set(gcf,'Position',[10 10 xSize*coef ySize*coef])
 % length(find(Locerror<50 & Qerror<=1000))
 % tempidx_B1 = find(PI~=0);
 % tempidx_B1 = tempidx_B1(mean(dLoc(tempidx_B1,:),2) == min(mean(dLoc(tempidx_B1,:),2)));
-tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));
+
+% % % tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));
 % tempidx_B1 = 398;
 % tempidx_B1 = tempidx_B1(1);
 %     [~,tempidx_B] = max(abs(divB(:,2)));

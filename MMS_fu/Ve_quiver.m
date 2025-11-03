@@ -2,8 +2,8 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-NAS/Data/MMS/'; 
-DownloadDir = '/Volumes/SPART-NAS/Data/MMS/';
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 
@@ -27,34 +27,34 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2021-07-17T17:25:19.200Z/2021-07-17T17:25:21.500Z'; % case 15 , 1
 % TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'; % case 16, 1/3
  % % % TT = '2017-06-27T22:44:35.000Z/2017-06-27T22:44:40.000Z';
-
- TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+ % % % TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+ TT = '2017-06-28T17:04:20.000Z/2017-06-28T17:04:45.000Z';
 
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 1;
-iic = 1;
-% filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
-% filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms');
-% filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-% filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
+ic = 1:4;
+iic = 1:4;
+filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
+filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms');
+filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
+filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
 % filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
 % filenames_fast = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms');
-% filenames = [filenames1, filenames2];
-% % % 
-% [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
-% % % [fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
-% % % [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
+filenames = [filenames1, filenames2];
+% % 
+[filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
+% % [fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
+% % [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
 
-% SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 64, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 64, 'CheckSize', 1)
 % SDCFilesDownload(filenames,TempDir)
-% % % 
-% % % SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 32, 'CheckSize', 0)
-% % % SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 32, 'CheckSize', 0)
-% % % id_flagTime = OverView_download(tint,desmoms,IC,Name,flagTime)
+% % 
+% % SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 32, 'CheckSize', 0)
+% % SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 32, 'CheckSize', 0)
+% % id_flagTime = OverView_download(tint,desmoms,IC,Name,flagTime)
 %% load data
 SDCDataMove(TempDir,ParentDir)
 mms.db_init('local_file_db',ParentDir);
