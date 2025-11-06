@@ -71,3 +71,49 @@ textm(lat(end),lon(end),sprintf('%d', yr(end)),'FontSize',10, ...
       'VerticalAlignment','bottom');
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
+
+
+%% figure 2
+latLim = [66 74];
+lonLim = [-105 -90];
+inZoom = lat >= latLim(1) & lat <= latLim(2) & ...
+         lon >= lonLim(1) & lon <= lonLim(2);
+
+% 1859 年位置
+idx1859 = find(yr == 1859, 1);
+lat1859 = lat(idx1859);
+lon1859 = lon(idx1859);
+
+figure('Color','w'); hold on;
+
+% 1. 画海岸线（转成 x=纬度, y=经度）
+load coastlines
+coastlon = mod(coastlon + 180, 360) - 180;
+plot(coastlat, coastlon, 'Color',[0.85 0.85 0.85], 'LineWidth',1);  % x=lat, y=lon
+
+% 2. 画轨迹散点（只画点）
+scatter(lat(inZoom), lon(inZoom), 15, [0.2 0.2 0.2], 'filled'); % 其他年份，稍小
+
+% 1859 年：蓝色五角星
+scatter(lat1859, lon1859, 60, 'b', 'p', 'filled');   % 'p' 为五角星
+text(lat1859, lon1859, ' 1859', ...
+    'FontSize',10, 'VerticalAlignment','middle', ...
+    'HorizontalAlignment','left', 'Color','b');
+
+% 3. 坐标轴与样式
+xlim(latLim);
+ylim(lonLim);
+set(gca,'YDir','reverse');          % 经度轴倒过来（上大下小）
+box on; grid on;
+set(gca,'GridLineStyle',':');
+
+xt = 66:2:74;
+yt = -105:5:-90;
+xticks(xt);
+yticks(yt);
+xticklabels(strcat(string(xt),      char(176),'N'));
+yticklabels(strcat(string(abs(yt)), char(176),'W'));
+
+xlabel('Latitude');
+ylabel('Longitude');
+

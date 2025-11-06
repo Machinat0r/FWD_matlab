@@ -21,7 +21,7 @@ s1 = [num2str(iCase),'/',num2str(length(CaseTimeList))]; s2 = ['正在处理:',C
 disp([s1,repmat('■',1,round(10*iCase/length(CaseTimeList))),repmat('□',1,10-round(10*iCase/length(CaseTimeList))),s2])
 try
     CaseTime = irf_time(CaseTimeList{iCase}, 'utc>epoch');
-    tint = irf_time([CaseTime-0.4,CaseTime+0.4],'epoch>epochTT');
+    tint = irf_time([CaseTime-0.1,CaseTime+0.1],'epoch>epochTT');
     
     % load B
     c_eval(['B?_ts=mms.get_data(''B_gsm_brst'',tint,?);'],ic);
