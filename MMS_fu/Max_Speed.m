@@ -1,16 +1,13 @@
-%% ======================= 0. 基本初始化 ==========================
-clear; clc;
+%% 初始化 
+clear; clc; close all
 
 % 初始化 MMS 本地数据库路径（按你自己的路径改）
-mms.db_init('local_file_db','Z:\SPART-WORK\Data\MMS\');
+mms.db_init('local_file_db','/Volumes/SPART-WORK/Data/MMS/');
 
 ic = 1:4;   % MMS1-4
-units = irf_units; %#ok<NASGU>
+units = irf_units; 
 
-%% ======================= 1. 读入并排序事件 ======================
-% txt 每行格式类似：
-% 2018-08-13T22:44:24.007000000Z的最大速度为28467097.3975
-speed_file = 'C:\MMS\ESWSearch\2018-01-01To2019-01-01\DRAFTCaseList.txt';   % 改成你的 txt 文件名
+speed_file = '/Users/fwd/Documents/Ti~mor~/M/ESW/Searching/DRAFTCaseList.txt';   % 改成你的 txt 文件名
 
 fid = fopen(speed_file,'r','n','UTF-8');
 C = textscan(fid,'%s%f', ...
@@ -25,10 +22,12 @@ vmax         = C{2};  % 最大速度 (数值)
 [v_sorted, idx_sorted] = sort(vmax,'descend');
 eventTimeStr_sorted    = eventTimeStr(idx_sorted);
 
-Nevents = min(10, numel(v_sorted));   % 只取前 10 个
+Nevents = min(100, numel(v_sorted));   % 只取前 10 个
 
-%% ======================= 2. 循环画 10 个事件 =====================
+%%
 for iev = 1:Nevents
+    clear low_FGM1 low_FGM2 low_FGM3 low_FGM4 high_SCM1 high_SCM2 high_SCM3 high_SCM4...
+        B_brst1 B_brst2 B_brst3 B_brst4
     fprintf('绘制事件 %d / %d: %s, vmax = %.1f\n', ...
         iev, Nevents, eventTimeStr_sorted{iev}, v_sorted(iev));
 
@@ -37,8 +36,8 @@ for iev = 1:Nevents
         'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSSSSSSSS''Z''', ...
         'TimeZone','UTC');
 
-    t_start = t0_dt - seconds(1);
-    t_end   = t0_dt + seconds(1);
+    t_start = t0_dt - seconds(0.2);
+    t_end   = t0_dt + seconds(0.2);
 
     % irf.tint 接受的时间字符串（到毫秒就够用）
     t_start_str = datestr(t_start,'yyyy-mm-ddTHH:MM:SS.FFFZ');
@@ -50,22 +49,71 @@ for iev = 1:Nevents
     try
         % 磁场：FGM GSM 三分量
         c_eval('Bxyz?  = mms.db_get_ts(''mms?_fgm_brst_l2'', ''mms?_fgm_b_gsm_brst_l2'', tint);', ic);
-        c_eval('B_brst? = irf.ts2mat(Bxyz?);', ic);   % -> [t, Bx, By, Bz]
+        c_eval('B_brst0? = irf.ts2mat(Bxyz?);', ic);   % -> [t, Bx, By, Bz]
 
         % 电场：EDP GSE -> GSM
         c_eval('Exyz?  = mms.db_get_ts(''mms?_edp_brst_l2_dce'', ''mms?_edp_dce_gse_brst_l2'', tint);', ic);
         c_eval('E_brst? = irf.ts2mat(Exyz?);', ic);   % [t, Ex, Ey, Ez] (GSE)
         c_eval('E_brst? = irf_gse2gsm(E_brst?);', ic);% -> GSM
+
+        c_eval('Bscm_gse?=mms.db_get_ts(''mms?_scm_brst_l2_scb'',''mms?_scm_acb_gse_scb_brst_l2'',tint);',ic);
+        try   %scm经典Bug,可能读到cell格式
+            c_eval('B_scm_gse?=irf.ts2mat(Bscm_gse?);',ic);
+        catch
+            c_eval('B_scm1_gse?=irf.ts2mat(Bscm_gse?{1});',ic);
+            c_eval('B_scm2_gse?=irf.ts2mat(Bscm_gse?{2});',ic);
+            c_eval('B_scm_gse?=[B_scm1_gse?;B_scm2_gse?];',ic);
+        end
+        c_eval('B_scm?=irf_gse2gsm(B_scm_gse?);',ic);
+
+        Pos = mms.get_data('R_gsm',tint);
+        R1 = Pos.gsmR1;R2 = Pos.gsmR2; R3 = Pos.gsmR3;R4 = Pos.gsmR4;
+        RR = [R1(1,1:3);R2(1,1:3);R3(1,1:3);R4(1,1:3)];
+        R = R1(1,1:3)./units.RE*1e3;
+        RR_mean = mean(pdist(RR));
+
+
     catch ME
         warning('事件 %d (%s) 数据读取失败: %s', ...
             iev, eventTimeStr_sorted{iev}, ME.message);
         continue;
     end
 
+    %% 处理磁场数据
+
+    % filter FGM <10Hz
+    Fs=128;    % 采样频率 (Hz)
+    Fc=10;  % 截止频率 (Hz)
+    filterOrder = 5;    % 滤波器阶数
+    [b2, a2] = butter(filterOrder, Fc/(Fs/2), 'low');  % 设计滤波器
+    c_eval('low_FGM?(:,1) = B_brst0?(:,1);',ic);
+    c_eval('low_FGM?(:,2) = filtfilt(b2, a2, B_brst0?(:,2));',ic);
+    c_eval('low_FGM?(:,3) = filtfilt(b2, a2, B_brst0?(:,3));',ic);
+    c_eval('low_FGM?(:,4) = filtfilt(b2, a2, B_brst0?(:,4));',ic);
+
+    % filter SCM >10Hz
+    Fs=8192;    % 采样频率 (Hz)
+    Fc=10;  % 截止频率 (Hz)
+    filterOrder = 5;    % 滤波器阶数
+    [b2, a2] = butter(filterOrder, Fc/(Fs/2), 'high');  % 设计滤波器
+    c_eval('high_SCM?(:,1) = B_scm?(:,1);',ic);
+    c_eval('high_SCM?(:,2) = filtfilt(b2, a2, B_scm?(:,2));',ic);
+    c_eval('high_SCM?(:,3) = filtfilt(b2, a2, B_scm?(:,3));',ic);
+    c_eval('high_SCM?(:,4) = filtfilt(b2, a2, B_scm?(:,4));',ic);
+
+
+    c_eval('B_re?=irf_resamp(low_FGM?,high_SCM?);',ic);
+    c_eval('B_brst?(:,1)=B_re?(:,1);',ic);
+    c_eval('B_brst?(:,2:4)=B_re?(:,2:4)+high_SCM?(:,2:4);',ic);
     %% 2.3 画图：6 个 panel (Bx, By, Bz, Ex, Ey, Ez)
     nplot = 6;
     h = irf_plot(nplot,'newfigure');
-    set(gcf,'Position',[50 50 400 620],'color','w');
+
+    set(gcf,'PaperUnits','centimeters')
+    xSize = 70; ySize = 80; coef=floor(min(800/xSize,800/ySize));
+    xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
+    set(gcf,'PaperPosition',[xLeft yTop xSize ySize]);
+    set(gcf,'Position',[10 10 xSize*coef ySize*coef]);
 
     xwidth = 0.8;
     ywidth = (0.95 - 0.15)/nplot;
@@ -155,9 +203,16 @@ for iev = 1:Nevents
     grid(h(1:nplot),'off');
 
     % 给第一行加个标题（可以按需打开/修改）
-    title(h(1), sprintf('Top %d  v_{max}=%.1f km/s  @ %s', ...
-        iev, v_sorted(iev)/1e3, char(t0_dt)), 'Interpreter','none');
+    title(h(1), sprintf('Top %d  Vmax=%.1f km/s (= %.1f c)  @ [%.1f %.1f %.1f] Re  Separation: %.1f km', ...
+        iev, v_sorted(iev)/1e3, v_sorted(iev)/units.c, R(1), R(2), R(3), RR_mean), 'Interpreter','none');
 
     % 底部 x 轴刻度不旋转
     set(gca,"XTickLabelRotation",0);
+    set(gcf,'render','painters');
+    set(gcf,'paperpositionmode','auto')
+
+    figname = ['/Users/fwd/Documents/Ti~mor~/M/ESW/Searching/Figures/', strrep(char(t0_dt),':','')];
+    print(gcf, '-dpdf', [figname '.pdf']); 
+
+    close all
 end
