@@ -2,7 +2,7 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
 DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
@@ -25,7 +25,8 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2022-08-19T01:13:40.00Z/2022-08-19T01:14:40.00Z';
 % TT = '2020-08-02T16:56:10.00Z/2020-08-02T16:56:25.00Z';
 % TT = '2017-06-25T05:06:58.00Z/2017-06-25T05:07:02.00Z';
-TT = '2017-06-11T17:50:00.000Z/2017-06-11T18:00:00.000Z';
+% TT = '2017-06-11T17:50:00.000Z/2017-06-11T18:00:00.000Z';
+TT = '2018-12-27T21:00:00.000Z/2018-12-27T23:00:00.000Z';
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
@@ -33,25 +34,39 @@ Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 ic = 1;
 iic = 1:4;
-filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
-filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms,des-dist,dis-dist');
-filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','fast','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','fast','dpt','dce,scpot');
-filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
-% filenames_fast = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms,des-dist,dis-dist');
 
-[filenames4,~,~] = findFilenames(TT,filenames4,'srvy',ic);
-[filenames2,desmoms1,desmoms2] = findFilenames(TT,filenames2,'fast',ic);
-filenames = [filenames2,filenames4];
-% [filenames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
+filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
+filenames_fast1 = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms');
+filenames_fast2 = SDCFilenames(Date,ic,'inst','edp','drm','fast');
+filenames_fast = [filenames_fast1, filenames_fast2];
+
+[fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
 [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
 
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 128)
-% SDCFilesDownload_NAS(filenames_fast,TempDir)
-SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 64)
+
+SDCFilesDownload_NAS(filenames_fast,TempDir, 'Threads', 64, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 64, 'CheckSize', 0)
+
+% % % filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
+filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms,des-dist,dis-dist');
+% % % filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','fast','dpt','scb');
+% % % filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','fast','dpt','dce,scpot');
+% % % filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
+% % % filenames_fast = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms,des-dist,dis-dist');
+% % % 
+% % % [filenames4,~,~] = findFilenames(TT,filenames4,'srvy',ic);
+[filenames2,desmoms1,desmoms2] = findFilenames(TT,filenames2,'fast',ic);
+% % % filenames = [filenames2,filenames4];
+% % % [filenames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
+% % % [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
+% % % 
+% % % % SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 128)
+% % % SDCFilesDownload_NAS(filenames_fast,TempDir)
+% % % SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 64)
 %% load data
 SDCDataMove(TempDir,ParentDir)
 mms.db_init('local_file_db',ParentDir);
+% mms.db_init('local_file_db',TempDir);
 
 % load B
 units = irf_units;
@@ -113,25 +128,37 @@ c_eval(['Ni?=irf.ts2mat(Ni?_ts);'],ic);
 % % % c_eval('dfNi? = 1/median(diff(Ni?_ts.time.epochUnix));',ic);
 % % % c_eval('Nibf? = Ni?_ts.filt(0,1,dfNi?,5);',ic);
 % % % c_eval(['Nibf?=irf.ts2mat(Nibf?);'],ic);
-
-
-
-
-c_eval('Te_para?_ts=mms.db_get_ts(''mms?_fpi_fast_l2_des-moms'',''mms?_des_temppara_fast'',tint);',ic);
-c_eval(['Te_para?=irf.ts2mat(Te_para?_ts);'],ic);
-c_eval('Te_perp?_ts=mms.db_get_ts(''mms?_fpi_fast_l2_des-moms'',''mms?_des_tempperp_fast'',tint);',ic);
-c_eval(['Te_perp?=irf.ts2mat(Te_perp?_ts);'],ic);
-c_eval(['Te?=[Te_para?(:,1),(Te_para?(:,2)+2*Te_perp?(:,2))/3.0];'],ic);
-
-% c_eval('dfTe_para? = 1/median(diff(Te_para?_ts.time.epochUnix));',ic);
-% c_eval('Te_parabf? = Te_para?_ts.filt(0,1.5,dfE?,5);',ic);
-% c_eval(['Te_parabf?=irf.ts2mat(Te_parabf?);'],ic);
+c_eval('if isempty(Ne?), Ne? = [Ni?(:,1) nan*Ni?(:,2)];end',ic);
 
 c_eval('Ti_para?_ts=mms.db_get_ts(''mms?_fpi_fast_l2_dis-moms'',''mms?_dis_temppara_fast'',tint);',ic);
 c_eval(['Ti_para?=irf.ts2mat(Ti_para?_ts);'],ic);
 c_eval('Ti_perp?_ts=mms.db_get_ts(''mms?_fpi_fast_l2_dis-moms'',''mms?_dis_tempperp_fast'',tint);',ic);
 c_eval(['Ti_perp?=irf.ts2mat(Ti_perp?_ts);'],ic);
 c_eval(['Ti?=[Ti_para?(:,1),(Ti_para?(:,2)+2*Ti_perp?(:,2))/3.0];'],ic);
+
+c_eval('Te_para?_ts=mms.db_get_ts(''mms?_fpi_fast_l2_des-moms'',''mms?_des_temppara_fast'',tint);',ic);
+c_eval(['Te_para?=irf.ts2mat(Te_para?_ts);'],ic);
+c_eval('Te_perp?_ts=mms.db_get_ts(''mms?_fpi_fast_l2_des-moms'',''mms?_des_tempperp_fast'',tint);',ic);
+c_eval(['Te_perp?=irf.ts2mat(Te_perp?_ts);'],ic);
+try
+c_eval(['Te?=[Te_para?(:,1),(Te_para?(:,2)+2*Te_perp?(:,2))/3.0];'],ic);
+catch me
+c_eval('if isempty(Te_para?), Te_para? = [Ti?(:,1) nan*(Ti?(:,2))];end',ic);
+c_eval('if isempty(Te_perp?), Te_perp? = [Ti?(:,1) nan*(Ti?(:,2))];end',ic);
+c_eval('Te? = [Ti?(:,1) nan*(Ti?(:,2))];',ic);
+end
+% c_eval('dfTe_para? = 1/median(diff(Te_para?_ts.time.epochUnix));',ic);
+% c_eval('Te_parabf? = Te_para?_ts.filt(0,1.5,dfE?,5);',ic);
+% c_eval(['Te_parabf?=irf.ts2mat(Te_parabf?);'],ic);
+
+c_eval('Vi?_ts = mms.get_data(''Vi_gse_fpi_fast_l2'',tint,?);',ic); 
+% c_eval('Vi?_ts=mms.db_get_ts(''mms?_fpi_fast_l2_dis-moms'',''mms?_dis_bulkv_gse_fast'',tint);',ic);
+c_eval(['Vit?_ts=Vi?_ts.abs;'],ic); 
+c_eval(['Vi?=irf.ts2mat(Vi?_ts);'],ic);
+c_eval(['gsmVi?_ts=irf_gse2gsm(Vi?_ts);'],ic);
+c_eval(['gsmVi?=irf.ts2mat(gsmVi?_ts);'],ic);
+c_eval(['Vit?=irf.ts2mat(Vit?_ts);'],ic);
+
 
 c_eval('Ve?_ts = mms.get_data(''Ve_gse_fpi_fast_l2'',tint,?);',ic)
 % c_eval('Ve?_ts=mms.db_get_ts(''mms?_fpi_fast_l2_des-moms'',''mms?_des_bulkv_gse_fast'',tint);',ic);
@@ -141,19 +168,13 @@ c_eval(['gsmVe?_ts=irf_gse2gsm(Ve?_ts);'],ic);
 c_eval(['gsmVe?=irf.ts2mat(gsmVe?_ts);'],ic);
 c_eval(['Vet?=irf.ts2mat(Vet?_ts);'],ic);
 
-c_eval('dfVe? = 1/median(diff(gsmVe?_ts.time.epochUnix));',ic);
-c_eval('Vebf? = gsmVe?_ts.filt(0,3,dfVe?,3);',ic);
+c_eval('if isempty(Ve?), Ve? = [Vi?(:,1) nan*(Vi?(:,2)) nan*(Vi?(:,2)) nan*(Vi?(:,2))];end',ic);
+c_eval('if isempty(gsmVe?), gsmVe? = [Vi?(:,1) nan*(Vi?(:,2)) nan*(Vi?(:,2)) nan*(Vi?(:,2))];end',ic);
+c_eval('if isempty(Vet?), Vet? = [Vi?(:,1) nan*(Vi?(:,2))];end',ic);
+
+% c_eval('dfVe? = 1/median(diff(gsmVe?_ts.time.epochUnix));',ic);
+% c_eval('Vebf? = gsmVe?_ts.filt(0,3,dfVe?,3);',ic);
 % c_eval(['Vebf?=irf.ts2mat(Vebf?);'],ic);
-
-
-
-c_eval('Vi?_ts = mms.get_data(''Vi_gse_fpi_fast_l2'',tint,?);',ic); 
-% c_eval('Vi?_ts=mms.db_get_ts(''mms?_fpi_fast_l2_dis-moms'',''mms?_dis_bulkv_gse_fast'',tint);',ic);
-c_eval(['Vit?_ts=Vi?_ts.abs;'],ic); 
-c_eval(['Vi?=irf.ts2mat(Vi?_ts);'],ic);
-c_eval(['gsmVi?_ts=irf_gse2gsm(Vi?_ts);'],ic);
-c_eval(['gsmVi?=irf.ts2mat(gsmVi?_ts);'],ic);
-c_eval(['Vit?=irf.ts2mat(Vit?_ts);'],ic);
 
 %Vifac
 c_eval(['Bt?_resVi=irf_resamp(Bt?,Vi?);'],ic);
@@ -199,17 +220,17 @@ c_eval('energy_i?=mms.db_get_variable(''mms?_fpi_fast_l2_dis-moms'',''mms?_dis_e
 % % % c_eval('S?(S?>=5)=0;',ic);
 
 %J
-c_eval('Je?_ts = -units.e*Ne?_ts*gsmVe?_ts*1e3*1e6*1e9;',ic);
-c_eval('Ji?_ts = units.e*Ne?_ts*gsmVi?_ts.resample(Ne?_ts.time)*1e3*1e6*1e9;',ic);
-c_eval('J?_ts = (Je?_ts+Ji?_ts);',ic);
-c_eval('J? = irf.ts2mat(J?_ts);',ic);
+% % % c_eval('Je?_ts = -units.e*Ne?_ts*gsmVe?_ts*1e3*1e6*1e9;',ic);
+% % % c_eval('Ji?_ts = units.e*Ne?_ts*gsmVi?_ts.resample(Ne?_ts.time)*1e3*1e6*1e9;',ic);
+% % % c_eval('J?_ts = (Je?_ts+Ji?_ts);',ic);
+% % % c_eval('J? = irf.ts2mat(J?_ts);',ic);
 
 %JdotE
-c_eval('E_resJ = irf_resamp(E?,J?);',ic);
-c_eval('JdotEtemp = [E_resJ(:,1) irf_dot(J?(:,2:4),E_resJ(:,2:4))];',ic);
-c_eval('JdotE? = irf_resamp(JdotEtemp,Ni?);',ic);
+% % % c_eval('E_resJ = irf_resamp(E?,J?);',ic);
+% % % c_eval('JdotEtemp = [E_resJ(:,1) irf_dot(J?(:,2:4),E_resJ(:,2:4))];',ic);
+% % % c_eval('JdotE? = irf_resamp(JdotEtemp,Ni?);',ic);
 
-
+energy_low1=mms.db_get_variable('mms1_fpi_fast_l2_des-moms','mms1_des_pitchangdist_lowen_fast',tint);
 energy_mid1=mms.db_get_variable('mms1_fpi_fast_l2_des-moms','mms1_des_pitchangdist_miden_fast',tint);
 energy_high1=mms.db_get_variable('mms1_fpi_fast_l2_des-moms','mms1_des_pitchangdist_highen_fast',tint);
 energy_e1=mms.db_get_variable('mms1_fpi_fast_l2_des-moms','mms1_des_energyspectr_omni_fast',tint);
@@ -237,7 +258,7 @@ energy_i4=mms.db_get_variable('mms4_fpi_fast_l2_dis-moms','mms4_dis_energyspectr
 % c_eval('dfE? = 1/median(diff(Exyz?.time.epochUnix));',ic);
 % c_eval('dfB? = 1/median(diff(Bscm?.time.epochUnix));',ic);
 % c_eval('Exyzfachf? = Exyzfac?.filt(9,12,dfE?,5);',ic);
-if flag == 1
+if ~isempty(desmoms2)
 c_eval(['fpiFilee1 = dataobj(','''',desmoms1,'''',');'],ic);
 c_eval('energy_low1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_lowen_fast'');',ic);
 c_eval('energy_mid1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_miden_fast'');',ic);
@@ -260,6 +281,7 @@ data1=energy_mid1.DEPEND_0.data;data2=energy_mid2.DEPEND_0.data; data=[data1;dat
 data1=energy_high1.DEPEND_0.data;data2=energy_high2.DEPEND_0.data; data=[data1;data2]; energy_high.DEPEND_0.data=data;
 data1=energy_e1.DEPEND_0.data;data2=energy_e2.DEPEND_0.data; data=[data1;data2]; energy_e.DEPEND_0.data=data;
 else
+try
 c_eval(['fpiFilee1 = dataobj(','''',desmoms1,'''',');'],ic);
 c_eval('energy_low1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_lowen_fast'');',ic);
 c_eval('energy_mid1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_miden_fast'');',ic);
@@ -273,6 +295,17 @@ energy_low=energy_low1; energy_low.data=energy_low1.data; energy_low.nrec=energy
 energy_mid=energy_mid1; energy_mid.data=energy_mid1.data;  energy_mid.nrec=energy_mid1.nrec;
 energy_high=energy_high1; energy_high.data=energy_high1.data;  energy_high.nrec=energy_high1.nrec;
 energy_e=energy_e1; energy_e.data=energy_e1.data;  energy_e.nrec=energy_e1.nrec;
+
+catch me
+
+energy_low.DEPEND_0.data=nan*energy_low1.DEPEND_0.data;
+energy_mid.DEPEND_0.data=nan*energy_mid1.DEPEND_0.data;
+energy_high.DEPEND_0.data=nan*energy_high1.DEPEND_0.data;
+energy_low=energy_low1; energy_low.data=nan*energy_low1.data; energy_low.nrec=energy_low1.nrec;
+energy_mid=energy_mid1; energy_mid.data=nan*energy_mid1.data;  energy_mid.nrec=energy_mid1.nrec;
+energy_high=energy_high1; energy_high.data=nan*energy_high1.data;  energy_high.nrec=energy_high1.nrec;
+energy_e=energy_e1; energy_e.data=nan*energy_e1.data;  energy_e.nrec=energy_e1.nrec;
+end
 end
 
 
@@ -312,33 +345,38 @@ end
 % % % end
 % % % hplus_flux.data = Tempdata1;
 % % % oplus_flux.data = Tempdata2;
-
+%% R
+units = irf_units;
+Pos = mms.get_data('R_gsm',tint);
+c_eval('R? = Pos.gsmR?;',ic)
+c_eval('R? = [Pos.time.epochUnix R?(:,1:3)];',ic)
+c_eval('R? = irf_resamp(R?,Bt?);',ic)
 %% lmn
-% irf_minvar_gui(B1);
-L=[0.22 0.22 0.95];%最大变化方向
-M=[0.72,0.62,-0.31];%N x L
-N=[-0.66 0.75 -0.03];%外法向
-%65，21
-
-% L=[0 0 1];
-% M=[0 1 0];
-% N=[1 0 0];
-% for ic=1:1,
-c_eval(['Blmn?=irf_newxyz(B?,N,M,L);'],ic);
-
-c_eval(['Elmn?=irf_newxyz(E?,N,M,L);'],ic);
-
-c_eval(['lmnVe?_ts=irf_newxyz(gsmVe?_ts,N,M,L);'],ic);
-c_eval("lmnVe? = irf.ts2mat(lmnVe?_ts);",ic);
-c_eval(['lmnVi?_ts=irf_newxyz(gsmVi?_ts,N,M,L);'],ic);
-c_eval("lmnVi? = irf.ts2mat(lmnVi?_ts);",ic);
-c_eval('lmnJe?_ts = -units.e*Ne?_ts*lmnVe?_ts*1e3*1e6*1e9;',ic);
-c_eval('lmnJi?_ts = units.e*Ne?_ts*lmnVi?_ts.resample(Ne?_ts.time)*1e3*1e6*1e9;',ic);
-c_eval('lmnJ?_ts = (lmnJe?_ts+lmnJi?_ts);',ic);
-c_eval('lmnJ? = irf.ts2mat(lmnJ?_ts);',ic);
-% end
+% % % % irf_minvar_gui(B1);
+% % % L=[0.22 0.22 0.95];%最大变化方向
+% % % M=[0.72,0.62,-0.31];%N x L
+% % % N=[-0.66 0.75 -0.03];%外法向
+% % % %65，21
+% % % 
+% % % % L=[0 0 1];
+% % % % M=[0 1 0];
+% % % % N=[1 0 0];
+% % % % for ic=1:1,
+% % % c_eval(['Blmn?=irf_newxyz(B?,N,M,L);'],ic);
+% % % 
+% % % c_eval(['Elmn?=irf_newxyz(E?,N,M,L);'],ic);
+% % % 
+% % % c_eval(['lmnVe?_ts=irf_newxyz(gsmVe?_ts,N,M,L);'],ic);
+% % % c_eval("lmnVe? = irf.ts2mat(lmnVe?_ts);",ic);
+% % % c_eval(['lmnVi?_ts=irf_newxyz(gsmVi?_ts,N,M,L);'],ic);
+% % % c_eval("lmnVi? = irf.ts2mat(lmnVi?_ts);",ic);
+% % % c_eval('lmnJe?_ts = -units.e*Ne?_ts*lmnVe?_ts*1e3*1e6*1e9;',ic);
+% % % c_eval('lmnJi?_ts = units.e*Ne?_ts*lmnVi?_ts.resample(Ne?_ts.time)*1e3*1e6*1e9;',ic);
+% % % c_eval('lmnJ?_ts = (lmnJe?_ts+lmnJi?_ts);',ic);
+% % % c_eval('lmnJ? = irf.ts2mat(lmnJ?_ts);',ic);
+% % % % end
 %% Init figure
-n=12;
+n=9;
 i=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
@@ -348,6 +386,7 @@ xSize = 70; ySize = 80; coef=floor(min(800/xSize,800/ySize));
 xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
 set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
 set(gcf,'Position',[10 10 xSize*coef ySize*coef])
+title(TT(1:10))
 %% B plot
 h(i)=irf_subplot(n,1,-i);
 c_eval("irf_plot([Bt?(:,1) Bt?(:,2)], 'color','k', 'Linewidth',0.75);",ic); hold on;
@@ -942,66 +981,66 @@ i=i+1;
 
 %% plot low e pad
 %     %0-200eV
-h(i)=irf_subplot(n,1,-i);
-% h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-colormap(h(i),jet)
-specrec_p_elow=struct('t',irf_time(energy_low.DEPEND_0.data,'ttns>epoch'));
-specrec_p_elow.f=transpose(energy_low.DEPEND_1.data(1,1:30));%energy levels
-specrec_p_elow.p=energy_low.data;%data matrix
-specrec_p_elow.f_label='';
-specrec_p_elow.p_label={' ','keV/(cm^2 s sr keV)'};
-[h(i), hcb6]=irf_spectrogram(h(i),specrec_p_elow);
-ylabel('PA low','fontsize',10)
-% set(gca,'yscale','log');
-set(h(i),'ytick',[0 90 180]);
-% caxis(gca,[6.5 7.5]);
-%irf_legend(h(i),'g',[0.99 0.98],'color','w','fontsize',12);
-poscbar6=get(hcb6,'pos');
-poscbar6(3)=poscbar6(3)*0.5;
-set(hcb6,'pos',poscbar6);
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % % h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+% % % colormap(h(i),jet)
+% % % specrec_p_elow=struct('t',irf_time(energy_low.DEPEND_0.data,'ttns>epoch'));
+% % % specrec_p_elow.f=transpose(energy_low.DEPEND_1.data(1,1:30));%energy levels
+% % % specrec_p_elow.p=energy_low.data;%data matrix
+% % % specrec_p_elow.f_label='';
+% % % specrec_p_elow.p_label={' ','keV/(cm^2 s sr keV)'};
+% % % [h(i), hcb6]=irf_spectrogram(h(i),specrec_p_elow);
+% % % ylabel('PA low','fontsize',10)
+% % % % set(gca,'yscale','log');
+% % % set(h(i),'ytick',[0 90 180]);
+% % % % caxis(gca,[6.5 7.5]);
+% % % %irf_legend(h(i),'g',[0.99 0.98],'color','w','fontsize',12);
+% % % poscbar6=get(hcb6,'pos');
+% % % poscbar6(3)=poscbar6(3)*0.5;
+% % % set(hcb6,'pos',poscbar6);
+% % % i=i+1;
 %% plot mid e pad
 %     %200-2000eV
-h(i)=irf_subplot(n,1,-i);
-%h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-colormap(h(i),jet)
-
-specrec_p_emid=struct('t',irf_time(energy_mid.DEPEND_0.data,'ttns>epoch'));
-specrec_p_emid.f=transpose(energy_mid.DEPEND_1.data(1,1:30));%energy levels
-specrec_p_emid.p=energy_mid.data;%data matrix
-specrec_p_emid.f_label='';
-specrec_p_emid.p_label={' ','keV/(cm^2 s sr keV)'};
-[h(i), hcb7]=irf_spectrogram(h(i),specrec_p_emid);
-ylabel('PA mid','fontsize',10)
-%set(gca,'yscale','log');
-set(h(i),'ytick',[0 90 180]);
-caxis(gca,[6.75 7.25]);
-%irf_legend(h(i),'h',[0.99 0.98],'color','w','fontsize',12);
-poscbar7=get(hcb7,'pos');
-poscbar7(3)=poscbar7(3)*0.5;
-set(hcb7,'pos',poscbar7);
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % %h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+% % % colormap(h(i),jet)
+% % % 
+% % % specrec_p_emid=struct('t',irf_time(energy_mid.DEPEND_0.data,'ttns>epoch'));
+% % % specrec_p_emid.f=transpose(energy_mid.DEPEND_1.data(1,1:30));%energy levels
+% % % specrec_p_emid.p=energy_mid.data;%data matrix
+% % % specrec_p_emid.f_label='';
+% % % specrec_p_emid.p_label={' ','keV/(cm^2 s sr keV)'};
+% % % [h(i), hcb7]=irf_spectrogram(h(i),specrec_p_emid);
+% % % ylabel('PA mid','fontsize',10)
+% % % %set(gca,'yscale','log');
+% % % set(h(i),'ytick',[0 90 180]);
+% % % caxis(gca,[6.75 7.25]);
+% % % %irf_legend(h(i),'h',[0.99 0.98],'color','w','fontsize',12);
+% % % poscbar7=get(hcb7,'pos');
+% % % poscbar7(3)=poscbar7(3)*0.5;
+% % % set(hcb7,'pos',poscbar7);
+% % % i=i+1;
 %% plot high e pad
 %2k-30keV
-h(i)=irf_subplot(n,1,-i);
-%h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
-colormap(h(i),jet)
-
-specrec_p_ehigh=struct('t',irf_time(energy_high.DEPEND_0.data,'ttns>epoch'));
-specrec_p_ehigh.f=transpose(energy_high.DEPEND_1.data(1,1:30));%energy levels
-specrec_p_ehigh.p=energy_high.data;%data matrix
-specrec_p_ehigh.f_label='';
-specrec_p_ehigh.p_label={' ','keV/(cm^2 s sr keV)'};
-[h(i), hcb6]=irf_spectrogram(h(i),specrec_p_ehigh);
-ylabel('PA high','fontsize',10)
-
-set(h(i),'ytick',[0 90 180]);
-caxis(gca,[7.1 7.3]);
-%irf_legend(h(i),'h',[0.99 0.98],'color','w','fontsize',12);
-poscbar6=get(hcb6,'pos');
-poscbar6(3)=poscbar6(3)*0.5;
-set(hcb6,'pos',poscbar6);
-i=i+1;
+% % % h(i)=irf_subplot(n,1,-i);
+% % % %h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
+% % % colormap(h(i),jet)
+% % % 
+% % % specrec_p_ehigh=struct('t',irf_time(energy_high.DEPEND_0.data,'ttns>epoch'));
+% % % specrec_p_ehigh.f=transpose(energy_high.DEPEND_1.data(1,1:30));%energy levels
+% % % specrec_p_ehigh.p=energy_high.data;%data matrix
+% % % specrec_p_ehigh.f_label='';
+% % % specrec_p_ehigh.p_label={' ','keV/(cm^2 s sr keV)'};
+% % % [h(i), hcb6]=irf_spectrogram(h(i),specrec_p_ehigh);
+% % % ylabel('PA high','fontsize',10)
+% % % 
+% % % set(h(i),'ytick',[0 90 180]);
+% % % caxis(gca,[7.1 7.3]);
+% % % %irf_legend(h(i),'h',[0.99 0.98],'color','w','fontsize',12);
+% % % poscbar6=get(hcb6,'pos');
+% % % poscbar6(3)=poscbar6(3)*0.5;
+% % % set(hcb6,'pos',poscbar6);
+% % % i=i+1;
 
 %% plot high e pad2
 % h(i)=irf_subplot(n,1,-i);
@@ -1109,6 +1148,7 @@ set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
 ylabel('Ei(ev)','fontsize',12)
 set(gca,'Ylim',[1e0 3e4]);
 caxis(gca,[4.3 6])
+set(gca,'xtick',[])
 
 % irf_legend(gca,'f',[0.99 0.98],'color','k','fontsize',12);
 poscbar8=get(hcb8,'pos');
@@ -1377,12 +1417,16 @@ irf_plot_axis_align(h)
 %   irf_pl_mark(h(1:8),[iso2epoch('2015-10-16T13:04:30.209Z')],'k');
 %  add_position(gca,gseR1), xlabel(gca,'')
 %  irf_zoom(tintlmn,'x',h(4:7))
+irf_timeaxis( h, 'nodate' );
+c_eval('add_position(h(n),R?);',ic);
 
 %%  出图保存部分
+
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
+set(gca,"XTickLabelRotation",0)
 colormap(jet)
 % cd  C:\Matlab\bin\新建文件夹\fwd\
-rmdir(TempDir,'s'); 
+% rmdir(TempDir,'s'); 
 figname = 'overview';
 %     print(gcf, '-dpdf', [figname '.pdf']);    

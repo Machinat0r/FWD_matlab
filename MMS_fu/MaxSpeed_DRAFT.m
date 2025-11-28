@@ -17,7 +17,7 @@ fclose(fid);
 
 eventTimeStr = C{1};  % 字符串时间
 vmax         = C{2};  % 最大速度 (数值)
-[v_sorted, idx_sorted] = sort(vmax,'descend');
+[v_sorted, idx_sorted] = sort(vmax,'descend');  
 eventTimeStr_sorted    = eventTimeStr(idx_sorted);
 
 t0_dt = datetime(eventTimeStr_sorted{iev}, ...
@@ -52,7 +52,7 @@ R  = mms.get_data('R_gsm',Tintlong);
 c_eval('Rxyz? = irf.ts_vec_xyz(R.time,R.gsmR?(:,1:3));',ic);
 
 
-lf = 100; hf = 1e3;
+lf = 100; hf = 1000;
 Pfrange = [lf hf];
 dfB = 1/median(diff(Bxyz1.time.epochUnix));
 c_eval('Bxyzf? = Bxyz?.filt(lf,hf,dfB,3);',ic);
@@ -60,14 +60,16 @@ c_eval('Bxyzf? = Bxyz?.filt(lf,hf,dfB,3);',ic);
 [Vp,kmag, waveL, waveE, waveThe, Fre, W1, W2, W3, W4,kx,ky,kz] = WaveAna_4SC_fast('Bxyzf?.z','Rxyz?','Bg?',Tint,'numf',400,...
     'wwidth',1,'frange',Pfrange,'sn',3,'cav',2);   
 
-[Vp2,~, ~, waveE2, ~, ~, ~, ~, ~, ~,~,~,~] = WaveAna_4SC_fast('Efac?_ts.z','Rxyz?','Bg?',Tint,'numf',400,...
+[Vp2,~, ~, waveE2, ~, ~, ~, ~, ~, ~,~,~,~] = WaveAna_4SC_fast('E?_ts.z','Rxyz?','Bg?',Tint,'numf',400,...
     'wwidth',1,'frange',Pfrange,'sn',3,'cav',2);  
+
 
 %% 检验
 % % % [Rcor, Ratio_L_sc, Ratio_M] = Checkwave_4SC_20170625('Bxyz?.abs','Rxyz?', waveL, Fre, W1, W2, W3, W4);
-
+a = Vp2(:,2:end);
+a(a>1e5) = a(a>1e5)*0.5;
+Vp2(:,2:end) = a;
 %% 角度修正
-
 P=waveThe(:,2:end);
 P(P>90)=180-P(P>90);
 waveThe(:,2:end)=P;
@@ -180,7 +182,7 @@ specV2.p_label={'V_p (km/s)'};
         irf_spectrogram(h(2),specV,'lin');
         hold(h(2),'on');
         hold(h(2),'off');
-        caxis(h(2),[1e4 4e5]);
+        caxis(h(2),[3e4 4e5]);
         set(h(2),'yscale','log');
         set(h(2),'Ylim',Pfrange)
         grid(h(2),'off');
@@ -195,7 +197,7 @@ specV2.p_label={'V_p (km/s)'};
         irf_spectrogram(h(3),specE2,'log');
         hold(h(3),'on');
         hold(h(3),'off');
-        caxis(h(3),[-4 -2]);
+        caxis(h(3),[-5 0]);
         set(h(3),'yscale','log');
         % set(h(3),'Ylim',Pfrange);
         set(h(3),'ytick', [ 0.02 0.1 1 4 ]);
@@ -210,7 +212,7 @@ specV2.p_label={'V_p (km/s)'};
         irf_spectrogram(h(4),specV2,'lin');
         hold(h(4),'on');
         hold(h(4),'off');
-        caxis(h(4),[1e4 4e5]);
+        caxis(h(4),[3e4 5e4]);
         set(h(4),'yscale','log');
         set(h(4),'Ylim',Pfrange)
         grid(h(4),'off');
@@ -309,8 +311,8 @@ specV2.p_label={'V_p (km/s)'};
 
         set(gcf,'render','painters'); 
         set(gca,"XTickLabelRotation",0);
-        figname=['/Users/fwd/Documents/Ti~mor~/M/ESW/Searching/201807091542-zoom.pdf'];
-        print(gcf, '-dpdf','-r400',figname);
+        figname=['/Users/fwd/Documents/Ti~mor~/M/ESW/Searching/MaxSpeed-2.png'];
+        % print(gcf, '-dpng','-r400',figname);
 
         
        
