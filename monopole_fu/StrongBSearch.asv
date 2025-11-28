@@ -2,14 +2,14 @@
 clear;clc;
 global ParentDir 
 % global OutputDir
-ParentDir = 'D:\MMS/'; 
-DownloadDir = 'D:\MMS/';
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
-ic = 1:4;iic = 1:3;
+ic = 1:3;iic = 1:3;
 load([pwd,'/NameTags.mat']);
 
-Date = '2021-05-22T00:00:00.000Z/2023-01-01T00:00:00.000Z';
+Date = '2016-01-01T00:00:00.000Z/2023-01-01T00:00:00.000Z';
 % Date = '2016-02-05T00:00:00.000Z/2016-03-01T00:00:00.000Z';
 splitDate = regexp(Date,'/','split');
 startDate = splitDate{1};

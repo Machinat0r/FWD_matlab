@@ -56,7 +56,7 @@ catch
 end
 %% wave analysis
 try
-Pfrange = [2 4096];
+Pfrange = [2 1000];
 [Vp,kmag, waveL, waveE, waveThe, Fre, W1, W2, W3, W4,kx,ky,kz] = WaveAna_4SC_fast('Efac?_ts.z','Rxyz?','B?_ts',tint,'numf',400,...
     'wwidth',1,'frange',Pfrange,'cav',1);  
 
@@ -123,7 +123,7 @@ speckmag.p_label={'k_{} (km^{-1})'};
         irf_spectrogram(h(2),specV,'lin');
         hold(h(2),'on');
         hold(h(2),'off');
-        % caxis(h(2),[0 300]);
+        caxis(h(2),[0 300]);
         set(h(2),'yscale','log');
         set(h(2),'Ylim',Pfrange)
         grid(h(2),'off');
