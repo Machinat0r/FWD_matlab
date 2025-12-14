@@ -1,0 +1,166 @@
+function results = MentoCarlo(r)
+% monopole_mc_ci_demo
+% ------------------------------------------------------------
+% Monte Carlo (parametric bootstrap) confidence intervals for
+% Qm and r0 in a monopole + local linear background model.
+%
+% Model:
+%   Bobs_i = B0 + G*(r_i - rRef) + C*Qm*(r_i - r0)/|r_i - r0|^3 + noise
+%   with optional div-free constraint on background: trace(G)=0
+%
+% Inputs you must provide:
+%   r      : N x 3 positions
+%   Bobs   : N x 3 observed B-field
+%   sigmaB : N x 3 (1-sigma) noise std for each component
+%
+% Outputs:
+%   results struct: base fit, MC samples, CI, ellipsoid, diagnostics
+%
+% ------------------------------------------------------------
+
+%% ===================== USER: LOAD YOUR DATA =====================
+% Replace this section with your real data loading.
+% Example placeholders (REMOVE):
+N = 200;  % e.g., 4 satellites x 50 time samples -> N=200
+r = randn(N,3)*1000;                 % positions
+Bobs = randn(N,3)*10;                % observed B
+sigmaB = ones(N,3)*0.2;              % per-component noise std (1σ)
+
+% Optional: choose reference position for background linearization
+rRef = mean(r,1);
+
+% Constant C in your unit system. If unsure, set C=1 and interpret Qm accordingly.
+C = 1.0;
+
+%% ===================== MC SETTINGS =====================
+K = 10000;              % number of MC pseudo-experiments (>=1e4 recommended)
+useDivFree = true;      % enforce trace(G)=0
+useRegularization = true;
+lambdaG = 1e-6;         % small regularization on background gradient to avoid runaway
+
+% Bounds (IMPORTANT to stabilize nonlinear fit)
+% You should set these to physically meaningful ranges.
+Qm_bounds = [-Inf, Inf];               % or [Qmin, Qmax]
+r0_bounds  = [min(r,[],1)-5*std(r), max(r,[],1)+5*std(r)];  % 3D bounds
+
+% Optim options
+opts = optimoptions('lsqnonlin','Display','off','MaxFunctionEvaluations',2e5,...
+    'MaxIterations',2e4,'FunctionTolerance',1e-10,'StepTolerance',1e-12);
+
+%% ===================== 1) BASE FIT =====================
+p0 = initial_guess(r, Bobs, rRef, useDivFree);     % initial parameter vector
+[lb, ub] = param_bounds(Qm_bounds, r0_bounds, useDivFree);
+
+[pHat, resnorm, residual, exitflag, output] = fit_params(r, Bobs, sigmaB, rRef, C, useDivFree, ...
+                                                         useRegularization, lambdaG, p0, lb, ub, opts);
+
+thetaHat = unpack_params(pHat, useDivFree);
+
+fprintf('Base fit done. exitflag=%d, resnorm=%.6g\n', exitflag, resnorm);
+disp(thetaHat);
+
+%% ===================== 2) MONTE CARLO BOOTSTRAP =====================
+Qm_s = zeros(K,1);
+r0_s = zeros(K,3);
+exit_s = zeros(K,1);
+
+% Precompute model mean field at base fit (for fast MC generation)
+Bmean = forward_model(r, rRef, C, thetaHat);
+
+parfor k = 1:K
+    % Generate Gaussian noise with per-component sigma
+    E = sigmaB .* randn(size(Bobs));         % N x 3
+    Bk = Bmean + E;
+
+    % Refit
+    try
+        [pK, ~, ~, exitflagK] = fit_params(r, Bk, sigmaB, rRef, C, useDivFree, ...
+                                           useRegularization, lambdaG, pHat, lb, ub, opts);
+        thK = unpack_params(pK, useDivFree);
+        Qm_s(k) = thK.Qm;
+        r0_s(k,:) = thK.r0(:).';
+        exit_s(k) = exitflagK;
+    catch
+        Qm_s(k) = NaN;
+        r0_s(k,:) = [NaN NaN NaN];
+        exit_s(k) = -999;
+    end
+end
+
+% Keep only successful fits
+ok = isfinite(Qm_s) & all(isfinite(r0_s),2) & (exit_s > 0);
+Qm_s = Qm_s(ok);
+r0_s = r0_s(ok,:);
+fprintf('MC done. Kept %d/%d successful refits.\n', size(r0_s,1), K);
+
+%% ===================== 3) CONFIDENCE INTERVALS =====================
+alpha = 0.05;
+
+CI_Qm = prctile(Qm_s, [100*alpha/2, 100*(1-alpha/2)]);
+
+CI_r0_comp = [ ...
+    prctile(r0_s(:,1), [100*alpha/2, 100*(1-alpha/2)]); ...
+    prctile(r0_s(:,2), [100*alpha/2, 100*(1-alpha/2)]); ...
+    prctile(r0_s(:,3), [100*alpha/2, 100*(1-alpha/2)]) ];
+
+% Joint 3D ellipsoid approximation via Mahalanobis distance quantile from MC
+mu_r0 = mean(r0_s,1);
+Cr = cov(r0_s);
+
+% Numerical guard
+Cr = Cr + 1e-12*eye(3);
+
+L = chol(Cr,'lower');     % Cr = L*L'
+Y = (r0_s - mu_r0) / L';  % N x 3
+d2 = sum(Y.^2, 2);        % squared Mahalanobis distances
+c95 = prctile(d2, 95);    % MC-based 95% cutoff (no chi-square assumption)
+
+% Ellipsoid axes from eigen-decomposition
+[V,D] = eig(Cr);
+axesLen95 = sqrt(diag(D) * c95);  % semi-axis lengths for 95% ellipsoid
+
+%% ===================== 4) PACKAGE RESULTS =====================
+results = struct();
+results.base.thetaHat = thetaHat;
+results.base.pHat = pHat;
+results.base.resnorm = resnorm;
+results.base.exitflag = exitflag;
+results.base.output = output;
+
+results.mc.Qm = Qm_s;
+results.mc.r0 = r0_s;
+
+results.CI.Qm_95 = CI_Qm;
+results.CI.r0_component_95 = CI_r0_comp;
+
+results.ellipsoid.mu_r0 = mu_r0;
+results.ellipsoid.Cr = Cr;
+results.ellipsoid.c95 = c95;
+results.ellipsoid.axesLen95 = axesLen95;
+results.ellipsoid.axesDir = V;
+
+%% ===================== 5) QUICK REPORT =====================
+fprintf('\n===== 95%% CI (MC bootstrap) =====\n');
+fprintf('Qm: [%.6g, %.6g]\n', CI_Qm(1), CI_Qm(2));
+fprintf('r0_x: [%.6g, %.6g]\n', CI_r0_comp(1,1), CI_r0_comp(1,2));
+fprintf('r0_y: [%.6g, %.6g]\n', CI_r0_comp(2,1), CI_r0_comp(2,2));
+fprintf('r0_z: [%.6g, %.6g]\n', CI_r0_comp(3,1), CI_r0_comp(3,2));
+
+fprintf('\n===== 95%% Joint ellipsoid (MC-calibrated Mahalanobis) =====\n');
+fprintf('Center mu_r0 = [%.6g, %.6g, %.6g]\n', mu_r0(1), mu_r0(2), mu_r0(3));
+fprintf('Semi-axes lengths (95%%): [%.6g, %.6g, %.6g]\n', axesLen95(1), axesLen95(2), axesLen95(3));
+
+end
+
+%% ===================== Helper: initial guess =====================
+function p0 = initial_guess(r, Bobs, rRef, useDivFree)
+% Basic initial guess:
+%   Qm=0, r0 at centroid, B0=mean(B), G=0
+Qm0 = 0;
+r00 = mean(r,1);
+
+B0 = mean(Bobs,1).';
+
+% G parameters
+if useDivFree
+    % 8 params for trace(G)=0, g33 =

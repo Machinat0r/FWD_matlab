@@ -1,7 +1,7 @@
 clear
 clc
 thresold=0.5; 
-mms.db_init('local_file_db','/Volumes/SPART-NAS/Data/MMS/')
+mms.db_init('local_file_db','/Volumes/SPART-WORK/Data/MMS/')
 % tint=irf.tint('2017-07-26T07:10:00Z/2017-07-26T07:50:00Z');
 % % % tint=irf.tint('2017-07-26T07:25:00Z/2017-07-26T07:31:00Z');
 % % % tint3=irf.tint('2017-07-26T07:27:29Z/2017-07-26T07:27:39Z');

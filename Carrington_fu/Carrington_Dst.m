@@ -1,6 +1,6 @@
 close all
 % 读取数据
-filename = '/Users/fwd/Documents/Ti~mor~/M/Carrington_Pole/Data/Digitised_Historical_Bfields/COLABA_DIGITISED.txt';
+filename = '/Users/fwd/Documents/Ti~mor~/M/Carrington_Pole/Data/Digitised_Historical_Bfields/STPETERSBURG_DIGITISED.txt';
 data = readtable(filename, 'Delimiter', '\t', 'Format', '%{yyyy-MM-dd HH:mm:ss}D%f');
 
 % 提取日期和数值

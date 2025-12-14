@@ -2,8 +2,8 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = 'D:/MMS/'; 
-DownloadDir = 'D:/MMS/';
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 % TT = '2021-08-15T03:35:15.00Z/2021-08-15T03:35:30.00Z';
@@ -27,14 +27,15 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2017-06-25T05:06:58.00Z/2017-06-25T05:07:02.00Z';
 % TT = '2019-08-16T09:31:57.500Z/2019-08-16T09:31:58.750Z';
 % TT = '2020-08-03T01:45:23.000Z/2020-08-03T01:45:38.000Z'; % case 16-short
-TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'; 
+% TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'; 
 % TT = '2017-07-18T13:04:50.00Z/2017-07-18T13:05:00.00Z';
+TT = '2021-09-08T09:31:48.000Z/2021-09-08T09:31:50.000Z';
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 2;
+ic = 1;
 iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
