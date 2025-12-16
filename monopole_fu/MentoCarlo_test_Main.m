@@ -30,8 +30,8 @@ clear;clc;close all
 %%
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
-TempDir = '/Volumes/SPART-WORK/Data/MMS/temp/';mkdir(TempDir);
+ParentDir = 'Z:\SPART-WORK\Data\MMS/'; 
+TempDir = 'Z:\SPART-WORK\Data\MMS/temp/';mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
 TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
@@ -112,6 +112,8 @@ BGnoise = noise.sigma_scalar;
 
 for i = 50
 clc;
-res = scan_confidence_sigma([R1(i,2:4);R2(i,2:4);R3(i,2:4);R4(i,2:4)], ...
-    [B1(i,2:4);B2(i,2:4);B3(i,2:4);B4(i,2:4)], 1e4, 100, BGnoise);
+% res = scan_confidence_sigma([R1(i,2:4);R2(i,2:4);R3(i,2:4);R4(i,2:4)], ...
+%     [B1(i,2:4);B2(i,2:4);B3(i,2:4);B4(i,2:4)], 1e4, 100, BGnoise);
+res = scan_confidence_sigma(randn(4,3), ...
+    randn(4,3), 1e4, 100, BGnoise);
 end
