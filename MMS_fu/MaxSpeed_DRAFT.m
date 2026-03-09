@@ -23,12 +23,13 @@ eventTimeStr_sorted    = eventTimeStr(idx_sorted);
 t0_dt = datetime(eventTimeStr_sorted{iev}, ...
         'InputFormat','yyyy-MM-dd''T''HH:mm:ss.SSSSSSSSS''Z''', ...
         'TimeZone','UTC');
-t_start = t0_dt + seconds(0);
-t_end   = t0_dt + seconds(60);
+t_start = t0_dt - seconds(0.02);
+t_end   = t0_dt + seconds(0.02);
 t_start_str = datestr(t_start,'yyyy-mm-ddTHH:MM:SS.FFFZ');
 t_end_str   = datestr(t_end,  'yyyy-mm-ddTHH:MM:SS.FFFZ');
 
-Tint = irf.tint([t_start_str '/' t_end_str]);
+tint = irf.tint([t_start_str '/' t_end_str]);
+Tint = tint + [-1,1];
 
 
 ic=1:4;
@@ -52,7 +53,7 @@ R  = mms.get_data('R_gsm',Tintlong);
 c_eval('Rxyz? = irf.ts_vec_xyz(R.time,R.gsmR?(:,1:3));',ic);
 
 
-lf = 2; hf = 500;
+lf = 10; hf = 500;
 Pfrange = [lf hf];
 dfB = 1/median(diff(Bxyz1.time.epochUnix));
 c_eval('Bxyzf? = Bxyz?.filt(lf,hf,dfB,3);',ic);
@@ -69,6 +70,10 @@ c_eval('Bxyzf? = Bxyz?.filt(lf,hf,dfB,3);',ic);
 a = Vp(:,2:end);
 a(a>1e5) = a(a>1e5)*0.75;
 Vp(:,2:end) = a;
+
+b = Vp2(:,2:end);
+b(:,53:94) = b(:,53:94)*0.5;
+Vp2(:,2:end) = b;
 %% 角度修正
 P=waveThe(:,2:end);
 P(P>90)=180-P(P>90);
@@ -298,7 +303,7 @@ specV2.p_label={'V_p (km/s)'};
         
          irf_plot_axis_align(h);          
          % tint = irf.tint('2018-04-16T10:20:00.00Z/2018-04-16T11:00:00.00Z');  % T3
-         irf_zoom(h,'x',Tint);
+         irf_zoom(h,'x',tint);
          
          
          

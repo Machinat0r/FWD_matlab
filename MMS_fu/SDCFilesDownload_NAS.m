@@ -1,4 +1,6 @@
 function SDCFilesDownload_NAS(filenames,OutputFiles_dir, varargin)
+%------modified by Wending Fu, Jan.2026 in Beijing------------
+% Fixed bugs in multi threads downloading (*´∀`)~♥
 %------modified by Wending Fu, Jan.2024 in Beijing------------
 % now it can use multi threads to download!
 % NOTICE: multi threads may cause the progroam crash! 
@@ -95,7 +97,7 @@ while i <= length(filenames)
         if Threads == 0
             websave(output_filename,file_url,options) ; 
         else
-            command = sprintf(['python3 ' func_path(1:func_dir) 'fwd_matlab_patch/MMS_fu/download_files.py "%s" "%s" "%s" "%s"'],...
+            command = sprintf(['python3 ' func_path(1:func_dir) 'fwd_matlab_patch/MMS_fu/download_files_new.py "%s" "%s" "%s" "%s"'],...
                 file_url, output_filename, filenames{i}, num2str(Threads)); % 若电脑发生卡顿，可以下调线程数（最后一个变量）
             system(command);
         end   
@@ -148,7 +150,7 @@ command = sprintf(['python3 ' func_path(1:func_dir) 'fwd_matlab_patch/MMS_fu/con
 
 if status == 0
 ContentLength = regexp(cmdout,'\d+','match');
-ContentLength = str2double(ContentLength{end-1});
+ContentLength = str2double(ContentLength{end});
 else
 ContentLength = nan;
 end

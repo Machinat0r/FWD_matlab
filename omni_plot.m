@@ -1,7 +1,8 @@
 clear;close all
 clc
 
-TT = '2018-12-27T21:00:00.000Z/2018-12-27T23:00:00.000Z';
+TT = '2018-07-03T00:00:00.000Z/2018-07-04T00:00:00.000Z';
+% TT = '2018-12-27T21:00:00.000Z/2018-12-27T23:00:00.000Z';
 Tsta = strsplit(TT,'/');
 Tend = Tsta{2};Tsta = Tsta{1};
 %% load data
@@ -14,6 +15,8 @@ Vx_omni= irf_get_data_omni_modified(tint,'Vx','omni_min');
 Vy_omni= irf_get_data_omni_modified(tint,'Vy','omni_min');
 Vz_omni= irf_get_data_omni_modified(tint,'Vz','omni_min');
 P_omni= irf_get_data_omni_modified(tint,'P','omni_min');
+AE_omni= irf_get_data_omni_modified(tint,'ae','omni_min');
+SYMH_omni= irf_get_data_omni_modified(tint,'symh','omni_min');
 %%
 B = [Bx_omni By_omni(:,2) Bz_omni(:,2)];
 Vi = [Vx_omni Vy_omni(:,2) Vz_omni(:,2)];
@@ -52,17 +55,17 @@ ylabel('Vi [km/s]')
 i = i+1;
 
 h(i)=irf_subplot(n,1,-i);
-irf_plot(N_omni,'k');
+irf_plot(AE_omni,'k');
 % ylim([0 40])
 grid off
-ylabel('N [cm^{-3}]')
+ylabel('AE [nT]')
 i=i+1;
 
 h(i)=irf_subplot(n,1,-i);
-irf_plot(P_omni,'k');
+irf_plot(SYMH_omni,'k');
 grid off
 % ylim([0 40])
-ylabel('Pdyn [nPa]')
+ylabel('SYM-H [nT]')
 
 
 irf_zoom(tint,'x',h(1:n));

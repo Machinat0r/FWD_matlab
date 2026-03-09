@@ -4,6 +4,9 @@ clear,clc
 ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
 mms.db_init('local_file_db',ParentDir);
 
+ic = 1;
+
+
 %%%%  按照路径读取好文件，设置好tint的时间  %%%%
 
 % d=dataobj('F:\mms\mms1\fpi\brst\l2\des-dist\mms1_fpi_brst_l2_des-dist_20151023145734_v2.1.0.cdf');
@@ -38,9 +41,13 @@ mms.db_init('local_file_db',ParentDir);
 % d=dataobj('D:\MATLAB\mms_db\data\mms1\fpi\fast\l2\des-dist\2015\12\mms1_fpi_fast_l2_des-dist_20151231000000_v2.1.0.cdf');
 % energye=get_variable(d,'mms1_des_energy_fast');
 % % % 
-tint = irf.tint('2019-08-05T16:24:00.00Z/2019-08-05T16:25:00.00Z');
-d=dataobj('/Volumes/SPART-WORK/Data/MMS/mms1/fpi/brst/l2/des-dist/2019/08/05/mms1_fpi_brst_l2_des-dist_20190805162313_v3.3.0.cdf');
-b=dataobj('/Volumes/SPART-WORK/Data/MMS/mms1/fgm/brst/l2/2019/08/05/mms1_fgm_brst_l2_20190805162313_v5.202.0.cdf');
+% % % tint = irf.tint('2019-08-05T16:24:00.00Z/2019-08-05T16:25:00.00Z');
+
+tint = irf.tint('2018-07-03T15:50:14.500Z/2018-07-03T15:50:22.500Z');
+c_eval('d_path = mms.get_filepath(''mms?_fpi_brst_l2_des-dist'',tint);',ic);
+c_eval('b_path = mms.get_filepath(''mms?_fgm_brst_l2'',tint);',ic);
+d=dataobj(d_path);
+b=dataobj(b_path);
 
 % % % tint = irf.tint('2019-08-16T09:29:35.000/2019-08-16T09:29:43.000');
 % % % d=dataobj('/Volumes/SPART-WORK/Data/MMS/mms1/fpi/brst/l2/des-dist/2019/08/16/mms1_fpi_brst_l2_des-dist_20190816092833_v3.3.0.cdf');
@@ -232,8 +239,8 @@ end
 % E1 = [30 300];  
 % E2 = [300 20000];
 % E3 = [20000 30000];
-E1 = [30 150];  
-E2 = [100 3000];
+E1 = [30 100];  
+E2 = [100 30000];
 E3 = [3000 30000];
 % E4 = [21.8808505,28.059874999999998];
 % E5 = [28.059874999999998,35.9838005];

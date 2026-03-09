@@ -2,7 +2,7 @@
 clear ;close all;clc
 Tcomputsta=clock; 
 %--------------------------------------------
-mms.db_init('local_file_db','/Users/fwd/Documents/MATLAB/MMS/')
+mms.db_init('local_file_db','/Volumes/SPART-WORK/Data/MMS/')
 %Tsta='2015-10-16T13:07:00Z'; 
 %Tend='2015-10-16T13:07:03Z';
 %Tnull='2015-10-16T13:07:02.250Z';
@@ -10,10 +10,14 @@ mms.db_init('local_file_db','/Users/fwd/Documents/MATLAB/MMS/')
 hh=10;hh1=5;
 % % % Tsta = '2017-07-06T17:31:58.000Z';
 % % % Tend = '2017-07-06T17:31:59.500Z';
-Tsta = '2019-08-05T16:24:00.000Z';
-Tend = '2019-08-05T16:25:00.000Z';
+% % % Tsta = '2019-08-05T16:24:00.000Z';
+% % % Tend = '2019-08-05T16:25:00.000Z';
+Tsta = '2018-07-03T15:50:14.500Z';
+Tend = '2018-07-03T15:50:22.500Z';
+
 % Tnull='2017-01-27T12:05:31.712Z';
-Tnull='2019-08-05T16:24:31.137Z';
+% Tnull='2019-08-05T16:24:31.137Z';
+Tnull='2018-07-03T15:50:18.500Z';
 
 % e1=[0.928580204157578 -0.145037102078109 -0.341618271565582];%31.712，别删
 % e1=[0.384889128652657 -0.890735064677563 -0.241767250054376];%30.99,别删
@@ -23,7 +27,8 @@ e1=[1,0,0];
 % e1 = [-0.4172 0.6567 0.3237];
 %--------------------------------------------
 ic = 1:4;
-tint=irf.tint('2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z');
+% tint=irf.tint('2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z');
+tint=irf.tint('2018-07-03T15:49:14.500Z/2018-07-03T15:51:22.500Z');
 
 %--------------------------------------------
 c_eval('e_r? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energy_brst'',tint);',ic);
@@ -43,6 +48,7 @@ c_eval('Bt?=Bxyz?.abs;',ic);
 
 c_eval('Ne?= mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',tint);',ic);
 c_eval('ne?=irf.ts2mat(Ne?);',ic);
+Ne4 = Ne1; ne4 = ne1;
 
 c_eval('Ni?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_numberdensity_brst'',tint);',ic);
 c_eval('ni?=irf.ts2mat(Ni?);',ic);
@@ -68,6 +74,12 @@ c_eval('VeS?=irf.ts2mat(Vexyz?);',ic);
 c_eval('VeS_LMN?=irf.ts2mat(Ve_LMN?);',ic);
 c_eval('VeS? = irf_resamp(VeS?, VeS1);',ic);
 c_eval('VeS_LMN? = irf_resamp(VeS_LMN?, VeS_LMN1);',ic);
+%% subtract background velocity
+Vbg = [360, 250, -140];
+c_eval('Ve?(:,2:4) = Ve?(:,2:4) - Vbg;', ic);
+c_eval('vi?(:,2:4) = vi?(:,2:4) - Vbg;', ic);
+c_eval('VeS?(:,2:4) = VeS?(:,2:4) - Vbg;', ic);
+c_eval('VeS_LMN?(:,2:4) = VeS_LMN?(:,2:4) - Vbg;', ic);
 %% smooth_step1
 kk = size(VeS1,1);
 if mod(kk,2) == 1
@@ -140,6 +152,8 @@ VeSS4=irf_resamp(VeSS4,VeSS1);
 tint=[iso2epoch(Tsta) iso2epoch(Tend)];
 for ic=1:4
   c_eval(['R?=irf_resamp(R?,VeSS?);'],ic);
+  c_eval(['Ve?=irf_tlim(Ve?,tint);'],ic);
+  c_eval(['VeS?=irf_tlim(VeS?,tint);'],ic);
   c_eval(['VeSS?=irf_tlim(VeSS?,tint);'],ic);
   c_eval(['R?=irf_tlim(R?,tint);'],ic);
 end
@@ -188,7 +202,8 @@ Rsc4=Rsc4-R_null;
 c_eval('RR? = R?(:,2:4) - R_null;')
 RR_mean = 0.25*(RR1 + RR2 + RR3 + RR4);
 
-tint3 = '2019-08-05T16:24:31.000Z/2019-08-05T16:24:31.200Z';
+tint3 = '2018-07-03T15:49:14.500Z/2018-07-03T15:51:22.500Z';
+% tint3 = '2019-08-05T16:24:31.000Z/2019-08-05T16:24:31.200Z';
 % c_eval('Vegse? = irf.ts2mat(Vegse?);');
 gradVe_3=c_4_grad('R?','Ve?','grad');
 gradVe_3 = irf_tlim(gradVe_3,tint3);
@@ -220,14 +235,17 @@ set(fig1,'Position',[100 100 xSize ySize]);
 % h(1)=axes('position',[0.1 0.1 0.8 0.8]); % [x y dx dy]
 aaa=1;
 BoxWid=3e4; %图坐标上下限[-100 100]
-Vup=500;
+Vup=400;
 
 %for Xgrid=[-40 -38 -35 -31 -26 -20 -13 -5 5 13 20 26 31 35 38 40]
 % for Xgrid=[-2 -1.3 -0.5 0.5 1.3 2 ]%三个循环，Xgrid变，theta变，X/Y/Z prev/curt变
 i_plot = 1;
-for Xgrid=[-37.5,  -30,-25]%31712
+% % % for Xgrid=[-37.5,  -30,-25]%31712
+% % % % for Xgrid=[-25]%31712
+% % %     for theta=[0,150]*pi/180
+for Xgrid=[-16 -10 -8 -6 -5 5 6 8 10 16]%31712
 % for Xgrid=[-25]%31712
-    for theta=[0,150]*pi/180
+    for theta=[0 25]*pi/180
 
     % % % fig1=figure(i_plot);clf;
     % % % set(fig1,'PaperUnits','centimeters')
@@ -239,7 +257,7 @@ for Xgrid=[-37.5,  -30,-25]%31712
 %     for theta=[0:120:240]*pi/180
     %for theta=[0:90:270]*pi/180
 % for theta=[0:90:350]*pi/180
-        Ygrid=Xgrid*cos(theta);%暂时不理解他在图上是哪一段，theta让人特别迷惑，先往下看，别纠结
+        Ygrid=Xgrid*cos(theta);
         Zgrid=Xgrid*sin(theta);
         
         %-----inverse trace-----
@@ -271,20 +289,20 @@ for Xgrid=[-37.5,  -30,-25]%31712
             Bmline(ii)=Bmcurt;
             ii=ii+1;
         end
-        if exist('Xline')
-            plot3(gca, Xline, Yline, Zline,'b'); hold on;
-            Nlin=length(Xline);
-%           cline(Xline, Yline, Zline, Bmline, 0, 1500, cool); view(3); hold on;%就是画个图，字面意思
-            % cline(Xline, Yline, Zline, Bmline, 0, Vup, jet); view(3); hold on;%就是画个图，字面意思
-            arrP=fix(Nlin*0.65);%315%舍入到最接近的整数,向0取整%完全没懂，但似乎影响不大
-%             daspect([1,1,1]); 
-%              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP-1) Yline(arrP-1) Zline(arrP-1)],'r',2.5,3.5); hold on;
-            arrP=fix(Nlin*0.5);%115
-%              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP-1) Yline(arrP-1) Zline(arrP-1)],'r',2.5,3.5); hold on;
-            arrP=fix(Nlin*0.7);%250
-%              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP-1) Yline(arrP-1) Zline(arrP-1)],'r',2.5,3.5); hold on;
-            Bmax(aaa)=max(Bmline); Bmin(aaa)=min(Bmline); aaa=aaa+1;%计算这条磁力线上磁场强度最大值，最小值
-        end
+% % %         if exist('Xline')
+% % %             plot3(gca, Xline, Yline, Zline,'b'); hold on;
+% % %             Nlin=length(Xline);
+% % % %           cline(Xline, Yline, Zline, Bmline, 0, 1500, cool); view(3); hold on;%就是画个图，字面意思
+% % %             % cline(Xline, Yline, Zline, Bmline, 0, Vup, jet); view(3); hold on;%就是画个图，字面意思
+% % %             arrP=fix(Nlin*0.65);%315%舍入到最接近的整数,向0取整%完全没懂，但似乎影响不大
+% % % %             daspect([1,1,1]); 
+% % % %              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP-1) Yline(arrP-1) Zline(arrP-1)],'r',2.5,3.5); hold on;
+% % %             arrP=fix(Nlin*0.5);%115
+% % % %              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP-1) Yline(arrP-1) Zline(arrP-1)],'r',2.5,3.5); hold on;
+% % %             arrP=fix(Nlin*0.7);%250
+% % % %              arrow3([Xline(arrP) Yline(arrP) Zline(arrP)], [Xline(arrP-1) Yline(arrP-1) Zline(arrP-1)],'r',2.5,3.5); hold on;
+% % %             Bmax(aaa)=max(Bmline); Bmin(aaa)=min(Bmline); aaa=aaa+1;%计算这条磁力线上磁场强度最大值，最小值
+% % %         end
         clear Xline
         clear Yline
         clear Zline
@@ -322,7 +340,7 @@ for Xgrid=[-37.5,  -30,-25]%31712
             ii=ii+1;
         end
         if exist('Xline')
-            plot3(gca, Xline, Yline, Zline,'r'); hold on;
+            % plot3(gca, Xline, Yline, Zline,'r'); hold on;
             Nlin=length(Xline);
             if Xline~=0
                 % cmap = 'jet';
@@ -341,8 +359,16 @@ for Xgrid=[-37.5,  -30,-25]%31712
             pos = linspace(0,1,size(cols,1))';
             t = linspace(0,1,n)';
             cmap = interp1(pos, cols, t, 'linear');
+            
 
-          % cline_arrow(Xline, Yline, Zline, Bmline, 0, Vup, 'jet');hold on;
+           box_bd1 = 1000; box_bd2 = 200; box_bd3 = 200;
+            set(gca,'XLim',[-box_bd1 box_bd1], 'YLim',[-box_bd2 box_bd2], 'ZLim',[-box_bd3 box_bd3]);
+            set(gca,'DataAspectRatio',[7 1 1]);
+            set(gca,'View',[90 0]);
+            axis manual
+            hold on 
+
+          cline_arrow(Xline, Yline, Zline, Bmline, 0, Vup, 'jet');hold on;
           i_plot=i_plot+1;
             end
 
@@ -363,18 +389,18 @@ for Xgrid=[-37.5,  -30,-25]%31712
         clear Bmline
         clear Nlin
         
-        box_bd1 = 1000;box_bd2 = 300;box_bd3 = 300;
-        caxis([0, Vup]);   %here is derived from minB & maxB. 【it should be consistent with cline range】
-        set(gca, 'Ylim',[-box_bd1 box_bd1], 'Ylim',[-box_bd2 box_bd2], 'Zlim',[-box_bd3 box_bd3]);
-        set(gca,'xtick',[-box_bd1:box_bd1:box_bd1], 'ytick',[-box_bd2:box_bd2:box_bd2], 'ztick',[-box_bd3:box_bd3:box_bd3],'fontsize',23);
-        set(gca,'DataAspectRatio',[1 1.0 1]);
-        set(gca,'view',[90 0])
+        % box_bd1 = 1e3;box_bd2 = 200;box_bd3 = 200;
+        % caxis([0, Vup]);   %here is derived from minB & maxB. 【it should be consistent with cline range】
+        % set(gca, 'Xlim',[-box_bd1 box_bd1], 'Ylim',[-box_bd2 box_bd2], 'Zlim',[-box_bd3 box_bd3]);
+        % set(gca,'xtick',[-box_bd1:box_bd1:box_bd1], 'ytick',[-box_bd2:box_bd2:box_bd2], 'ztick',[-box_bd3:box_bd3:box_bd3],'fontsize',23);
+        % set(gca,'DataAspectRatio',[7 1.0 1]);
+        % set(gca,'view',[90 0])
         set(gcf,'render','painters');
         set(gcf,'paperpositionmode','auto')
-        print(gcf, '-dpdf', ['/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/new/打死不改了版/Ve_resconstruction/Ver3/', ...
-            num2str(i_plot),'.pdf']);    
+     print(gcf, '-dpdf', ['/Users/fwd/Documents/Ti~mor~/M/Sandglass/Nat/submission/Figures/new/打死不改了版/AnotherCase/Reconstruction/', ...
+            num2str(i_plot-1),'.pdf']);    
 
-     
+          clf
     end
 end
 
@@ -386,22 +412,22 @@ end
 % light('position',Jendp1); lighting gouraud;
 
 
-plot3(gca, [Rsc1(1) Rsc2(1) Rsc3(1) Rsc4(1)], [Rsc1(2) Rsc2(2) Rsc3(2) Rsc4(2)], ...%画线，四点出三线
-           [Rsc1(3) Rsc2(3) Rsc3(3) Rsc4(3)], 'k', 'Linewidth',1); hold on;
-plot3(gca, [Rsc2(1) Rsc4(1) Rsc1(1) Rsc3(1)], [Rsc2(2) Rsc4(2) Rsc1(2) Rsc3(2)], ...%同画线，四点出另外三线
-           [Rsc2(3) Rsc4(3) Rsc1(3) Rsc3(3)], 'k', 'Linewidth',1); hold on;
-plot3(gca, [Rsc1(1)], [Rsc1(2)],[Rsc1(3)], 'ks', 'Linewidth',1, ...%画点
-           'MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',12); hold on;
-plot3(gca, [Rsc2(1)], [Rsc2(2)],[Rsc2(3)], 'rs', 'Linewidth',1, ...
-           'MarkerEdgeColor','r','MarkerFaceColor','r','MarkerSize',12); hold on;
-plot3(gca, [Rsc3(1)], [Rsc3(2)],[Rsc3(3)], 'gs', 'Linewidth',1, ...
-           'MarkerEdgeColor','g','MarkerFaceColor','g','MarkerSize',12); hold on;
-plot3(gca, [Rsc4(1)], [Rsc4(2)],[Rsc4(3)], 'bs', 'Linewidth',1, ...
-           'MarkerEdgeColor','b','MarkerFaceColor','b','MarkerSize',12); hold on;   
-RSC(1,1)=(Rsc1(1,1)+Rsc2(1,1)+Rsc3(1,1)+Rsc4(1,1))/4;
-RSC(2,1)=(Rsc1(1,2)+Rsc2(1,2)+Rsc3(1,2)+Rsc4(1,2))/4;
-RSC(3,1)=(Rsc1(1,3)+Rsc2(1,3)+Rsc3(1,3)+Rsc4(1,3))/4;
-plot3(R_sc_all(:,1),R_sc_all(:,2),R_sc_all(:,3));hold off;
+% % % plot3(gca, [Rsc1(1) Rsc2(1) Rsc3(1) Rsc4(1)], [Rsc1(2) Rsc2(2) Rsc3(2) Rsc4(2)], ...%画线，四点出三线
+% % %            [Rsc1(3) Rsc2(3) Rsc3(3) Rsc4(3)], 'k', 'Linewidth',1); hold on;
+% % % plot3(gca, [Rsc2(1) Rsc4(1) Rsc1(1) Rsc3(1)], [Rsc2(2) Rsc4(2) Rsc1(2) Rsc3(2)], ...%同画线，四点出另外三线
+% % %            [Rsc2(3) Rsc4(3) Rsc1(3) Rsc3(3)], 'k', 'Linewidth',1); hold on;
+% % % plot3(gca, [Rsc1(1)], [Rsc1(2)],[Rsc1(3)], 'ks', 'Linewidth',1, ...%画点
+% % %            'MarkerEdgeColor','k','MarkerFaceColor','k','MarkerSize',12); hold on;
+% % % plot3(gca, [Rsc2(1)], [Rsc2(2)],[Rsc2(3)], 'rs', 'Linewidth',1, ...
+% % %            'MarkerEdgeColor','r','MarkerFaceColor','r','MarkerSize',12); hold on;
+% % % plot3(gca, [Rsc3(1)], [Rsc3(2)],[Rsc3(3)], 'gs', 'Linewidth',1, ...
+% % %            'MarkerEdgeColor','g','MarkerFaceColor','g','MarkerSize',12); hold on;
+% % % plot3(gca, [Rsc4(1)], [Rsc4(2)],[Rsc4(3)], 'bs', 'Linewidth',1, ...
+% % %            'MarkerEdgeColor','b','MarkerFaceColor','b','MarkerSize',12); hold on;   
+% % % RSC(1,1)=(Rsc1(1,1)+Rsc2(1,1)+Rsc3(1,1)+Rsc4(1,1))/4;
+% % % RSC(2,1)=(Rsc1(1,2)+Rsc2(1,2)+Rsc3(1,2)+Rsc4(1,2))/4;
+% % % RSC(3,1)=(Rsc1(1,3)+Rsc2(1,3)+Rsc3(1,3)+Rsc4(1,3))/4;
+% % % plot3(R_sc_all(:,1),R_sc_all(:,2),R_sc_all(:,3));hold off;
 
 maxB=max(Bmax);
 minB=min(Bmin);
@@ -417,7 +443,7 @@ minB=min(Bmin);
 % ylabel(hcb,'|Ve|');
 
 
-box_bd1 = 1000;box_bd2 = 300;box_bd3 = 300;
+box_bd1 = 1000;box_bd2 = 200;box_bd3 = 200;
 caxis([0, Vup]);   %here is derived from minB & maxB. 【it should be consistent with cline range】
 set(gca, 'Ylim',[-box_bd1 box_bd1], 'Ylim',[-box_bd2 box_bd2], 'Zlim',[-box_bd3 box_bd3]);
 set(gca,'xtick',[-box_bd1:box_bd1:box_bd1], 'ytick',[-box_bd2:box_bd2:box_bd2], 'ztick',[-box_bd3:box_bd3:box_bd3],'fontsize',23);

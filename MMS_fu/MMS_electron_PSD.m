@@ -4,8 +4,8 @@
 % Written by D. B. Graham
 clear;
 clc;
-mms.db_init('local_file_db','D:/MMS/');
-ic = 2; % Spacecraft number
+mms.db_init('local_file_db','/Volumes/SPART-WORK/Data/MMS/');
+ic = 1; % Spacecraft number
 
 % Tintr = irf.tint('2019-08-16T09:31:45.0Z/2019-08-16T09:32:15.0Z');
 % 

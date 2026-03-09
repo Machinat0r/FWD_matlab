@@ -6,7 +6,9 @@ mms.db_init('local_file_db','/Volumes/SPART-WORK/Data/MMS/')
 % % % tint=irf.tint('2017-07-26T07:25:00Z/2017-07-26T07:31:00Z');
 % % % tint3=irf.tint('2017-07-26T07:27:29Z/2017-07-26T07:27:39Z');
 
-tint=irf.tint('2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z');
+% tint=irf.tint('2022-08-19T03:52:17.000Z/2022-08-19T03:52:22.000Z');
+tint=irf.tint('2019-09-24T02:17:06.500Z/2019-09-24T02:17:10.000Z');
+
 tint3 = tint;
 % tint3=irf.tint('2017-07-26T07:37:15Z/2017-07-26T07:37:35Z');
 % from SPEDAS: mms_feeps_omni.pro - correction factors per SC
@@ -264,3 +266,6 @@ colormap(h1(i_plot),jet)
 caxis(gca,[1, 4])
 end
 irf_zoom(h1,'x',tint3);
+
+colormap(jet)
+set(gca,"XTickLabelRotation",0)

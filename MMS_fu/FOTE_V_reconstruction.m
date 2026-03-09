@@ -2,7 +2,7 @@
 clear;close all
 clc
 global ParentDir 
-ParentDir = '/Users/fwd/Documents/MATLAB/MMS/'; 
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
 DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 %% VORTEX_9图全版
@@ -25,18 +25,22 @@ dspan2 = 1;
 % Tend = '2017-05-22T08:23:55.000Z';
 % Tsta = '2017-05-25T04:40:29.500Z';
 % Tend = '2017-05-25T04:40:33.000Z';
-Tsta = '2019-08-05T16:24:00.000Z';
-Tend = '2019-08-05T16:25:00.000Z';
+% % % Tsta = '2019-08-05T16:24:00.000Z';
+% % % Tend = '2019-08-05T16:25:00.000Z';
+Tsta = '2018-07-03T15:50:14.500Z';
+Tend = '2018-07-03T15:50:22.500Z';
 tint = irf.tint(Tsta,Tend);
 % tint=irf.tint('2017-01-27T12:05:42.50Z/2017-01-27T12:05:43.80Z');
 % TT = '2017-07-12T11:54:00.000Z/2017-07-12T11:55:00.000Z';
-TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
+ TT = '2018-07-03T15:49:14.500Z/2018-07-03T15:51:22.500Z';
+
+% TT = '2019-08-05T16:24:00.000Z/2019-08-05T16:25:00.000Z';
 % % % TT = '2017-07-06T17:31:52.000Z/2017-07-06T17:32:07.000Z';
 % TT = '2018-07-06T12:36:30.000Z/2018-07-06T12:38:00.000Z';
 % TT = '2017-05-22T08:23:30.000Z/2017-05-22T08:24:30.000Z';
 % TT = '2017-05-25T04:40:00.000Z/2017-05-25T04:41:00.000Z';
 
-TT3 = '2019-08-05T16:24:29.000Z/2019-08-05T16:24:33.000Z';
+TT3 = '2018-07-03T15:50:14.500Z/2018-07-03T15:50:22.500Z';
 tint2=irf.tint(TT);
 tint3 = irf.tint(TT3);
 
@@ -55,7 +59,7 @@ Date = [Datelist{1},'/',Datelist{2}];
 % SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
 SDCDataMove(TempDir,ParentDir)
 mms.db_init('local_file_db',ParentDir)
-Time='2019-08-05T16:24:31.137Z';
+Time='2018-07-03T15:50:18.500Z';
 time = irf_time(Time,'utc>epochtt');
 c_eval('e_r? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energy_brst'',tint);',ic);
 
@@ -74,6 +78,7 @@ c_eval('Bt?=Bxyz?.abs;',ic);
 
 c_eval('Ne?= mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',tint);',ic);
 c_eval('ne?=irf.ts2mat(Ne?);',ic);
+Ne4 = Ne1;ne4 = ne1;
 
 c_eval('Ni?= mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_numberdensity_brst'',tint);',ic);
 c_eval('ni?=irf.ts2mat(Ni?);',ic);

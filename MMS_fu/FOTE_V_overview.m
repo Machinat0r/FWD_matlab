@@ -11,7 +11,7 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 %% load data
 iic = 1;
 ic=1:4;
-hh = 10;
+hh = 5;
 hh1= 5;
 thresold = 0.2;  
 dspan = 3;
@@ -19,8 +19,11 @@ dspan2 = 1;
 % Tsta = '2017-07-06T01:44:50.000Z';
 % Tend = '2017-07-06T01:45:10.000Z';
 
-Tsta = '2017-06-27T22:44:30.000Z';
-Tend = '2017-06-27T22:44:45.000Z';
+% % % Tsta = '2017-06-27T22:44:30.000Z';
+% % % Tend = '2017-06-27T22:44:45.000Z';
+Tsta = '2018-07-03T15:50:14.500Z';
+Tend = '2018-07-03T15:50:22.500Z';
+
 
 % Tsta = '2017-07-12T11:54:33.600Z';
 % Tend = '2017-07-12T11:54:35.400Z';
@@ -40,7 +43,8 @@ tint = irf.tint(Tsta,Tend);
 % TT = '2018-07-06T12:36:30.000Z/2018-07-06T12:38:00.000Z';
 % TT = '2017-05-22T08:23:30.000Z/2017-05-22T08:24:30.000Z';
 % TT = '2017-05-25T04:40:00.000Z/2017-05-25T04:41:00.000Z';
-TT = '2017-06-27T22:44:30.000Z/2017-06-27T22:44:45.000Z';
+% % % TT = '2017-06-27T22:44:30.000Z/2017-06-27T22:44:45.000Z';
+ TT = '2018-07-03T15:49:14.500Z/2018-07-03T15:51:22.500Z';
 
 % TT3 = '2019-08-05T16:24:29.000Z/2019-08-05T16:24:33.000Z';
 tint2=irf.tint(TT);
@@ -51,17 +55,17 @@ Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 
-filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
-filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist');
-% filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
-filenames = [filenames1, filenames2,filenames4];
+% % % filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
+% % % filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist');
+% % % % filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
+% % % filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
+% % % filenames = [filenames1, filenames2,filenames4];
+% % % % % % 
+% % % [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
 % % % 
-[filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
-
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
-SDCDataMove(TempDir,ParentDir)
-mms.db_init('local_file_db',ParentDir)
+% % % SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
+% % % SDCDataMove(TempDir,ParentDir)
+% % % mms.db_init('local_file_db',ParentDir)
 
 c_eval('e_r? = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energy_brst'',tint);',ic);
 
@@ -530,7 +534,7 @@ grid(h(3),'off');
 set(gca,"XTickLabelRotation",0)
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
-irf_zoom(tint3,'x',h(1:3));
+irf_zoom(tint,'x',h(1:3));
 irf_plot_axis_align(h)
 %% plot
 h=irf_plot(10,'newfigure');
@@ -734,5 +738,5 @@ colormap(jet)
 set(gca,"XTickLabelRotation",0)
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
-irf_zoom(tint3,'x',h(1:10));
+irf_zoom(tint,'x',h(1:10));
 irf_plot_axis_align(h)

@@ -29,7 +29,7 @@ if ~isequal(size(R),[4 3]) || ~isequal(size(B),[4 3])
 end
 
 % ---- sigma grid: log-spaced (recommended for 0.1~10)
-sigma_list = logspace(log10(0.1), log10(10), nSigma);  % nT
+sigma_list = logspace(log10(3.93), log10(3.93), nSigma);  % nT
 
 % ---- observed field amplitude (constant across sigma)
 Bmag = vecnorm(B,2,2);          % |B_i| for each satellite
@@ -97,13 +97,13 @@ set(gca,'XScale','log');
 
 % ---------------- Plot 2: Confidence curve ----------------
 figure('Name','Confidence vs sigma');
-hold on; grid on; box on;
+hold on; grid off; box on;
 
 semilogx(sigma_list, confs, 'LineWidth', 2);
 ylim([0 1]);
 xlabel('\sigma (nT)  [noise std per component]');
 ylabel('Confidence = 1 - p-value');
-title(sprintf('Event confidence vs noise std (K=%d per point)', K));
+% title(sprintf('Event confidence vs noise std (K=%d per point)', K));
 
 set(gca,'XScale','log');
 
