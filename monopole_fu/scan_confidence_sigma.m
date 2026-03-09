@@ -24,6 +24,7 @@ if nargin < 6 || isempty(seed),   seed = 1; end
 R = take_xyz(Rin);   % 4x3
 B = take_xyz(Bin);   % 4x3
 
+
 if ~isequal(size(R),[4 3]) || ~isequal(size(B),[4 3])
     error('R and B must be 4x3 (or 4x4 with time column).');
 end
@@ -68,7 +69,8 @@ parfor i = 1:nSigma
     % opts.fitMethod = "profile_fminsearch"; % if your main supports it
     % opts.Qsign = 0;               % or +1/-1 if you constrain Q sign
 
-    res = MentoCarlo_estimate(R, B, SigmaVar, K);
+    % % % res = MentoCarlo_estimate(R, B, SigmaVar, K);
+    res = MentoCarlo_estimate(R, randn(4,3) * sigma, SigmaVar, K);
 
     pvals(i) = res.pvalue;
     confs(i) = res.confidence;

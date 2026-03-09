@@ -1,15 +1,15 @@
 clear; clc;
 global ParentDir OutputDir
 %% 
-ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
-DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+ParentDir = 'D:\MMS1/'; 
+DownloadDir = 'C:\MMS/';
 TempDir     = [DownloadDir, 'temp/']; 
 if ~isfolder(TempDir)
     mkdir(TempDir);
 end
 
 %% 
-Date = '2016-01-01T00:00:00.000Z/2024-01-01T00:00:00.000Z';
+Date = '2022-04-22T00:00:00.000Z/2024-01-01T00:00:00.000Z';
 ic  = 1:4; 
 
 load([pwd,'/NameTags.mat']);

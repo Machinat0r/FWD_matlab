@@ -31,8 +31,8 @@ clear;clc;close all
 %%
 
 global ParentDir 
-ParentDir = '/Volumes/100.114.210.8/SPART-WORK/Data/MMS/'; 
-TempDir = '/Volumes/100.114.210.8/SPART-WORK/Data/MMS/temp/';mkdir(TempDir);
+ParentDir = 'Z:\SPART-WORK\Data\MMS/'; 
+TempDir = 'Z:\SPART-WORK\Data\MMS/temp/';mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
 TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
@@ -49,7 +49,7 @@ TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % % % TT = '2016-01-06T00:32:36.000Z/2016-01-06T00:32:37.000Z';
 % TT = '2016-01-08T03:25:20.000Z/2016-01-08T03:25:30.000Z';
 % TT = '2016-03-07T00:38:52.000Z/2016-03-07T00:38:52.500Z';
-TTlong = '2019-01-16T04:00:00.000Z/2019-01-16T05:00:00.000Z'; %no boundary, 10,78-81
+TTlong = '2019-01-16T04:00:00.000Z/2019-01-16T04:20:00.000Z'; %no boundary, 10,78-81
 
 tintlong = irf.tint(TTlong);
 tint=irf.tint(TT);
@@ -58,10 +58,10 @@ Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 
 ic = 1:4;
-% filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
-% [filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
-% 
-% SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
+[filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
+
+SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
 %% Poincare Index  
 SDCDataMove(TempDir,ParentDir); 
 mms.db_init('local_file_db',ParentDir);
@@ -109,11 +109,12 @@ RR_mean = (RR12(:,5) + RR13(:,5) + RR14(:,5) + RR23(:,5) + RR24(:,5) + RR34(:,5)
 id = nchoosek(1:6,2);
 
 noise = estimate_noise_strength_4sc(Blong1(:,2:4), Blong2(:,2:4), Blong3(:,2:4), Blong4(:,2:4));
-% BGnoise = noise.sigma_scalar;
-BGnoise = 3.93;
+BGnoise = noise.sigma_scalar;
 
 for i = 1
 clc;
-res = scan_confidence_sigma([R1(i,2:4);R2(i,2:4);R3(i,2:4);R4(i,2:4)], ...
-    [B1(i,2:4);B2(i,2:4);B3(i,2:4);B4(i,2:4)], 1e6, 1, BGnoise);
+% res = scan_confidence_sigma([R1(i,2:4);R2(i,2:4);R3(i,2:4);R4(i,2:4)], ...
+%     [B1(i,2:4);B2(i,2:4);B3(i,2:4);B4(i,2:4)], 1e4, 100, BGnoise);
+res = scan_confidence_sigma(randn(4,3), ...
+    randn(4,3), 1e4, 100, BGnoise);
 end

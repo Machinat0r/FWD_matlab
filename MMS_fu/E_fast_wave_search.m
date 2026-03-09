@@ -5,7 +5,7 @@ ParentDir = 'Z:\SPART-WORK\Data\MMS\';
 DownloadDir = 'C:\MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-Date = '2016-0  7-01/2019-01-01';
+Date = '2018-07-09/2020-01-01';
 splitDate = regexp(Date,'/','split');
 ic = 1:4;iic = 1:4;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
@@ -32,6 +32,7 @@ if ~isfolder([OutputDir,'OverviewFig/'])
 end
 
 units = irf_units;
+%%
 for TDT = 1:length(NameTags)-1 %This is a distinctive temp  (๑ˉ∀ˉ๑)
 tempDir = [OutputDir,NameTags{TDT}(2:end-2),'/'];
 clc;fprintf(['当前处理时间为:',NameTags{TDT}(2:end-2),'\n'])
@@ -60,13 +61,13 @@ end
 
 %% lobe location
 flag = 0;
-if Pos(1,4) >= 2*units.RE/1e3 % |R|>2
+% if Pos(1,4) >= 2*units.RE/1e3 % |R|>2
 try
     c_eval(['E?_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],ic); 
     c_eval('E? = irf.ts2mat(E?_ts);',ic);
    
     c_eval('Et? = irf_abs(E?);',ic);
-    c_eval('id_E? = find(Et?(:,5) >= 15);',ic);
+    c_eval('id_E? = find(Et?(:,5) >= 10);',ic);
     same_id= intersect(intersect(intersect(id_E1, id_E2), id_E3), id_E4);
 
     if isempty(same_id)
@@ -90,7 +91,7 @@ try
         c_eval(['E?_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],ic); 
         c_eval(['E?_ts = irf_gse2gsm(E?_ts);'],ic);
 
-        Pfrange = [2 1000];
+        Pfrange = [2 500];
         [Vpx,~, ~, waveEx, ~, Frex, ~, ~, ~, ~,~,~,~] = WaveAna_4SC_fast('E?_ts.x','Rxyz?','B?_ts',tint,'numf',400,...
             'wwidth',1,'frange',Pfrange,'cav',1);  
         specEx=struct('t',waveEx(:,1));
@@ -259,9 +260,9 @@ catch
         'WriteMode','append','Encoding','UTF-8')
     continue
 end
-else
-    continue
-end
+% else
+%     continue
+% end
 % % % %% 符合判据的继续下载并出图
 % % % if flag == 2
 % % % try
