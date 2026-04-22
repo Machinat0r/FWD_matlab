@@ -39,11 +39,11 @@ clear,clc
 
 
 % tint = irf.tint('2017-08-23T15:38:50.00Z/2017-08-23T15:39:05.00Z');
-tint = irf.tint('2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'); 
-ic = 2;
+tint = irf.tint('2021-01-08T18:24:50.000Z/2021-01-08T18:25:00.000Z'); 
+ic = 1;
 
-c_eval("d=dataobj('D:\MMS\mms2\fpi\brst\l2\des-dist\2020\08\03\mms2_fpi_brst_l2_des-dist_20200803014513_v3.4.0.cdf');",ic);
-c_eval("b=dataobj('D:\MMS\mms2\fgm\brst\l2\2020\08\03\mms2_fgm_brst_l2_20200803014513_v5.256.1.cdf');",ic);
+c_eval("d=dataobj('/Volumes/SPART-WORK/Data/MMS/mms1/fpi/brst/l2/des-dist/2021/01/08/mms1_fpi_brst_l2_des-dist_20210108182303_v3.3.0.cdf');",ic);
+c_eval("b=dataobj('/Volumes/SPART-WORK/Data/MMS/mms1/fgm/brst/l2/2021/01/08/mms1_fgm_brst_l2_20210108182303_v5.278.0.cdf');",ic);
 % % tint=irf.tint('2017-07-03T22:45:20.00Z/2017-07-03T22:46:20.00Z');
 %%%%%%%%%%%%%%%%%%   ion   %%%%%%%%%%%%%%%%%%%%%%%
 % diste = get_ts(d,'mms1_dis_dist_brst');

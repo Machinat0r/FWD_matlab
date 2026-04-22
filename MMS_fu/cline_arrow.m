@@ -35,10 +35,10 @@ function h = cline_arrow(x, y, z, c, minc, maxc, cmap)
   % h = gobjects(n-1,1);
 
   % 2) 对每一段，用 arrow3 画箭头
-  W = 0.8;     % 箭柄宽度，单位是 PlotBox 对角线的 1/72
-  H = 1;   % 箭头高度（一般取 3 倍于宽度）
+  W = 0.5;% 0.8     % 箭柄宽度，单位是 PlotBox 对角线的 1/72
+  H = 0.7;% 1   % 箭头高度（一般取 3 倍于宽度）
   % for i = 1:n-1
-  dspan = 60;st = 40;
+  dspan = 30;st = 20;
   P1 = [x(1:dspan:end-dspan)',   y(1:dspan:end-dspan)',   z(1:dspan:end-dspan)'];
     P0 = [x(st:dspan:end)', y(st:dspan:end)', z(st:dspan:end)'];
     if size(P1,1) > size(P0,1)
@@ -52,14 +52,14 @@ function h = cline_arrow(x, y, z, c, minc, maxc, cmap)
     set(gca,'ColorOrder',colors);
     arrow3(P0, P1,'o-2',W,H);hold on;
 
-    box_bd1 = 1000;box_bd2 = 250;box_bd3 = 300;
-    set(gca, 'Ylim',[-box_bd1 box_bd1], 'Ylim',[-box_bd2 box_bd2], 'Zlim',[-box_bd3 box_bd3]);
+    box_bd1 = 1000;box_bd2 = 200;box_bd3 = 200;
+    set(gca, 'Xlim',[-box_bd1 box_bd1], 'Ylim',[-box_bd2 box_bd2], 'Zlim',[-box_bd3 box_bd3]);
     set(gca,'xtick',[-box_bd1:box_bd1:box_bd1], 'ytick',[-box_bd2:box_bd2:box_bd2], 'ztick',[-box_bd3:box_bd3:box_bd3],'fontsize',23);
-    set(gca,'DataAspectRatio',[5 1.0 1]);
+    set(gca,'DataAspectRatio',[7 1.0 1]);
     set(gca,'view',[90 0])
     % set(gca,'YTickLabel',[]);set(gca,'ZTickLabel',[])
     xlabel('x');ylabel('y')
-    light('position',[800,-100,-100],'style','infinite'), lighting gouraud
+    light('position',[1,0,0],'style','infinite'), lighting gouraud
     % for hobj = hn(:)'
     %   if isprop(hobj, 'Color')
     %     hobj.Color     = colors(i,:);

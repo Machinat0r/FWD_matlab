@@ -42,6 +42,7 @@ function f = irf_get_data_omni_modified( tint, parameter , database)
 %               'swid'  - Spacecraft ID for SW
 %               'ts'    - Timeshift to bow shock in seconds
 %               'rmsts' - Root mean square of timeshift to bow shock
+%               'symh' - SYM-H
 %
 % f=IRF_GET_DATA_OMNI(tint,parameter,database) download from specified database
 %
