@@ -29,13 +29,10 @@ if ~isequal(size(R),[4 3]) || ~isequal(size(B),[4 3])
     error('R and B must be 4x3 (or 4x4 with time column).');
 end
 
-% ---- sigma grid: log-spaced (recommended for 0.1~10)
-sigma_list = logspace(log10(0.1), log10(10), nSigma);  % nT
+% ---- sigma grid
+% % % sigma_list = logspace(log10(1), log10(10), nSigma);  % nT、
+sigma_list = BGnoise;
 
-% ---- observed field amplitude (constant across sigma)
-Bmag = vecnorm(B,2,2);          % |B_i| for each satellite
-% % Bmag_rms = sqrt(mean(Bmag.^2)); % RMS of |B| across 4 sats
-% sigma_eq = Bmag_rms / sqrt(3);   % nT, equivalent per-component noise std
 sigma_eq = BGnoise;
 Bmag_rms = sigma_eq * sqrt(3);
 
@@ -47,13 +44,11 @@ Zs    = nan(nSigma,1);
 % For plot 1: expected noise RMS(|e|) under independent components
 % If e_x,e_y,e_z ~ N(0, sigma^2), then E[|e|^2] = 3*sigma^2
 noise_mag_rms_theory = sqrt(3) .* sigma_list(:); % nT
-
-% Optional: also show one random noise realization RMS(|e|) per sigma
 noise_mag_rms_sample = nan(nSigma,1);
 
-fprintf('Scanning sigma in [0.1, 10] nT with %d points, K=%d MC each...\n', nSigma, K);
+fprintf('Scanning sigma in [1, 10] nT with %d points, K=%d MC each...\n', nSigma, K);
 
-parfor i = 1:nSigma
+for i = 1:nSigma
     sigma = sigma_list(i);     % nT (std)
     SigmaVar = sigma^2;        % nT^2 (variance) -- IMPORTANT
 
@@ -69,8 +64,8 @@ parfor i = 1:nSigma
     % opts.fitMethod = "profile_fminsearch"; % if your main supports it
     % opts.Qsign = 0;               % or +1/-1 if you constrain Q sign
 
-    % % % res = MentoCarlo_estimate(R, B, SigmaVar, K);
-    res = MentoCarlo_estimate(R, randn(4,3) * sigma, SigmaVar, K);
+    res = MentoCarlo_estimate(R, B, SigmaVar, K);
+    % res = MentoCarlo_estimate(R, randn(4,3) * sigma, SigmaVar, K);
 
     pvals(i) = res.pvalue;
     confs(i) = res.confidence;

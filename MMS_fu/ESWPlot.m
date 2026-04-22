@@ -5,24 +5,24 @@ function ESWPlot(tint,IC,Name)
 
     for ic=IC
     % load B
-    c_eval(['B?_ts=mms.get_data(''B_gsm_brst'',tint,?);'],ic);
-    c_eval(['Bt?_ts=B?_ts.abs;'],ic); 
-    c_eval(['B?=irf.ts2mat(B?_ts);'],ic);
+    c_eval(['B1_ts=mms.get_data(''B_gsm_brst'',tint,?);'],ic);
+    c_eval(['Bt1_ts=B1_ts.abs;'],ic); 
+    c_eval(['B1=irf.ts2mat(B1_ts);'],ic);
     %  c_eval(['B?_gsm=irf_gse2gsm(B?,-1);'],ic);
-    c_eval(['Bt?=irf.ts2mat(Bt?_ts);'],ic);
+    c_eval(['Bt1=irf.ts2mat(Bt1_ts);'],ic);
 
     % load E
-    c_eval(['E?_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],ic);
+    c_eval(['E1_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],ic);
     %%%%%c_eval(['E?_ts=mms.get_data(''E_gse_edp_fast_l2'',tint,?);'],ic);
-    c_eval(['Et?_ts=E?_ts.abs;'],ic); 
-    c_eval(['E?_gsm=irf_gse2gsm(E?_ts);'],ic);
-    c_eval(['E?=irf.ts2mat(E?_gsm);'],ic);
-    c_eval('Et? = irf_abs(E?);',ic);
-    c_eval(['Efac?=irf_convert_fac(E?,B?,[1,0,0]);'],ic);
+    c_eval(['Et1_ts=E1_ts.abs;'],ic); 
+    c_eval(['E1_gsm=irf_gse2gsm(E1_ts);'],ic);
+    c_eval(['E1=irf.ts2mat(E1_gsm);'],ic);
+    c_eval('Et1 = irf_abs(E1);',ic);
+    c_eval(['Efac1=irf_convert_fac(E1,B1,[1,0,0]);'],ic);
 
     % load N
-    Ne1_ts=mms.db_get_ts('mms1_fpi_brst_l2_des-moms','mms1_des_numberdensity_brst',tint);
-    Ne1=irf.ts2mat(Ne1_ts);
+    Ne3_ts=mms.db_get_ts('mms3_fpi_brst_l2_des-moms','mms3_des_numberdensity_brst',tint);
+    Ne3=irf.ts2mat(Ne3_ts);
     end
 
 %% Init figure

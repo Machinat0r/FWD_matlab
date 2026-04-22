@@ -111,10 +111,10 @@ id = nchoosek(1:6,2);
 noise = estimate_noise_strength_4sc(Blong1(:,2:4), Blong2(:,2:4), Blong3(:,2:4), Blong4(:,2:4));
 BGnoise = noise.sigma_scalar;
 
-for i = 1
+for i = 50
 clc;
-% res = scan_confidence_sigma([R1(i,2:4);R2(i,2:4);R3(i,2:4);R4(i,2:4)], ...
-%     [B1(i,2:4);B2(i,2:4);B3(i,2:4);B4(i,2:4)], 1e4, 100, BGnoise);
-res = scan_confidence_sigma(randn(4,3), ...
-    randn(4,3), 1e4, 100, BGnoise);
+res = scan_confidence_sigma([R1(i,2:4);R2(i,2:4);R3(i,2:4);R4(i,2:4)], ...
+    [B1(i,2:4);B2(i,2:4);B3(i,2:4);B4(i,2:4)], 1e8, 1, BGnoise);
+% res = scan_confidence_sigma(randn(4,3), ...
+%     randn(4,3), 1e4, 100, BGnoise);
 end

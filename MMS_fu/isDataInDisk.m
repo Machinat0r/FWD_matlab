@@ -47,6 +47,13 @@ if isfolder(tempDir)
         filepath = [tempDir, filename_sep{ii}(1:4),'/', filename_sep{ii}(5:6)...
             ,'/', filename_sep{ii}(7:8), '/', filename];
         ToF = isfile(filepath);
+
+        if contains(filename, 'v3.4.0') && ~ToF
+            filename = strrep(filename, 'v3.4.0', 'v3.3.0');
+            filepath = [tempDir, filename_sep{ii}(1:4),'/', filename_sep{ii}(5:6)...
+            ,'/', filename_sep{ii}(7:8), '/', filename];
+            ToF = isfile(filepath);
+        end
     elseif ismember('srvy',filename_sep) || ismember('fast', filename_sep)
         filepath = [tempDir, filename_sep{ii}(1:4),'/', filename_sep{ii}(5:6)...
             , '/', filename];

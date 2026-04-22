@@ -30,11 +30,11 @@ clear;clc;close all
 %%
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
-TempDir = '/Volumes/SPART-WORK/Data/MMS/temp/';mkdir(TempDir);
+ParentDir = 'Y:\SPART-WORK\Data\MMS\'; 
+TempDir = 'Y:\SPART-WORK\Data\MMS\temp\';mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
-TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
+% TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % TT = '2019-01-16T04:09:55.420Z/2019-01-16T04:09:55.800Z'; %no boundary, 10,78-81
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:15:50.00Z';
 
@@ -48,6 +48,7 @@ TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % % % TT = '2016-01-06T00:32:36.000Z/2016-01-06T00:32:37.000Z';
 % TT = '2016-01-08T03:25:20.000Z/2016-01-08T03:25:30.000Z';
 % TT = '2016-03-07T00:38:52.000Z/2016-03-07T00:38:52.500Z';
+TT = '2015-12-30T22:29:30.000Z/2015-12-30T22:32:30.000Z';
 
 
 tint=irf.tint(TT);
@@ -59,7 +60,7 @@ ic = 1:4;
 filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
 [filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
 
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+SDCFilesDownload_NAS(filenames,TempDir, 'CheckSize', 0)
 %% Poincare Index  
 SDCDataMove(TempDir,ParentDir); 
 mms.db_init('local_file_db',ParentDir);

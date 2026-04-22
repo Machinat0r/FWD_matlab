@@ -90,6 +90,7 @@ Tmc = zeros(K,1);
 % For speed: use observed r0hat as init for all MC fits
 r0_init_mc = fitObs.r0hat;
 
+% parfor_progress(K);
 for k = 1:K
     E = sample_noise(4, Sigma);  % 4x3 in nT
     Bk = E;
@@ -99,7 +100,11 @@ for k = 1:K
     chi2_null_k = chi2_under_null(Bk, Sigma);
 
     Tmc(k) = chi2_null_k - chi2_alt_k;
+    
+    clc;k
+    % parfor_progress;
 end
+parfor_progress(0);
 
 % one-sided p-value with +1 smoothing
 p = (sum(Tmc >= Tobs) + 1) / (K + 1);

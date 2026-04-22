@@ -1,11 +1,11 @@
 %----------written by Wending Fu, Dec.2025 in Beijing------------
 clear;clc;close all
-cd '/Volumes/SPART-WORK/Data/Cluster/'
-ParentDir = '/Volumes/SPART-WORK/Data/Cluster/';
+cd 'D:\Cluster/'
+ParentDir = 'D:\Cluster/';
 ic=1:4;
 
 % TT = '2002-03-17\2003-01-01';
-TT = '2001-02-07\2008-01-01';
+TT = '2001-01-01\2008-01-01';
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 TaskDir = [ParentDir,Datelist{1},'T',Datelist{2},'/']; mkdir(TaskDir)
 Datelist = datenum(Datelist,'yyyy-mm-dd');
@@ -57,7 +57,13 @@ try
 %% load R & B
 % % % dobjname=irf_ssub('C?_CP_FGM_FULL',ic); 
 % % % varname=irf_ssub('B_vec_xyz_gse__C?_CP_FGM_FULL',ic); 
-c_eval('B?_gse=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'',''mat'');',ic); 
+c_eval('B?_gse=c_caa_var_get(''B_vec_xyz_gse__C?_CP_FGM_FULL'',''mat'');',ic);
+if B1_gse(end,1) - B1_gse(1) < 3600*12 || B2_gse(end,1) - B2_gse(1) < 3600*12 ...
+        || B3_gse(end,1) - B3_gse(1) < 3600*12 || B4_gse(end,1) - B4_gse(1) < 3600*12
+        writematrix(['Data incompleted at: ',datestr(datenum(1970,1,1,0,0,0)+R(1,1)/86400,'yyyymmdd HH:MM:SS.FFF')],[TaskDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
+    continue
+end
+
 c_eval('B? = irf_abs(irf_gse2gsm(B?_gse));',ic);
 Rc_gse = c_caa_var_get('sc_r_xyz_gse__CL_SP_AUX','mat');
 c_eval("dR? = c_caa_var_get('sc_dr?_xyz_gse__CL_SP_AUX','mat');",ic);
@@ -75,7 +81,13 @@ c_eval('B?(find(R?(:,5)<10*units.RE/1e3),:)=[];',ic);
 c_eval('[Bmax?, id?] = max(B?(:,5));',ic);
 
 if Bmax1 > 80 || Bmax2 > 80 || Bmax3 > 80 || Bmax4 > 80
-    writematrix(['Strong B at: ',datestr(datenum(1970,1,1,0,0,0)+B1(id1,1)/86400,'yyyymmdd HH:MM:SS.FFF'), 'maxB = ', num2str(Bmax1)],...
+    writematrix(['Strong B at: ',datestr(datenum(1970,1,1,0,0,0)+B1(id1,1)/86400,'yyyymmdd HH:MM:SS.FFF'), ' maxB1 = ', num2str(Bmax1)],...
+                    [TaskDir,'StrongB.txt'],'WriteMode','append','Encoding','UTF-8')
+    writematrix(['Strong B at: ',datestr(datenum(1970,1,1,0,0,0)+B2(id1,1)/86400,'yyyymmdd HH:MM:SS.FFF'), ' maxB2 = ', num2str(Bmax2)],...
+                    [TaskDir,'StrongB.txt'],'WriteMode','append','Encoding','UTF-8')
+    writematrix(['Strong B at: ',datestr(datenum(1970,1,1,0,0,0)+B3(id1,1)/86400,'yyyymmdd HH:MM:SS.FFF'), ' maxB3 = ', num2str(Bmax3)],...
+                    [TaskDir,'StrongB.txt'],'WriteMode','append','Encoding','UTF-8')
+    writematrix(['Strong B at: ',datestr(datenum(1970,1,1,0,0,0)+B4(id1,1)/86400,'yyyymmdd HH:MM:SS.FFF'), ' maxB4 = ', num2str(Bmax4)],...
                     [TaskDir,'StrongB.txt'],'WriteMode','append','Encoding','UTF-8')
 end
 
