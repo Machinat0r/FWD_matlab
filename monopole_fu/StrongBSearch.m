@@ -6,10 +6,10 @@ ParentDir = '/Volumes/SPART-WORK/Data/MMS/';
 DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
  
-ic = 1:3;iic = 1:3;
+ic = 1:4;iic = 1:4;
 load([pwd,'/NameTags.mat']);
 
-Date = '2020-11-01T00:00:00.000Z/2023-01-01T00:00:00.000Z';
+Date = '2024-01-01T00:00:00.000Z/2025-01-01T00:00:00.000Z';
 % Date = '2016-02-05T00:00:00.000Z/2016-03-01T00:00:00.000Z';
 splitDate = regexp(Date,'/','split');
 startDate = splitDate{1};
@@ -20,17 +20,18 @@ NameTagsDT = datetime(NameTags, 'InputFormat', "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", '
 mask = (NameTagsDT >= startDT) & (NameTagsDT <= endDT);
 NameTags = NameTags(mask);
 %% download data
-% % % filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
-% % % filenames2 = SDCFilenames(Date,iic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms');
-% % % % filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-% % % % filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
-% % % % filenames_srvy = SDCFilenames(Date,ic,'inst','fgm','drm','srvy'); %为了知道坐标
-% % % filenames = [filenames1,filenames2];
-% % % % % % filenames = filenames1;
-% % % 
-% % % expr = '_[0-9]+\_v';
-% % % NameTags = regexp(filenames,expr,'match');
-% % % NameTags = unique(cellfun(@cellstr,NameTags));
+% filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
+% filenames2 = SDCFilenames(Date,iic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms');
+% filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
+% filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce');
+% filenames_srvy = SDCFilenames(Date,ic,'inst','fgm','drm','srvy'); %为了知道坐标
+% filenames = [filenames1,filenames2];
+% filenames = filenames1;
+% 
+% expr = '_[0-9]+\_v';
+% NameTags = regexp(filenames,expr,'match');
+% 
+% NameTags = unique(cellfun(@cellstr,NameTags));
 % % % FileGroups = cell(1,length(NameTags)); 
 % % % for j = 1:length(NameTags)
 % % %     % FileGroups{j} = [filenames(contains(filenames,NameTags{j})), filenames_srvy(contains(filenames_srvy,NameTags{j}(2:9)))];
@@ -78,6 +79,7 @@ try
     mms.db_init('local_file_db',ParentDir);
     Pos = mms.get_data('R_gsm',tempTint,1);
     Pos = irf.ts2mat(Pos);
+    Pos = irf_abs(Pos);
     tryTimes = 666;
 catch
     tryTimes = tryTimes + 1;
@@ -86,7 +88,7 @@ end
 end
 
 if tryTimes ~= 666
-writematrix([NameTags{TDT}(2:end-2),'的数据导入1出现问题'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
+writematrix([NameTags{TDT}(1:end-1),'的数据导入1出现问题'],[OutputDir,'errorlog.txt'],'WriteMode','append','Encoding','UTF-8')
 continue
 end
 
@@ -107,39 +109,39 @@ try
     R1 = [Pos.time.epochUnix R1(:,1:3)]; R2 = [Pos.time.epochUnix R2(:,1:3)];
     R3 = [Pos.time.epochUnix R3(:,1:3)]; R4 = [Pos.time.epochUnix R4(:,1:3)];
 
-    c_eval('Ne?_ts = mms.get_data(''Ne_fpi_brst_l2'',tint,?);',ic);
-    c_eval(['Ne?=irf.ts2mat(Ne?_ts);'],ic);
-    c_eval('Ni?_ts = mms.get_data(''Ni_fpi_brst_l2'',tint,?);',ic);
-    c_eval(['Ni?=irf.ts2mat(Ni?_ts);'],ic);
-
-    c_eval('Te_para?_ts=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_temppara_brst'',tint);',ic);
-    c_eval(['Te_para?=irf.ts2mat(Te_para?_ts);'],ic);
-    c_eval('Te_perp?_ts=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempperp_brst'',tint);',ic);
-    c_eval(['Te_perp?=irf.ts2mat(Te_perp?_ts);'],ic);
-    c_eval(['Te?=[Te_para?(:,1),(Te_para?(:,2)+2*Te_perp?(:,2))/3.0];'],ic);
-
-    
-
-    c_eval('Ti_para?_ts=mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_temppara_brst'',tint);',ic);
-    c_eval(['Ti_para?=irf.ts2mat(Ti_para?_ts);'],ic);
-    c_eval('Ti_perp?_ts=mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_tempperp_brst'',tint);',ic);
-    c_eval(['Ti_perp?=irf.ts2mat(Ti_perp?_ts);'],ic);
-    c_eval(['Ti?=[Ti_para?(:,1),(Ti_para?(:,2)+2*Ti_perp?(:,2))/3.0];'],ic);
-
-    c_eval('Ne? = irf_resamp(Ne?, B?);',ic);c_eval('Te? = irf_resamp(Te?, B?);',ic);
-    c_eval('Ni? = irf_resamp(Ni?, B?);',ic);c_eval('Ti? = irf_resamp(Ti?, B?);',ic);
-
-    c_eval('Pthe? = units.e*10^(15)*Ni?(:,2).*Ti?(:,2) + units.e*10^(15)*Ne?(:,2).*Te?(:,2);',ic);
-    c_eval('Pm? = 10^(-9)*Bt?(:,5).^2 / (2*units.mu0);',ic); %nPa
-    c_eval('Beta? = Pthe? ./ Pm?;',ic);
-
-    c_eval('Flag_msp? = find(Beta? <= 1);',ic);
+    % c_eval('Ne?_ts = mms.get_data(''Ne_fpi_brst_l2'',tint,?);',ic);
+    % c_eval(['Ne?=irf.ts2mat(Ne?_ts);'],ic);
+    % c_eval('Ni?_ts = mms.get_data(''Ni_fpi_brst_l2'',tint,?);',ic);
+    % c_eval(['Ni?=irf.ts2mat(Ni?_ts);'],ic);
+    % 
+    % c_eval('Te_para?_ts=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_temppara_brst'',tint);',ic);
+    % c_eval(['Te_para?=irf.ts2mat(Te_para?_ts);'],ic);
+    % c_eval('Te_perp?_ts=mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_tempperp_brst'',tint);',ic);
+    % c_eval(['Te_perp?=irf.ts2mat(Te_perp?_ts);'],ic);
+    % c_eval(['Te?=[Te_para?(:,1),(Te_para?(:,2)+2*Te_perp?(:,2))/3.0];'],ic);
+    % 
+    % 
+    % 
+    % c_eval('Ti_para?_ts=mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_temppara_brst'',tint);',ic);
+    % c_eval(['Ti_para?=irf.ts2mat(Ti_para?_ts);'],ic);
+    % c_eval('Ti_perp?_ts=mms.db_get_ts(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_tempperp_brst'',tint);',ic);
+    % c_eval(['Ti_perp?=irf.ts2mat(Ti_perp?_ts);'],ic);
+    % c_eval(['Ti?=[Ti_para?(:,1),(Ti_para?(:,2)+2*Ti_perp?(:,2))/3.0];'],ic);
+    % 
+    % c_eval('Ne? = irf_resamp(Ne?, B?);',ic);c_eval('Te? = irf_resamp(Te?, B?);',ic);
+    % c_eval('Ni? = irf_resamp(Ni?, B?);',ic);c_eval('Ti? = irf_resamp(Ti?, B?);',ic);
+    % 
+    % c_eval('Pthe? = units.e*10^(15)*Ni?(:,2).*Ti?(:,2) + units.e*10^(15)*Ne?(:,2).*Te?(:,2);',ic);
+    % c_eval('Pm? = 10^(-9)*Bt?(:,5).^2 / (2*units.mu0);',ic); %nPa
+    % c_eval('Beta? = Pthe? ./ Pm?;',ic);
+    % 
+    % c_eval('Flag_msp? = find(Beta? <= 1);',ic);
 
     c_eval('Bmsh? = Bt?(:,[1,5]);',ic);
-    c_eval('Bmsh?(Flag_msp?,2) = 0;',ic);
+    % c_eval('Bmsh?(Flag_msp?,2) = 0;',ic);
     c_eval('Flag_StrongB? = find(Bmsh?(:,2) >= 100);',ic);
 
-    if isempty(Flag_StrongB1) & isempty(Flag_StrongB2) & isempty(Flag_StrongB3)
+    if isempty(Flag_StrongB1) & isempty(Flag_StrongB2) & isempty(Flag_StrongB3) & isempty(Flag_StrongB4)
         writematrix([NameTags{TDT}(1:end-1) , '无maxB>100事件'],...
             [OutputDir,'Log.txt'],'WriteMode','append','Encoding','UTF-8')
         continue
@@ -158,6 +160,12 @@ try
     if ~isempty(Flag_StrongB3)
         c_eval('[maxB?, id_maxB?] = max(Bmsh?(Flag_StrongB?,2));',3);
         writematrix([irf_time(B3(id_maxB3,1),'epoch>utc'),' maxB3 = ', num2str(maxB3)],...
+            [OutputDir,'CaseList.txt'],'WriteMode','append','Encoding','UTF-8')
+    end
+
+    if ~isempty(Flag_StrongB4)
+        c_eval('[maxB?, id_maxB?] = max(Bmsh?(Flag_StrongB?,2));',3);
+        writematrix([irf_time(B4(id_maxB4,1),'epoch>utc'),' maxB4 = ', num2str(maxB4)],...
             [OutputDir,'CaseList.txt'],'WriteMode','append','Encoding','UTF-8')
     end
 

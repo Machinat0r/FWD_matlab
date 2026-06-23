@@ -1,0 +1,355 @@
+function out = calc_electron_EM_Baro_phi_3sc( ...
+    R1, R2, R3, ...
+    ne1, ne2, ne3, ...
+    pe1, pe2, pe3, ...
+    Ve1, Ve2, Ve3, ...
+    B1, B2, B3, ...
+    Lvec, Mvec, Nvec)
+% calc_electron_EM_Baro_phi_3sc
+%
+% Calculate phi-component Baro and EM terms using three-spacecraft MMS
+% electron measurements under local 2D approximation.
+%
+% Local coordinates:
+%   er   = N
+%   ephi = L
+%   ez   = M
+%
+% Inputs:
+%   R1, R2, R3       : n x 4, [time, Rx, Ry, Rz], km
+%   ne1, ne2, ne3   : n x 2, [time, ne], cm^-3
+%   pe1, pe2, pe3   : n x 2, [time, pe], nPa
+%                     or n x 4, [time, Pxx, Pyy, Pzz], nPa
+%   Ve1, Ve2, Ve3   : n x 4, [time, Vex, Vey, Vez], km/s
+%   B1, B2, B3      : n x 4, [time, Bx, By, Bz], nT
+%
+% Outputs:
+%   out.baro_phi      : baroclinic term, s^-2
+%   out.eMag_phi      : electron magnetic-force term, s^-2
+%
+% Baro term:
+%   T_baro_phi = [(grad ne x grad pe)/(me ne^2)]_phi
+%
+% EM term calculated here:
+%   T_eB_phi = 1/rho_e * [curl(ne*q_e*Ve x B)]_phi
+%
+% under local 2D approximation d/dphi = 0:
+%   T_eB_phi = 1/rho_e * (dF_eB_r/dz - dF_eB_z/dr)
+%
+% where:
+%   F_eB = ne*q_e*(Ve x B)
+%   rho_e = me*ne
+%   q_e = -e
+
+%% constants
+units = irf_units;
+e = units.e;
+q_e = -e;
+me = units.me;
+
+%% use R1 time as reference time
+t = R1(:,1);
+Nt = length(t);
+
+%% interpolate all data onto R1 time
+R1_xyz  = interp_vec_to_t(R1,  t);
+R2_xyz  = interp_vec_to_t(R2,  t);
+R3_xyz  = interp_vec_to_t(R3,  t);
+
+ne1_s   = interp_scalar_to_t(ne1, t);
+ne2_s   = interp_scalar_to_t(ne2, t);
+ne3_s   = interp_scalar_to_t(ne3, t);
+
+pe1_s   = interp_pressure_to_t(pe1, t);
+pe2_s   = interp_pressure_to_t(pe2, t);
+pe3_s   = interp_pressure_to_t(pe3, t);
+
+Ve1_xyz = interp_vec_to_t(Ve1, t);
+Ve2_xyz = interp_vec_to_t(Ve2, t);
+Ve3_xyz = interp_vec_to_t(Ve3, t);
+
+B1_xyz  = interp_vec_to_t(B1,  t);
+B2_xyz  = interp_vec_to_t(B2,  t);
+B3_xyz  = interp_vec_to_t(B3,  t);
+
+%% construct local orthonormal basis
+er = Nvec(:) ./ norm(Nvec);
+
+ephi = Lvec(:) - dot(Lvec(:), er) .* er;
+ephi = ephi ./ norm(ephi);
+
+ez_from_cross = cross(er, ephi);
+ez_from_cross = ez_from_cross ./ norm(ez_from_cross);
+
+Munit = Mvec(:) ./ norm(Mvec);
+
+if dot(ez_from_cross, Munit) < 0
+    ez_from_cross = -ez_from_cross;
+end
+
+ez = ez_from_cross;
+
+% GSM vector A to local vector:
+% A_local = A_GSM * Q
+Q = [er, ephi, ez];
+
+%% unit conversion to SI
+R1_m  = R1_xyz .* 1e3;       % km to m
+R2_m  = R2_xyz .* 1e3;
+R3_m  = R3_xyz .* 1e3;
+
+ne1_m = ne1_s .* 1e6;        % cm^-3 to m^-3
+ne2_m = ne2_s .* 1e6;
+ne3_m = ne3_s .* 1e6;
+
+pe1_Pa = pe1_s .* 1e-9;      % nPa to Pa
+pe2_Pa = pe2_s .* 1e-9;
+pe3_Pa = pe3_s .* 1e-9;
+
+Ve1_SI = Ve1_xyz .* 1e3;     % km/s to m/s
+Ve2_SI = Ve2_xyz .* 1e3;
+Ve3_SI = Ve3_xyz .* 1e3;
+
+B1_SI = B1_xyz .* 1e-9;      % nT to T
+B2_SI = B2_xyz .* 1e-9;
+B3_SI = B3_xyz .* 1e-9;
+
+%% initialize outputs
+baro_phi = nan(Nt,1);
+eMag_phi = nan(Nt,1);
+
+grad_ne_rz    = nan(Nt,2);
+grad_pe_rz    = nan(Nt,2);
+grad_FeB_r_rz = nan(Nt,2);
+grad_FeB_z_rz = nan(Nt,2);
+
+FeB_mean_local = nan(Nt,3);
+rho_e_mean     = nan(Nt,1);
+
+%% main loop
+for it = 1:Nt
+
+    %% three-spacecraft positions in GSM
+    Rtmp = [
+        R1_m(it,:);
+        R2_m(it,:);
+        R3_m(it,:)
+    ];
+
+    if any(isnan(Rtmp(:)))
+        continue
+    end
+
+    %% convert positions to local coordinates
+    Rloc = Rtmp * Q;
+
+    r_sc = Rloc(:,1);
+    z_sc = Rloc(:,3);
+
+    %% scalar quantities
+    ne_sc = [
+        ne1_m(it);
+        ne2_m(it);
+        ne3_m(it)
+    ];
+
+    pe_sc = [
+        pe1_Pa(it);
+        pe2_Pa(it);
+        pe3_Pa(it)
+    ];
+
+    if any(isnan(ne_sc)) || any(isnan(pe_sc))
+        continue
+    end
+
+    %% vector quantities in GSM
+    Vetmp = [
+        Ve1_SI(it,:);
+        Ve2_SI(it,:);
+        Ve3_SI(it,:)
+    ];
+
+    Btmp = [
+        B1_SI(it,:);
+        B2_SI(it,:);
+        B3_SI(it,:)
+    ];
+
+    if any(isnan(Vetmp(:))) || any(isnan(Btmp(:)))
+        continue
+    end
+
+    %% electron magnetic force density
+    %
+    % F_eB = ne*q_e*(Ve x B)
+    %
+    % Units:
+    %   ne       : m^-3
+    %   q_e      : C
+    %   Ve       : m/s
+    %   B        : T
+    %   F_eB     : N/m^3
+    %
+    Ve_cross_B_gsm = cross(Vetmp, Btmp, 2);
+    FeB_gsm = bsxfun(@times, q_e .* ne_sc, Ve_cross_B_gsm);
+
+    %% convert F_eB to local coordinates
+    FeB_loc = FeB_gsm * Q;
+
+    FeB_r = FeB_loc(:,1);
+    FeB_z = FeB_loc(:,3);
+
+    FeB_mean_local(it,:) = mean(FeB_loc, 1, 'omitnan');
+
+    %% calculate 2D gradients from three spacecraft
+    grad_ne    = grad2D_3sc(r_sc, z_sc, ne_sc);
+    grad_pe    = grad2D_3sc(r_sc, z_sc, pe_sc);
+    grad_FeB_r = grad2D_3sc(r_sc, z_sc, FeB_r);
+    grad_FeB_z = grad2D_3sc(r_sc, z_sc, FeB_z);
+
+    grad_ne_rz(it,:)    = grad_ne;
+    grad_pe_rz(it,:)    = grad_pe;
+    grad_FeB_r_rz(it,:) = grad_FeB_r;
+    grad_FeB_z_rz(it,:) = grad_FeB_z;
+
+    dne_dr = grad_ne(1);
+    dne_dz = grad_ne(2);
+
+    dpe_dr = grad_pe(1);
+    dpe_dz = grad_pe(2);
+
+    dFeBr_dz = grad_FeB_r(2);
+    dFeBz_dr = grad_FeB_z(1);
+
+    %% average electron density and mass density
+    ne0 = mean(ne_sc, 'omitnan');
+
+    rho_e0 = me .* ne0;
+    rho_e_mean(it) = rho_e0;
+
+    %% Baro term phi component
+    %
+    % [(grad ne x grad pe)/(me ne^2)]_phi
+    %
+    baro_phi(it) = ...
+        abs((dne_dz .* dpe_dr - dne_dr .* dpe_dz) ./ (me .* ne0.^2));    
+
+    %% EM term phi component
+    %
+    % T_eB_phi = 1/rho_e * [curl(ne*q_e*Ve x B)]_phi
+    %
+    % under d/dphi = 0:
+    % [curl(F_eB)]_phi = dF_eB_r/dz - dF_eB_z/dr
+    %
+    eMag_phi(it) = ...
+        abs((dFeBr_dz - dFeBz_dr) ./ rho_e0);
+
+end
+
+%% output
+out.t = t;
+
+out.baro_phi = baro_phi;
+out.eMag_phi = eMag_phi;
+
+out.grad_ne_rz    = grad_ne_rz;
+out.grad_pe_rz    = grad_pe_rz;
+out.grad_FeB_r_rz = grad_FeB_r_rz;
+out.grad_FeB_z_rz = grad_FeB_z_rz;
+
+out.FeB_mean_local = FeB_mean_local;
+out.rho_e_mean     = rho_e_mean;
+
+out.er   = er;
+out.ephi = ephi;
+out.ez   = ez;
+out.Q    = Q;
+
+end
+
+
+function vec_out = interp_vec_to_t(data_in, t_ref)
+% data_in: n x 4, [time, x, y, z]
+% vec_out: length(t_ref) x 3
+
+if size(data_in,2) < 4
+    error('Vector input should be n x 4: [time, x, y, z].');
+end
+
+t_in = data_in(:,1);
+x_in = data_in(:,2:4);
+
+vec_out = interp1(t_in, x_in, t_ref, 'linear', NaN);
+
+end
+
+
+function scalar_out = interp_scalar_to_t(data_in, t_ref)
+% data_in: n x 2, [time, scalar]
+
+if size(data_in,2) < 2
+    error('Scalar input should be n x 2: [time, scalar].');
+end
+
+t_in = data_in(:,1);
+s_in = data_in(:,2);
+
+scalar_out = interp1(t_in, s_in, t_ref, 'linear', NaN);
+
+end
+
+
+function p_out = interp_pressure_to_t(data_in, t_ref)
+% data_in:
+%   n x 2, [time, scalar pressure]
+%   n x 4, [time, Pxx, Pyy, Pzz]
+%
+% output:
+%   scalar pressure
+
+if size(data_in,2) == 2
+    t_in = data_in(:,1);
+    p_in = data_in(:,2);
+
+elseif size(data_in,2) >= 4
+    t_in = data_in(:,1);
+    p_in = mean(data_in(:,2:4), 2, 'omitnan');
+
+else
+    error('Pressure input should be n x 2 or n x 4.');
+end
+
+p_out = interp1(t_in, p_in, t_ref, 'linear', NaN);
+
+end
+
+
+function grad_f = grad2D_3sc(r_sc, z_sc, f_sc)
+% Estimate local 2D gradient of scalar f using three spacecraft.
+%
+% f(r,z) = f0 + df/dr * (r-r0) + df/dz * (z-z0)
+%
+% output:
+%   grad_f = [df/dr, df/dz]
+
+r_sc = r_sc(:);
+z_sc = z_sc(:);
+f_sc = f_sc(:);
+
+r0 = mean(r_sc, 'omitnan');
+z0 = mean(z_sc, 'omitnan');
+f0 = mean(f_sc, 'omitnan');
+
+G  = [r_sc - r0, z_sc - z0];
+df = f_sc - f0;
+
+if rank(G) < 2
+    grad_f = [NaN, NaN];
+    return
+end
+
+grad_f_col = G \ df;
+grad_f = grad_f_col(:).';
+
+end

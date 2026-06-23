@@ -27,7 +27,9 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2017-06-25T05:06:58.00Z/2017-06-25T05:07:02.00Z';
 % TT = '2017-06-11T17:50:00.000Z/2017-06-11T18:00:00.000Z';
 % % % TT = '2021-07-22T11:05:00.000Z/2021-07-22T11:35:00.000Z';
- TT = '2021-07-14T17:36:00.000Z/2021-07-14T17:38:00.000Z';
+ % TT = '2021-07-14T17:36:00.000Z/2021-07-14T17:38:00.000Z';
+ TT = '2019-08-31T11:40:00.000Z/2019-08-31T12:50:00.000Z';
+
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
@@ -37,11 +39,11 @@ ic = 1;
 iic = 1:4;
 
 filenames_srvy1 = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
-filenames_srvy2 = SDCFilenames(Date,iic,'inst','hpca','drm','srvy','dpt','ion,moments'); 
-filenames_srvy = [filenames_srvy1, filenames_srvy2];
+% filenames_srvy2 = SDCFilenames(Date,iic,'inst','hpca','drm','srvy','dpt','ion,moments'); 
+filenames_srvy = [filenames_srvy1];
 filenames_fast1 = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms');
-filenames_fast2 = SDCFilenames(Date,ic,'inst','edp','drm','fast');
-filenames_fast = [filenames_fast1, filenames_fast2];
+% filenames_fast2 = SDCFilenames(Date,ic,'inst','edp','drm','fast');
+filenames_fast = [filenames_fast1];
 
 [fileames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
 [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);

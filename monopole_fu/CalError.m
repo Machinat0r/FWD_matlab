@@ -43,13 +43,13 @@ else
 end
 %% resample
 % units = irf_units;
-% % % if ~isempty(idx)
-% % % %     c_eval('R?(:,2:4) = units.RE*R?(:,2:4);')
-% % %     c_eval('B? = irf_resamp(B?,B1);',2:4)
-% % % %     c_eval('R? = irf_resamp(R?,B1);')
-% % %     c_eval('B? = B?(idx,:);')
-% % %     c_eval('R? = R?(idx_R,:);')
-% % % end
+if ~isempty(idx)
+%     c_eval('R?(:,2:4) = units.RE*R?(:,2:4);')
+    c_eval('B? = irf_resamp(B?,B1);',2:4)
+%     c_eval('R? = irf_resamp(R?,B1);')
+    c_eval('B? = B?(idx,:);')
+    c_eval('R? = R?(idx_R,:);')
+end
 
 %% residual
 %% 使用2颗卫星代入模型求解

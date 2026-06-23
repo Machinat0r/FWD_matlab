@@ -2,12 +2,15 @@ clc;
 clear;
 close all;
 global ParentDir 
-ParentDir = '/Volumes/172.17.190.41/Data/MMS/'; 
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
 DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
-TT = '2016-01-07T09:34:27.00Z/2016-01-07T09:34:37.00Z';
+
+TT = '2021-01-08T17:51:00.000Z/2021-01-08T17:51:30.000Z';
+% TT = '2016-01-07T09:34:27.00Z/2016-01-07T09:34:37.00Z';
 Tint = irf.tint(TT);
-Tintlong = Tint+[-60 60];
+Tint2 = Tint;
+Tintlong = Tint+[-60 60];Tint = Tintlong;
 mms.db_init('local_file_db',ParentDir);
 
 ic=1:4;
@@ -16,12 +19,18 @@ c_eval('B?=mms.get_data(''B_gse_fgm_brst_l2'',Tintlong,?);',ic);
 ic=1;
 c_eval('Bxyz_brst?=mms.get_data(''B_gsm_brst'',Tint,?);',ic);
 c_eval('Bxyz_srvy?=mms.get_data(''B_gsm_srvy'',Tint,?);',ic);
-c_eval('Bscm=mms.db_get_ts(''mms?_scm_brst_l2_scb'',''mms?_scm_acb_gse_scb_brst_l2'',Tint);',ic);
+
+
+c_eval('Bscm = Bxyz_brst?;',ic)
+% c_eval('Bscm=mms.db_get_ts(''mms?_scm_brst_l2_scb'',''mms?_scm_acb_gse_scb_brst_l2'',Tint);',ic);
 c_eval('Bscm = irf_gse2gsm(Bscm);',ic);
 
 c_eval('Exyz_brst?=mms.get_data(''E_gse_edp_brst_l2'',Tint,?);',ic);
+c_eval('Exyz_brst? = irf_gse2gsm(Exyz_brst?);',ic)
 % c_eval('E?_gse_ts=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',tint);',ic);
 % c_eval('Exyz_brst?=Exyz_brst?.resample(Bxyz_brst?);',ic);
+
+c_eval('Bscm = Bscm.resample(Exyz_brst?);',ic)
 
 R  = mms.get_data('R_gsm',Tintlong);
 
@@ -31,12 +40,12 @@ c_eval('magB=Bxyz_brst?.abs;',ic);
 c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensity_brst'',Tint);',ic);
 %% calculate B0
 
-B0 = Bxyz_brst1.filt(0,1,128,5);
+B0 = Bxyz_brst1.filt(0,0.1,128,5);
 %% polarization
-fmin=2e2;
-fmax=4e3;
+fmin=0.2;
+fmax=1;
 % c_eval('fmax=0.5/(Bxyz_brst?.time(2).epochUnix-Bxyz_brst?.time(1).epochUnix);',ic);%ÄÎ¿üË¹ÌØÆµÂÊ
-c_eval('polarization=irf_ebsp(Exyz_brst?,Bscm,Bxyz_brst?,B0,Rxyz1,[fmin fmax],''polarization'',''fac'');',ic);
+c_eval('polarization=irf_ebsp(Exyz_brst?,Bscm,Bxyz_brst?,B0,Rxyz?,[fmin fmax],''polarization'',''fac'');',ic);
 % irf_pl_ebsp(polarization);
 
 %% Compute characteristic frequencies
@@ -333,7 +342,7 @@ set(h(5:10),'ytick', [5 10 20 50 100 200]);
 % irf_adjust_panel_position
 irf_plot_axis_align(h);
 % irf_pl_number_subplots(h,[0.02, 0.98]);
-irf_zoom(h,'x',Tint);
+irf_zoom(h,'x',Tint2);
 set(h(1:10),'xgrid','off','ygrid','off')
 
 % n=256;
@@ -349,19 +358,19 @@ colormap(h(10),jet);
 % colormap(h(7),jet);
 % colormap(h(8),jet);
 
-Tsta='2021-07-22T05:20:55Z';   
-Tend='2021-07-22T05:20:58Z';
+% Tsta='2021-07-22T05:20:55Z';   
+% Tend='2021-07-22T05:20:58Z';
 %%
-tint2=irf.tint('2021-07-22T05:20:56Z/2021-07-22T05:20:57');
-for ii = 1:6
-    c_eval('irf_pl_mark(h(?),tint2,[0.74 0.74 0.74],''edgecolor'',''k'',''linestyle'',''--'')',ii);
-end
+% tint2=irf.tint('2021-07-22T05:20:56Z/2021-07-22T05:20:57');
+% for ii = 1:6
+%     c_eval('irf_pl_mark(h(?),tint2,[0.74 0.74 0.74],''edgecolor'',''k'',''linestyle'',''--'')',ii);
+% end
 %%
 % color=[192 192 192]./255;
 % set(h(1:6),'color',color);
 % set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
 % irf_adjust_panel_position;
-figname=['wave_polarization' '_' Tsta(1:4) Tsta(6:7) Tsta(9:10) '-' Tsta(12:13) ...
-    Tsta(15:16) Tsta(18:19) '_' Tend(12:13) Tend(15:16) Tend(18:19)];
+% figname=['wave_polarization' '_' Tsta(1:4) Tsta(6:7) Tsta(9:10) '-' Tsta(12:13) ...
+%     Tsta(15:16) Tsta(18:19) '_' Tend(12:13) Tend(15:16) Tend(18:19)];
 % print(gcf, '-dpng', [figname '.png']);

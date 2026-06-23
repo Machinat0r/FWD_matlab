@@ -2,7 +2,7 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+ParentDir = '/Volumes/172.17.191.188/SPART-WORK/Data/MMS/'; 
 DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
@@ -30,35 +30,42 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'; 
 % TT = '2017-07-18T13:04:50.00Z/2017-07-18T13:05:00.00Z';
 % % % TT = '2021-09-08T09:31:48.000Z/2021-09-08T09:31:50.000Z';
-TT = '2019-09-24T02:17:06.500Z/2019-09-24T02:17:10.000Z';
+% TT = '2019-09-24T02:17:06.500Z/2019-09-24T02:17:10.000Z';
+TT = '2021-01-08T17:51:00.000Z/2021-01-08T17:51:30.000Z';
+% TT = '2015-12-30T22:26:26.000Z/2015-12-30T22:26:36.000Z';
 
 tint=irf.tint(TT);
+tint2 = tint;tint = tint+[-60 60];
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 ic = 1;
 iic = 1:4;
-filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
-filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
-filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
-filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce,scpot');
-filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
-% filenames_fast = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms,des-dist,dis-dist');
-filenames = [filenames1,filenames2,filenames3,filenames4];
-
-[filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
-% [filenames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
-% [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
-
-SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
-% SDCFilesDownload_NAS(filenames_fast,TempDir)
-% SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 32, 'CheckSize', 0)
-SDCDataMove(TempDir,ParentDir)
+% % % filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
+% % % filenames2 = SDCFilenames(Date,ic,'inst','fpi','drm','brst','dpt','des-moms,dis-moms,des-dist,dis-dist');
+% % % filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
+% % % filenames4 = SDCFilenames(Date,ic,'inst','edp','drm','brst','dpt','dce,scpot');
+% % % filenames_srvy = SDCFilenames(Date,iic,'inst','fgm','drm','srvy'); 
+% % % % filenames_fast = SDCFilenames(Date,ic,'inst','fpi','drm','fast','dpt','des-moms,dis-moms,des-dist,dis-dist');
+% % % filenames = [filenames1,filenames2,filenames3,filenames4];
+% % % 
+% % % [filenames,desmoms1,desmoms2] = findFilenames(TT,filenames,'brst',ic);
+% % % % [filenames_fast,~,~] = findFilenames(TT,filenames_fast,'fast',ic);
+% % % % [filenames_srvy,~,~] = findFilenames(TT,filenames_srvy,'srvy',iic);
+% % % 
+% % % SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 48, 'CheckSize', 0)
+% % % % SDCFilesDownload_NAS(filenames_fast,TempDir)
+% % % % SDCFilesDownload_NAS(filenames_srvy,TempDir, 'Threads', 32, 'CheckSize', 0)
+% % % SDCDataMove(TempDir,ParentDir)
 mms.db_init('local_file_db',ParentDir);
 %% Load Data 
 c_eval('Bxyz=mms.db_get_ts(''mms?_fgm_brst_l2'',''mms?_fgm_b_gsm_brst_l2'',tint);',ic);
+% Bxyz2 = Bxyz;
+% 
+% Bxyz = Bxyz.filt(0,0.05,128,5);
+
 magB = Bxyz.abs;
-B=irf.ts2mat(Bxyz);
+B=irf.ts2mat(Bxyz2);
 Bt=irf.ts2mat(magB);
 c_eval('Exyz_gse=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms?_edp_dce_gse_brst_l2'',tint);',ic);
 % E_temp=irf.ts2mat(Exyz_gse);
@@ -67,6 +74,10 @@ E=irf.ts2mat(Exyz);
 % Exyz = TSeries(Exyz_gse.time,[Exyz_gsm(:,2:4)]);
 % Exyz = irf.ts_vec_xyz(Exyz_gse.time,Exyz_gsm(:,2:4));
 c_eval('Bscm_ts=mms.db_get_ts(''mms?_scm_brst_l2_scb'',''mms?_scm_acb_gse_scb_brst_l2'',tint);',ic);
+
+
+% Bscm_ts=Bxyz2;
+
 
 c_eval('Epar?_err_ts=mms.db_get_ts(''mms?_edp_brst_l2_dce'',''mms£¿_edp_dce_err_brst_l2'',tint);',ic);
 c_eval('Epar?_err=irf.ts2mat(Epar?_err_ts);',ic);
@@ -122,7 +133,7 @@ c_eval('ne = mms.db_get_ts(''mms?_fpi_brst_l2_des-moms'',''mms?_des_numberdensit
 %% Rotate E and B into field-aligned coordinates
 Exyzfac = irf_convert_fac(Exyz,Bxyz,[1 0 0]);
 Bscmfac1 = irf_convert_fac(Bscm1,Bxyz,[1 0 0]);
-lf=2;
+lf=0.1; hf = 1;
 if flag == 2
     Bscmfac2 = irf_convert_fac(Bscm2,Bxyz,[1 0 0]);
     dfB2 = 1/median(diff(Bscm2.time.epochUnix));
@@ -138,11 +149,11 @@ dfB1 = 1/median(diff(Bscm1.time.epochUnix));
 
 % 
 Exyzfachf = Exyzfac.filt(lf,0,dfE,5);
-Exyzfaclf = Exyzfac.filt(0,lf,dfE,5);
-Bscmfachf1 = Bscmfac1.filt(lf,0,dfB1,5);
-Bscmfachf1=irf_convert_fac(Bscmfachf1,B,[1,0,0]);
+Exyzfaclf = Exyzfac.filt(1,4000,dfE,3);
+% Bscmfachf1 = Bscmfac1.filt(lf,0,dfB1,5);
+% Bscmfachf1=irf_convert_fac(Bscmfachf1,B,[1,0,0]);
 % Bscmfachf1 = Bscmfac1.filt(0.02,0,128,5);
-% Bscmfachf1 = Bscmfac1.filt(40,300,dfB1,5);
+Bscmfachf1 = Bscmfac1.filt(1,4000,dfB1,3);
 % % % 
 % % % hf = 40;
 % % % Exyzfachf = Exyzfac.filt(lf,hf,dfE,5);
@@ -154,11 +165,11 @@ Bfachf1=irf.ts2mat(Bscmfachf1);
 %% Wavelet transforms
 nf = 100;
 % Ewavelet = irf_wavelet(Exyzfachf,'nf',nf,'f',[lf 1]);
-Ewavelet = irf_wavelet(Exyzfac,'nf',nf,'f',[lf 6000]);
-Bwavelet1 = irf_wavelet(Bscmfachf1,'nf',nf,'f',[lf 6000]);
+Ewavelet = irf_wavelet(Exyzfaclf,'nf',nf,'f',[lf hf]);
+Bwavelet1 = irf_wavelet(Bscmfachf1,'nf',nf,'f',[lf hf]);
 % Bwavelet1 = irf_wavelet(Bscmfachf1,'nf',nf,'f',[lf 1]);
 if flag == 2
-Bwavelet2 = irf_wavelet(Bscmfachf2,'nf',nf,'f',[lf 6000]);
+Bwavelet2 = irf_wavelet(Bscmfachf2,'nf',nf,'f',[lf hf]);
 end
 
 %compress wavelet transform data 10 point average
@@ -312,7 +323,7 @@ irf_plot(h(4),Fce,'color','r','LineWidth',1.5);hold on;
 grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e1 1e2 1e3 1e4]);
-set(gca,'ylim',[2, 1e2]);
+set(gca,'ylim',[0.2 1]);
 clim(h(4),[-8 1]);
 ylabel(h(4),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
@@ -333,7 +344,7 @@ irf_plot(h(5),Fce05,'color','c','LineWidth',1.5);hold off;
 grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e1 1e2 1e3 1e4]);
-set(gca,'ylim',[2,4e3]);
+set(gca,'ylim',[0.2 1]);
 clim(h(5),[-8 0]);
 ylabel(h(5),'f (Hz)','fontsize',12);
 poscbar=get(hcb,'pos');
@@ -374,7 +385,7 @@ irf_plot(h(7),Fce05,'color','c','LineWidth',1.5);hold off;
 grid off;
 set(gca,'yscale','log');
 set(gca,'ytick',[1e-1 1e0 1e1 1e2 1e3 1e4]);
-set(gca,'ylim',[2 4e3]);
+set(gca,'ylim',[0.2 1]);
 % set(gca,'ylim',[50,400]);
 set(gca,'XTickLabelRotation',0)
 clim(h(7),[-8 -6]);
@@ -388,7 +399,7 @@ set(hcb,'fontsize',10);
 colormap(jet);
 
 irf_plot_axis_align(h(1:7));
-irf_zoom(h(1:7),'x',tint);
+irf_zoom(h(1:7),'x',tint2);
 
 % irf_pl_mark(h(1:7),[iso2epoch('2015-10-16T13:04:26Z')],'k');
 % irf_pl_mark(h(1:7),[iso2epoch('2015-12-14T00:59:04Z')],'k');

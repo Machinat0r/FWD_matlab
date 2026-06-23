@@ -30,18 +30,18 @@ clear;clc;close all
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 global ParentDir 
-ParentDir = 'D:\MMS/'; 
-DownloadDir = 'D:\MMS/';
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
 % TT = '2019-01-16T04:09:55.605Z/2019-01-16T04:09:55.630Z'; %no boundary, 10,78-81
-% % % % % TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
+TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % TT = '2019-01-16T04:09:55.420Z/2019-01-16T04:09:55.800Z'; %no boundary, 10,78-81
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:15:50.00Z';
-
-TT =  '2015-09-09T14:49:00.000Z/2015-09-09T14:52:00.000Z';
-TT2 = '2015-09-09T14:51:39.000Z/2015-09-09T14:51:41.000Z';
+% 
+% TT =  '2015-09-09T14:49:00.000Z/2015-09-09T14:52:00.000Z';
+% TT2 = '2015-09-09T14:51:39.000Z/2015-09-09T14:51:41.000Z';
 
 % TT =  '2016-01-27T03:00:00.000Z/2016-01-27T03:05:00.000Z';
 % TT2 = '2016-01-27T03:03:26.000Z/2016-01-27T03:03:28.000Z';
@@ -55,7 +55,8 @@ TT2 = '2015-09-09T14:51:39.000Z/2015-09-09T14:51:41.000Z';
 
 % TT = '2015-09-19T07:43:28.000Z/2015-09-19T07:43:33.000Z';
 
-tint=irf.tint(TT);tint2=irf.tint(TT2);
+tint=irf.tint(TT);
+TT2 = TT; tint2=irf.tint(TT2);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
@@ -121,7 +122,7 @@ clc;
 % RR_mean = RR_mean(4)/6;
 % if PI(i)~=0
     [Q(i),resQ{i},LocPoint(i,:),LocRes{i}] = CalError(R1, R2, R3, R4,B1, B2, B3, B4,...
-        i,i*sign(divB(i,2)),RR_mean(i),1);
+        i,i*sign(divB(i,2)),10,1);
 
     tempd = irf_abs(LocRes{i}(id(:,1),:)-LocRes{i}(id(:,2),:));
     tempd = tempd(:,4)/RR_mean(i);
@@ -194,22 +195,23 @@ c_eval('Bcross? = irf_dot(B?(:,2:4),Bm?(:,2:4));')
 % % c_eval('Btheta? = 100*theta?./RR_mean.*R?(:,5);')
 % c_eval('Btheta? = asin(sqrt(1-(Bcross?./(B?(:,5).*Bm?(:,5))).^2))*180/pi;')
 % c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5)./RR_mean.*Rres(:,?);')
-% % % % % c_eval('Btheta? = acosd(Bcross?./(B?(:,5).*Bm?(:,5)))./RR_mean.*R?(:,5);')
-% % % % % c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5)./RR_mean.*R?(:,5);')
-c_eval('Btheta? = acosd(Bcross?./(B?(:,5).*Bm?(:,5)));')
-c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5);')
-% % % c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5)./RR_mean.*R?(:,5);')
+c_eval('Btheta? = acosd(Bcross?./(B?(:,5).*Bm?(:,5)))./RR_mean.*R?(:,5);')
+c_eval('Blength? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5)./RR_mean.*R?(:,5);')
+
+c_eval('Btheta2? = acosd(Bcross?./(B?(:,5).*Bm?(:,5)));')
+c_eval('Blength2? = abs(B?(:,5)-Bm?(:,5))./Bm?(:,5);')
+
 Blength = 0.25*(Blength1+Blength2+Blength3+Blength4);
 c_eval('BErr? = 100*(1-(1-Btheta?).*(1-Blength?));')
 BErr = mean([BErr1,BErr2,BErr3,BErr4],2);
 %% Init figure
-n=5;
+n=4;
 i=1;
 set(0,'DefaultAxesFontSize',8);
 set(0,'DefaultLineLineWidth', 0.5);
 fn=figure(1);clf;
 set(gcf,'PaperUnits','centimeters')
-xSize = 70; ySize = 80; coef=floor(min(800/xSize,800/ySize));
+xSize = 70; ySize = 70; coef=floor(min(800/xSize,800/ySize));
 xLeft = (21-xSize)/2; yTop = (30-ySize)/2;
 set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
 set(gcf,'Position',[10 10 xSize*coef ySize*coef])
@@ -254,24 +256,24 @@ set(gcf,'Position',[10 10 xSize*coef ySize*coef])
 % % % ylabel('Loc ','fontsize',12);
 % % % i=i+1;
 %% Location Error
-h(i)=irf_subplot(n,1,-i);
-
-irf_plot([B1(:,1) mean(dLoc,2)], 'color','k', 'Linewidth',0.75); hold on;
-grid off;
-% set(gca,'Ylim',[0 max(Locerror)]);
-set(gca,'Ylim',[0,120], 'ytick',[0 50 100],'fontsize',9);
-pos1=get(gca,'pos');
-ylabel('mean','fontsize',12);
-i=i+1;
+% h(i)=irf_subplot(n,1,-i);
+% 
+% irf_plot([B1(:,1) mean(dLoc,2)], 'color','k', 'Linewidth',0.75); hold on;
+% grid off;
+% % set(gca,'Ylim',[0 max(Locerror)]);
+% set(gca,'Ylim',[0,120], 'ytick',[0 50 100],'fontsize',9);
+% pos1=get(gca,'pos');
+% ylabel('mean','fontsize',12);
+% i=i+1;
 %% Q Error
-h(i)=irf_subplot(n,1,-i);
-irf_plot([B1(:,1) Qerror], 'color','k', 'Linewidth',0.75); hold on;
-grid off;
-% set(gca,'Ylim',[0 max(Qerror)]);
-set(gca,'Ylim',[0,200], 'ytick',[0 100 200],'fontsize',9);
-pos1=get(gca,'pos');
-ylabel('Q Err [%]','fontsize',12);
-i=i+1;
+% h(i)=irf_subplot(n,1,-i);
+% irf_plot([B1(:,1) Qerror], 'color','k', 'Linewidth',0.75); hold on;
+% grid off;
+% % set(gca,'Ylim',[0 max(Qerror)]);
+% set(gca,'Ylim',[0,200], 'ytick',[0 100 200],'fontsize',9);
+% pos1=get(gca,'pos');
+% ylabel('Q Err [%]','fontsize',12);
+% i=i+1;
 %% Q
 % % % h(i)=irf_subplot(n,1,-i);
 % % % irf_plot([B1(:,1) Q], 'color','k', 'Linewidth',0.75); hold on;
@@ -283,20 +285,20 @@ i=i+1;
 % % % set(gca,'Yscale','log')
 % % % i=i+1;
 %% plot div err
-h(i)=irf_subplot(n,1,-i);
-irf_plot([divErr(:,1) divErr(:,2)], 'color','k', 'Linewidth',0.75); hold on;
-%irf_plot([B1(:,1) B1], 'color','k', 'Linewidth',0.75); hold on;
-% c_eval("irf_plot([B?_gse(:,1) 0*B?_gse(:,2)],'k--', 'Linewidth',0.75);",ic); hold off;
-grid off;
-% set(gca,'Ylim',[min([min(B1_gse(:,2)) min(B2_gse(:,2)) min(B3_gse(:,2)) min(B4_gse(:,2))])-5 ...
-%     max([max(B1_gse(:,2)) max(B2_gse(:,2)) max(B3_gse(:,2)) max(B4_gse(:,2))])+5]);
-% c_eval("set(gca,'Ylim',[min([min(B?_gse(:,2))])-100 max([max(B?_gse(:,2))])+100]);",ic);
-set(gca,'Ylim',[0 100], 'ytick',[0 50 100],'fontsize',9);
-pos1=get(gca,'pos');
-ylabel('div Error [%]','fontsize',12);
-% irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
-% irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
-i=i+1;
+% h(i)=irf_subplot(n,1,-i);
+% irf_plot([divErr(:,1) divErr(:,2)], 'color','k', 'Linewidth',0.75); hold on;
+% %irf_plot([B1(:,1) B1], 'color','k', 'Linewidth',0.75); hold on;
+% % c_eval("irf_plot([B?_gse(:,1) 0*B?_gse(:,2)],'k--', 'Linewidth',0.75);",ic); hold off;
+% grid off;
+% % set(gca,'Ylim',[min([min(B1_gse(:,2)) min(B2_gse(:,2)) min(B3_gse(:,2)) min(B4_gse(:,2))])-5 ...
+% %     max([max(B1_gse(:,2)) max(B2_gse(:,2)) max(B3_gse(:,2)) max(B4_gse(:,2))])+5]);
+% % c_eval("set(gca,'Ylim',[min([min(B?_gse(:,2))])-100 max([max(B?_gse(:,2))])+100]);",ic);
+% set(gca,'Ylim',[0 100], 'ytick',[0 50 100],'fontsize',9);
+% pos1=get(gca,'pos');
+% ylabel('div Error [%]','fontsize',12);
+% % irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
+% % irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
+% i=i+1;
 %% plot B theta err
 h(i)=irf_subplot(n,1,-i);
 
@@ -326,6 +328,50 @@ irf_plot([B1(:,1) 100*Blength1], 'color','k', 'Linewidth',0.75); hold on;
 irf_plot([B2(:,1) 100*Blength2], 'color','r', 'Linewidth',0.75); hold on;
 irf_plot([B3(:,1) 100*Blength3], 'color','g', 'Linewidth',0.75); hold on;
 irf_plot([B4(:,1) 100*Blength4], 'color','b', 'Linewidth',0.75); hold on;
+% irf_plot([B1(:,1) Blength], 'color','k', 'Linewidth',0.75); hold on;
+%irf_plot([B1(:,1) B1], 'color','k', 'Linewidth',0.75); hold on;
+% c_eval("irf_plot([B?_gse(:,1) 0*B?_gse(:,2)],'k--', 'Linewidth',0.75);",ic); hold off;
+grid off;
+% set(gca,'Ylim',[min([min(B1_gse(:,2)) min(B2_gse(:,2)) min(B3_gse(:,2)) min(B4_gse(:,2))])-5 ...
+%     max([max(B1_gse(:,2)) max(B2_gse(:,2)) max(B3_gse(:,2)) max(B4_gse(:,2))])+5]);
+% c_eval("set(gca,'Ylim',[min([min(B?_gse(:,2))])-100 max([max(B?_gse(:,2))])+100]);",ic);
+set(gca,'Ylim',[0 100], 'ytick',[0 50 100],'fontsize',9);
+pos1=get(gca,'pos');
+% set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
+% irf_legend(gca,{'C1','C2','C3','C4'},[0.97 0.92]);
+ylabel('B strength Error [%]','fontsize',12);
+% irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
+% irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
+i=i+1;
+%% plot B theta err2
+h(i)=irf_subplot(n,1,-i);
+
+irf_plot([B1(:,1) Btheta21], 'color','k', 'Linewidth',0.75); hold on;
+irf_plot([B2(:,1) Btheta22], 'color','r', 'Linewidth',0.75); hold on;
+irf_plot([B3(:,1) Btheta23], 'color','g', 'Linewidth',0.75); hold on;
+irf_plot([B4(:,1) Btheta24], 'color','b', 'Linewidth',0.75); hold on;
+
+%irf_plot([B1(:,1) B1], 'color','k', 'Linewidth',0.75); hold on;
+% c_eval("irf_plot([B?_gse(:,1) 0*B?_gse(:,2)],'k--', 'Linewidth',0.75);",ic); hold off;
+grid off;
+% set(gca,'Ylim',[min([min(B1_gse(:,2)) min(B2_gse(:,2)) min(B3_gse(:,2)) min(B4_gse(:,2))])-5 ...
+%     max([max(B1_gse(:,2)) max(B2_gse(:,2)) max(B3_gse(:,2)) max(B4_gse(:,2))])+5]);
+% c_eval("set(gca,'Ylim',[min([min(B?_gse(:,2))])-100 max([max(B?_gse(:,2))])+100]);",ic);
+set(gca,'Ylim',[0 100], 'ytick',[0 50 100],'fontsize',9);
+pos1=get(gca,'pos');
+set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
+irf_legend(gca,{'MMS1','MMS2','MMS3','MMS4'},[0.97 0.92]);
+ylabel('B angular Error [%]','fontsize',12);
+% irf_legend(gca,{'B_N'},[pos2(1)+1.15*pos2(3),pos2(2)]);
+% irf_legend(gca,'a',[0.99 0.98],'color','k','fontsize',12)
+i=i+1;
+%% plot B length err2
+h(i)=irf_subplot(n,1,-i);
+% % % irf_plot([B1(:,1) BErr], 'color','k', 'Linewidth',0.75); hold on;
+irf_plot([B1(:,1) 100*Blength21], 'color','k', 'Linewidth',0.75); hold on;
+irf_plot([B2(:,1) 100*Blength22], 'color','r', 'Linewidth',0.75); hold on;
+irf_plot([B3(:,1) 100*Blength23], 'color','g', 'Linewidth',0.75); hold on;
+irf_plot([B4(:,1) 100*Blength24], 'color','b', 'Linewidth',0.75); hold on;
 % irf_plot([B1(:,1) Blength], 'color','k', 'Linewidth',0.75); hold on;
 %irf_plot([B1(:,1) B1], 'color','k', 'Linewidth',0.75); hold on;
 % c_eval("irf_plot([B?_gse(:,1) 0*B?_gse(:,2)],'k--', 'Linewidth',0.75);",ic); hold off;
