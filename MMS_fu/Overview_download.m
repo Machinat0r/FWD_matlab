@@ -735,7 +735,7 @@ i=i+1;
 % 
 % 
 % grid off;
-% ylabel('B [nT]','fontsize',10);
+% ylabel('B [ne]','fontsize',10);
 % % set(gca,'Ylim',[fix(min([min(B1(:,2)) min(B1(:,3)) min(B1(:,4))])/10)*10-10 fix(max(Bt1(:,2))/10)*10+10]);
 % % set(gca,'Ylim',[-5 15], 'ytick',[ -5 0 5 10]);
 % pos1=get(gca,'pos');

@@ -2,14 +2,16 @@ function id_flagTime = SDCPlot(tint,desmoms1,desmoms2,IC,Name,flagTime)
 % see also SDCFilenames,SDCFilesDownload,SDCDataMove
 %% 底下就是原来的overview程序
     %zhuanhuan
-    N=[0.54,-0.82,0.17];
-    q=[0 0 1];
-    L=cross(N,q);
-    M=cross(N,L);
+    % N=[0.54,-0.82,0.17];
+    % q=[0 0 1];
+    % L=cross(N,q);
+    % M=cross(N,L);
 
-    global OutputDir
+    global OutputDir ParentDir
+    mms.db_init('local_file_db', ParentDir);
 
-    for ic=IC
+    ic = IC;
+    % for ic=IC
     % load B
 
         c_eval(['B?_ts=mms.get_data(''B_gsm_brst'',tint,?);'],ic);
@@ -25,7 +27,7 @@ function id_flagTime = SDCPlot(tint,desmoms1,desmoms2,IC,Name,flagTime)
         % c_eval('Bbff? = B?_ts.filt(0,0.8,dfB?,3);',ic);
         % c_eval(['Bbff?=irf.ts2mat(Bbff?);'],ic);
 
-        c_eval('Blmn?=irf_newxyz(Bbf1,L,M,N);',ic);
+        % c_eval('Blmn?=irf_newxyz(Bbf1,L,M,N);',ic);
 
         % load E
         c_eval(['E?_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],ic);
@@ -53,7 +55,7 @@ function id_flagTime = SDCPlot(tint,desmoms1,desmoms2,IC,Name,flagTime)
         % c_eval('Ebff? = E?_gsm.filt(0,0.8,dfE?,3);',ic);
         % c_eval(['Ebff?=irf.ts2mat(Ebf?);'],ic);
 
-        c_eval('Elmn?=irf_newxyz(Ebf1,L,M,N);',ic);
+        % c_eval('Elmn?=irf_newxyz(Ebf1,L,M,N);',ic);
 
 
         % load FPI
@@ -113,7 +115,7 @@ function id_flagTime = SDCPlot(tint,desmoms1,desmoms2,IC,Name,flagTime)
         c_eval(["Pte? = 10^(-6)*Ne?(:,2).*Te?(:,2);"],ic);
         c_eval(["Pti? = 10^(-6)*Ni?(:,2).*Ti?(:,2);"],ic);
 
-    end
+    % end
 
 
     energy_mid1=mms.db_get_variable('mms1_fpi_brst_l2_des-moms','mms1_des_pitchangdist_miden_brst',tint);
@@ -143,61 +145,34 @@ function id_flagTime = SDCPlot(tint,desmoms1,desmoms2,IC,Name,flagTime)
     % c_eval('dfE? = 1/median(diff(Exyz?.time.epochUnix));',ic);
     % c_eval('dfB? = 1/median(diff(Bscm?.time.epochUnix));',ic);
     % c_eval('Exyzfachf? = Exyzfac?.filt(9,12,dfE?,5);',ic);
-
-    c_eval(['fpiFilee1 = dataobj(','''',desmoms1,'''',');'],ic);
-    c_eval('energy_low1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_lowen_brst'');',ic);
-    c_eval('energy_mid1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_miden_brst'');',ic);
-    c_eval('energy_high1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_highen_brst'');',ic);
-    c_eval('energy_e1 = get_variable(fpiFilee1,''mms?_des_energyspectr_omni_brst'');',ic);
-
-    c_eval(['fpiFilee2 = dataobj(','''',desmoms2,'''',');'],ic);
-    c_eval('energy_low2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_lowen_brst'');',ic);
-    c_eval('energy_mid2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_miden_brst'');',ic);
-    c_eval('energy_high2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_highen_brst'');',ic);
-    c_eval('energy_e2 = get_variable(fpiFilee2,''mms?_des_energyspectr_omni_brst'');',ic);
-    % data merge
-    data1=energy_low1.data; data2=energy_low2.data; data=[data1;data2];energy_low=energy_low1; energy_low.data=data; energy_low.nrec=energy_low1.nrec+energy_low2.nrec;
-    data1=energy_mid1.data; data2=energy_mid2.data; data=[data1;data2];energy_mid=energy_mid1; energy_mid.data=data;  energy_mid.nrec=energy_mid1.nrec+energy_mid2.nrec;
-    data1=energy_high1.data; data2=energy_high2.data; data=[data1;data2];energy_high=energy_high1; energy_high.data=data;  energy_high.nrec=energy_high1.nrec+energy_high2.nrec;
-    data1=energy_e1.data; data2=energy_e2.data; data=[data1;data2];energy_e=energy_e1; energy_e.data=data;  energy_e.nrec=energy_e1.nrec+energy_e2.nrec;
-    % time merge
-    data1=energy_low1.DEPEND_0.data;data2=energy_low2.DEPEND_0.data; data=[data1;data2]; energy_low.DEPEND_0.data=data;
-    data1=energy_mid1.DEPEND_0.data;data2=energy_mid2.DEPEND_0.data; data=[data1;data2]; energy_mid.DEPEND_0.data=data;
-    data1=energy_high1.DEPEND_0.data;data2=energy_high2.DEPEND_0.data; data=[data1;data2]; energy_high.DEPEND_0.data=data;
-    data1=energy_e1.DEPEND_0.data;data2=energy_e2.DEPEND_0.data; data=[data1;data2]; energy_e.DEPEND_0.data=data;
-
-
-
-    % c_eval(['Vexb?=irf_cross(E?_resamp,B?);'],ic);
-    % c_eval(['Vexb?(:,2:4)=Vexb?(:,2:4)./[power(Bt?(:,2),2) power(Bt?(:,2),2) power(Bt?(:,2),2)]*1e-12*1e18;'],ic);
-    % c_eval(['Vexbt?=[Vexb?(:,1) sqrt(power(Vexb?(:,2),2)+power(Vexb?(:,3),2)+power(Vexb?(:,4),2))];'],ic);
-    % c_eval(['Energy_exb?=[Vexb?(:,1) 0.5*me*power(Vexbt?(:,2),2)/(1.602176565*1e-19)];'],ic);
     % 
-    % Vexb1=irf_cross(E1_resamp,B1_gse);
-    % Vexb1(:,2:4)=(Vexb1(:,2:4)./[power(Bt1(:,2),2) power(Bt1(:,2),2) power(Bt1(:,2),2)])*1e-12*1e18;
-    % Vexbt1=[Vexb1(:,1) sqrt(power(Vexb1(:,2),2)+power(Vexb1(:,3),2)+power(Vexb1(:,4),2))];
-    % Energy_exb1=[Vexbt1(:,1) 0.5*me*power(Vexbt1(:,2),2)/(1.602176565*1e-19)];
+    % c_eval(['fpiFilee1 = dataobj(','''',desmoms1,'''',');'],ic);
+    % c_eval('energy_low1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_lowen_brst'');',ic);
+    % c_eval('energy_mid1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_miden_brst'');',ic);
+    % c_eval('energy_high1 = get_variable(fpiFilee1,''mms?_des_pitchangdist_highen_brst'');',ic);
+    % c_eval('energy_e1 = get_variable(fpiFilee1,''mms?_des_energyspectr_omni_brst'');',ic);
+    % 
+    % c_eval(['fpiFilee2 = dataobj(','''',desmoms2,'''',');'],ic);
+    % c_eval('energy_low2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_lowen_brst'');',ic);
+    % c_eval('energy_mid2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_miden_brst'');',ic);
+    % c_eval('energy_high2 = get_variable(fpiFilee2,''mms?_des_pitchangdist_highen_brst'');',ic);
+    % c_eval('energy_e2 = get_variable(fpiFilee2,''mms?_des_energyspectr_omni_brst'');',ic);
+    % % data merge
+    % data1=energy_low1.data; data2=energy_low2.data; data=[data1;data2];energy_low=energy_low1; energy_low.data=data; energy_low.nrec=energy_low1.nrec+energy_low2.nrec;
+    % data1=energy_mid1.data; data2=energy_mid2.data; data=[data1;data2];energy_mid=energy_mid1; energy_mid.data=data;  energy_mid.nrec=energy_mid1.nrec+energy_mid2.nrec;
+    % data1=energy_high1.data; data2=energy_high2.data; data=[data1;data2];energy_high=energy_high1; energy_high.data=data;  energy_high.nrec=energy_high1.nrec+energy_high2.nrec;
+    % data1=energy_e1.data; data2=energy_e2.data; data=[data1;data2];energy_e=energy_e1; energy_e.data=data;  energy_e.nrec=energy_e1.nrec+energy_e2.nrec;
+    % % time merge
+    % data1=energy_low1.DEPEND_0.data;data2=energy_low2.DEPEND_0.data; data=[data1;data2]; energy_low.DEPEND_0.data=data;
+    % data1=energy_mid1.DEPEND_0.data;data2=energy_mid2.DEPEND_0.data; data=[data1;data2]; energy_mid.DEPEND_0.data=data;
+    % data1=energy_high1.DEPEND_0.data;data2=energy_high2.DEPEND_0.data; data=[data1;data2]; energy_high.DEPEND_0.data=data;
+    % data1=energy_e1.DEPEND_0.data;data2=energy_e2.DEPEND_0.data; data=[data1;data2]; energy_e.DEPEND_0.data=data;
 
-    % irf_minvar_gui(B1);
-    % L=[0.36 0.16 0.92];
-    % M=[0.40 -0.91 0.01];
-    % N=[0.84 0.37 -0.39];
-
-    % L=[0 0 1];
-    % M=[0 1 0];
-    % N=[1 0 0];
-    % for ic=1:1,
-    %     c_eval(['B?lmn=irf_newxyz(B?,N,M,L);'],ic);
-    % end
-    % for ic=1:1,
-    %     c_eval(['E?lmn=irf_newxyz(E?,N,M,L);'],ic);
-    % end
-    % for ic=1:1,
-    %     c_eval(['Ve?lmn=irf_newxyz(Ve?,N,M,L);'],ic);
-    % end
-    % for ic=1:1,
-    %     c_eval(['Vi?lmn=irf_newxyz(Vi?,N,M,L);'],ic);
-    % end
+c_eval('energy_low=mms.db_get_variable(''mms?_fpi_brst_l2_des-moms'',''mms?_des_pitchangdist_lowen_brst'',tint);',ic)
+c_eval('energy_mid=mms.db_get_variable(''mms?_fpi_brst_l2_des-moms'',''mms?_des_pitchangdist_miden_brst'',tint);',ic)
+c_eval('energy_high=mms.db_get_variable(''mms?_fpi_brst_l2_des-moms'',''mms?_des_pitchangdist_highen_brst'',tint);',ic)
+c_eval('energy_e=mms.db_get_variable(''mms?_fpi_brst_l2_des-moms'',''mms?_des_energyspectr_omni_brst'',tint);',ic)
+c_eval('energy_i=mms.db_get_variable(''mms?_fpi_brst_l2_dis-moms'',''mms?_dis_energyspectr_omni_brst'',tint);',ic)
 %% Init figure
     n=12;
     i=1;
@@ -726,7 +701,7 @@ function id_flagTime = SDCPlot(tint,desmoms1,desmoms2,IC,Name,flagTime)
     set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
     ylabel('Ee(ev)','fontsize',12)
     set(gca,'Ylim',[1e1 3e4]);
-    caxis(gca,[6.4 7.4])
+    % caxis(gca,[6.4 7.4])
     % irf_legend(gca,'f',[0.99 0.98],'color','k','fontsize',12);
     poscbar8=get(hcb8,'pos');
     poscbar8(3)=poscbar8(3)*0.5;
@@ -750,7 +725,7 @@ function id_flagTime = SDCPlot(tint,desmoms1,desmoms2,IC,Name,flagTime)
     set(h(i),'ytick',[1e1 1e2 1e3 1e4],'fontsize',9);
     ylabel('Ei(ev)','fontsize',12)
     set(gca,'Ylim',[1e1 3e4]);
-    caxis(gca,[5 6])
+    % caxis(gca,[5 6])
     % irf_legend(gca,'f',[0.99 0.98],'color','k','fontsize',12);
     poscbar7=get(hcb7,'pos');
     poscbar7(3)=poscbar7(3)*0.5;
@@ -983,7 +958,7 @@ function id_flagTime = SDCPlot(tint,desmoms1,desmoms2,IC,Name,flagTime)
     set(gcf,'render','painters');
     set(gcf,'paperpositionmode','auto')
     % figname = [OutputDir,'OverviewFig\',Name(2:end-2)];    
-    figname = [OutputDir,Name];  
+    figname = [OutputDir,'OverviewFig/',Name];  
     colormap(jet)
     print(gcf, '-dpng', [figname '.png']);    
 %     pause(1)

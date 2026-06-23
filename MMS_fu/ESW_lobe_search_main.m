@@ -5,9 +5,9 @@ ParentDir = 'D:\MMS/';
 DownloadDir = 'C:\MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
-Date = '2019-01-01/2025-01-01';
+Date = '2020-10-02/2025-01-01';
 splitDate = regexp(Date,'/','split');
-ic = 1;iic = 1;
+ic = 3;iic = 3;
 filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
 filenames2 = SDCFilenames(Date,iic,'inst','fpi','drm','brst','dpt','des-moms');
 filenames3 = SDCFilenames(Date,ic,'inst','scm','drm','brst','dpt','scb');
@@ -26,7 +26,7 @@ end
 FileGroups = cellfun(@cellstr,FileGroups,'UniformOutput',false);%按时间分类整理后的文件名组
 
 %修改文件夹时特别注意SDCFilesDownload需要datamove的文件夹必须是ParentDir，否则需要手动修改
-OutputDir = [DownloadDir,'ESWSearch/',splitDate{1},'To',splitDate{2},'/'];
+OutputDir = [DownloadDir,'ESWSearch_all/',splitDate{1},'To',splitDate{2},'/'];
 if ~isfolder([OutputDir,'OverviewFig/'])
     mkdir([OutputDir,'OverviewFig/']);
 end
@@ -60,22 +60,22 @@ end
 
 %% lobe location
 flag = 0;
-if Pos(1,1) <= -10*units.RE/1e3 && abs(Pos(1,3)) >= 5*units.RE/1e3 % X<-10, |Z|>5
+if abs(Pos(1,1)) >= 0
 try
     % FLAG 1, discrete location
-    Ne1_ts=mms.db_get_ts('mms1_fpi_brst_l2_des-moms','mms1_des_numberdensity_brst',tint);
-    Ne1=irf.ts2mat(Ne1_ts);
-    
-    if min(Ne1(:,2)) > 0.1, continue; else, flag = 1; end
+    % Ne1_ts=mms.db_get_ts('mms3_fpi_brst_l2_des-moms','mms1_des_numberdensity_brst',tint);
+    % Ne1=irf.ts2mat(Ne1_ts);
+    % 
+    % if min(Ne1(:,2)) > 0.1, continue; else, flag = 1; end
 
     % FLAG 2, discrete E zero
     B1_ts=mms.get_data('B_gsm_brst',tint,ic);
     B1 = irf.ts2mat(B1_ts);
 
-    c_eval(['E?_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],ic); 
-    c_eval(['E?_ts = irf_gse2gsm(E?_ts);'],ic);
-    c_eval('E? = irf.ts2mat(E?_ts);',ic);
-    c_eval(['Efac=irf_convert_fac(E?,B?,[1,0,0]);'],ic);
+    c_eval(['E1_ts=mms.get_data(''E_gse_edp_brst_l2'',tint,?);'],ic); 
+    c_eval(['E1_ts = irf_gse2gsm(E1_ts);'],ic);
+    c_eval('E1 = irf.ts2mat(E1_ts);',ic);
+    c_eval(['Efac=irf_convert_fac(E1,B1,[1,0,0]);'],ic);
     Efre = 1/median(diff(Efac(:,1)));
 
     Efac = irf_filt(Efac, 10, 0, Efre, 3);

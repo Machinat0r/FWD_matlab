@@ -30,11 +30,11 @@ clear;clc;close all
 %%
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
-TempDir = '/Users/fwd/Documents/MATLAB/MMS/temp/';mkdir(TempDir);
+ParentDir = 'Y:\SPART-WORK\Data\MMS\'; 
+TempDir = 'Y:\SPART-WORK\Data\MMS\temp\';mkdir(TempDir);
 
 % TT = '2019-01-16T04:09:50.00Z/2019-01-16T04:10:00.00Z';
-% % % TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
+% TT = '2019-01-16T04:09:55.220Z/2019-01-16T04:09:56.000Z'; %no boundary, 10,78-81
 % TT = '2019-01-16T04:09:55.420Z/2019-01-16T04:09:55.800Z'; %no boundary, 10,78-81
 % TT = '2018-08-27T12:15:30.00Z/2018-08-27T12:15:50.00Z';
 
@@ -48,9 +48,7 @@ TempDir = '/Users/fwd/Documents/MATLAB/MMS/temp/';mkdir(TempDir);
 % % % TT = '2016-01-06T00:32:36.000Z/2016-01-06T00:32:37.000Z';
 % TT = '2016-01-08T03:25:20.000Z/2016-01-08T03:25:30.000Z';
 % TT = '2016-03-07T00:38:52.000Z/2016-03-07T00:38:52.500Z';
-% TT = '2021-01-07T08:24:04.000Z/2021-01-07T08:24:07.000Z'; % DOI: 10.1126/sciadv.adr8227
-% TT = '2020-02-14T20:08:50.000Z/2020-02-14T20:08:56.000Z'; % https://doi.org/10.1038/s41567-022-01837-z
-TT = '2015-12-30T22:26:30.000Z/2015-12-30T22:26:33.000Z';
+TT = '2015-12-30T22:29:30.000Z/2015-12-30T22:32:30.000Z';
 
 
 tint=irf.tint(TT);
@@ -59,10 +57,10 @@ Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
 
 ic = 1:4;
-% filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
-% [filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
-% 
-% SDCFilesDownload_NAS(filenames,TempDir, 'Threads', 32, 'CheckSize', 0)
+filenames1 = SDCFilenames(Date,ic,'inst','fgm','drm','brst');
+[filenames,~,~] = findFilenames(TT,filenames1,'brst',ic);
+
+SDCFilesDownload_NAS(filenames,TempDir, 'CheckSize', 0)
 %% Poincare Index  
 SDCDataMove(TempDir,ParentDir); 
 mms.db_init('local_file_db',ParentDir);
@@ -170,10 +168,6 @@ set(gcf,'PaperPosition',[xLeft yTop xSize ySize])
 set(gcf,'Position',[10 10 xSize*coef ySize*coef])
 %% Btotal
 h(i)=irf_subplot(n,1,-i);
-c_eval('B?_gse(:,2) = B?_gse(:,2) - 1;');
-c_eval('B?_gse(:,3) = B?_gse(:,3) + 30;');
-c_eval('B?_gse(:,4) = B?_gse(:,4) - 45;');
-c_eval('B? = irf_abs(B?_gse);');
 irf_plot([B1(:,1) B1(:,5)], 'color','k', 'Linewidth',0.75); hold on;
 irf_plot([B2(:,1) B2(:,5)], 'color','r', 'Linewidth',0.75); hold on;
 irf_plot([B3(:,1) B3(:,5)], 'color','g', 'Linewidth',0.75); hold on;
@@ -214,7 +208,6 @@ ylabel('Bx [nT]','fontsize',12);
 i=i+1;
 %% By
 h(i)=irf_subplot(n,1,-i);
-
 irf_plot([B1_gse(:,1) B1_gse(:,3)], 'color','k', 'Linewidth',0.75); hold on;
 irf_plot([B2_gse(:,1) B2_gse(:,3)], 'color','r', 'Linewidth',0.75); hold on;
 irf_plot([B3_gse(:,1) B3_gse(:,3)], 'color','g', 'Linewidth',0.75); hold on;
@@ -223,8 +216,8 @@ irf_plot([B4_gse(:,1) B4_gse(:,3)], 'color','b', 'Linewidth',0.75); hold on;
 % c_eval("irf_plot([B?_gse(:,1) 0*B?_gse(:,3)],'k--', 'Linewidth',0.75);",ic); hold off;
 grid off;
 % c_eval("set(gca,'Ylim',[min([min(B?_gse(:,3))])-100 max([max(B?_gse(:,3))])+100]);",ic);
-% % % set(gca,'Ylim',[min([min(B1_gse(:,3)) min(B2_gse(:,3)) min(B3_gse(:,3)) min(B4_gse(:,3))])-1 ...
-% % %     max([max(B1_gse(:,3)) max(B2_gse(:,3)) max(B3_gse(:,3)) max(B4_gse(:,3))])+1]);
+set(gca,'Ylim',[min([min(B1_gse(:,3)) min(B2_gse(:,3)) min(B3_gse(:,3)) min(B4_gse(:,3))])-10 ...
+    max([max(B1_gse(:,3)) max(B2_gse(:,3)) max(B3_gse(:,3)) max(B4_gse(:,3))])+10]);
 % set(gca,'Ylim',[-18 20], 'ytick',[-10:10:20],'fontsize',9);
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
@@ -235,7 +228,6 @@ ylabel('By [nT]','fontsize',12);
 i=i+1;
 %% Bz
 h(i)=irf_subplot(n,1,-i);
-
 irf_plot([B1_gse(:,1) B1_gse(:,4)], 'color','k', 'Linewidth',0.75); hold on;
 irf_plot([B2_gse(:,1) B2_gse(:,4)], 'color','r', 'Linewidth',0.75); hold on;
 irf_plot([B3_gse(:,1) B3_gse(:,4)], 'color','g', 'Linewidth',0.75); hold on;
@@ -244,8 +236,8 @@ irf_plot([B4_gse(:,1) B4_gse(:,4)], 'color','b', 'Linewidth',0.75); hold on;
 % c_eval("irf_plot([B?_gse(:,1) 0*B?_gse(:,4)],'k--', 'Linewidth',0.75);",ic); hold off;
 grid off;
 % c_eval("set(gca,'Ylim',[min([min(B?_gse(:,4))])-100 max([max(B?_gse(:,4))])+100]);",ic);
-% % % set(gca,'Ylim',[min([min(B1_gse(:,4)) min(B2_gse(:,4)) min(B3_gse(:,4)) min(B4_gse(:,4))])-1 ...
-% % %     max([max(B1_gse(:,4)) max(B2_gse(:,4)) max(B3_gse(:,4)) max(B4_gse(:,4))])+1]);
+set(gca,'Ylim',[min([min(B1_gse(:,4)) min(B2_gse(:,4)) min(B3_gse(:,4)) min(B4_gse(:,4))])-10 ...
+    max([max(B1_gse(:,4)) max(B2_gse(:,4)) max(B3_gse(:,4)) max(B4_gse(:,4))])+15]);
 % set(gca,'Ylim',[-20 15], 'ytick',[-20:20:10],'fontsize',9);
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 0];[1 0 0];[0 1 0];[0 0 1]]);
@@ -306,8 +298,8 @@ irf_plot([divB(:,1) divB(:,2)], 'color','k', 'Linewidth',0.75); hold on;
 
 c_eval("irf_plot([divB(:,1) 0*divB(:,2)],'k--', 'Linewidth',0.75);",ic); hold off;
 grid off;
-c_eval("set(gca,'Ylim',[min(divB(:,2))-0.05 max(divB(:,2))+0.05]);",ic);
-% set(gca,'Ylim',[-1 1], 'ytick',[-1 -0.5 0 0.5 1 1.5],'fontsize',9);
+% c_eval("set(gca,'Ylim',[min(divB(:,2))-0.05 max(divB(:,2))+0.05]);",ic);
+set(gca,'Ylim',[-1 1], 'ytick',[-1 -0.5 0 0.5 1 1.5],'fontsize',9);
 pos1=get(gca,'pos');
 set(gca,'ColorOrder',[[0 0 1];[1 0 0]]);
 % irf_legend(gca,{'B_x','B_z'},[0.97 0.92]);
@@ -395,7 +387,7 @@ irf_plot_axis_align;
 set(gcf,'render','painters');
 set(gcf,'paperpositionmode','auto')
 colormap(jet)
-tempidx_B1 = 175;
+tempidx_B1 = 30;
 % tempidx_B1 = find(mean(dLoc,2) == min(mean(dLoc,2)));
 c_eval("irf_pl_mark(h(?),B1(tempidx_B1,1),'k','LineStyle','-.');",1:n)
 set(gca,"XTickLabelRotation",0)
