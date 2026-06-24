@@ -14,6 +14,7 @@ addParameter(parser, 'product', 'mfi_h0', @(x) ischar(x) || isstring(x));
 addParameter(parser, 'inst', '', @(x) ischar(x) || isstring(x));
 addParameter(parser, 'drm', '', @(x) ischar(x) || isstring(x));
 addParameter(parser, 'PythonScript', '', @(x) ischar(x) || isstring(x));
+addParameter(parser, 'PythonExe', '', @(x) ischar(x) || isstring(x));
 parse(parser, Date, varargin{:});
 
 Date = char(parser.Results.Date);
@@ -21,6 +22,7 @@ Product = char(parser.Results.product);
 Instrument = char(parser.Results.inst);
 Mode = char(parser.Results.drm);
 PythonScript = char(parser.Results.PythonScript);
+PythonExe = char(parser.Results.PythonExe);
 
 if ~isempty(Instrument)
     if isempty(Mode)
@@ -40,7 +42,8 @@ if ~isfile(PythonScript)
     error('Cannot find Python backend: %s', PythonScript);
 end
 
-cmd = ['python3 ', shellquote(PythonScript), ...
+pythonCmd = resolvePythonCommand(PythonExe);
+cmd = [pythonCmd, ' ', shellquote(PythonScript), ...
     ' --date ', shellquote(Date), ...
     ' --product ', shellquote(Product), ...
     ' --list-only --json'];
@@ -61,10 +64,94 @@ else
 end
 end
 
+function pythonCmd = resolvePythonCommand(pythonExe)
+pythonExe = strtrim(char(pythonExe));
+if isempty(pythonExe)
+    pythonExe = strtrim(getenv('ACE_PYTHON'));
+end
+
+if ~isempty(pythonExe)
+    pythonCmd = formatPythonCommand(pythonExe);
+    if pythonCommandWorks(pythonCmd)
+        return
+    end
+    error('PythonExe is not a working Python 3 interpreter: %s', pythonExe);
+end
+
+try
+    pe = pyenv;
+    if ~isempty(pe.Executable)
+        pythonCmd = shellquote(char(pe.Executable));
+        if pythonCommandWorks(pythonCmd)
+            return
+        end
+    end
+catch
+end
+
+candidateFiles = knownPythonFiles();
+for ii = 1:numel(candidateFiles)
+    if isfile(candidateFiles{ii})
+        pythonCmd = shellquote(candidateFiles{ii});
+        if pythonCommandWorks(pythonCmd)
+            return
+        end
+    end
+end
+
+if ispc
+    candidates = {'python', 'python3', 'py -3', 'py'};
+else
+    candidates = {'python3', 'python'};
+end
+
+for ii = 1:numel(candidates)
+    pythonCmd = candidates{ii};
+    if pythonCommandWorks(pythonCmd)
+        return
+    end
+end
+
+error(['Cannot find a working Python 3 interpreter. Set MATLAB pyenv("Version", ' ...
+    '"C:\path\to\python.exe"), pass ''PythonExe'', ''C:\path\to\python.exe'', ' ...
+    'or set the ACE_PYTHON environment variable.']);
+end
+
+function files = knownPythonFiles()
+files = {};
+if ispc
+    userProfile = getenv('USERPROFILE');
+    if ~isempty(userProfile)
+        files{end + 1} = fullfile(userProfile, '.cache', 'codex-runtimes', ...
+            'codex-primary-runtime', 'dependencies', 'python', 'python.exe');
+    end
+end
+end
+
+function ok = pythonCommandWorks(pythonCmd)
+testCode = 'import sys; raise SystemExit(0 if sys.version_info[0] >= 3 else 1)';
+[status, ~] = system([pythonCmd, ' -c ', shellquote(testCode)]);
+ok = (status == 0);
+end
+
+function out = formatPythonCommand(pythonExe)
+if isfile(pythonExe) || contains(pythonExe, '\') || contains(pythonExe, '/')
+    out = shellquote(pythonExe);
+else
+    out = pythonExe;
+end
+end
+
 function out = shellquote(in)
 in = char(in);
-q = char(39);
-dq = char(34);
-in = strrep(in, q, [q, dq, q, dq, q]);
-out = [q, in, q];
+if ispc
+    dq = char(34);
+    in = strrep(in, dq, [dq, dq]);
+    out = [dq, in, dq];
+else
+    q = char(39);
+    dq = char(34);
+    in = strrep(in, q, [q, dq, q, dq, q]);
+    out = [q, in, q];
+end
 end

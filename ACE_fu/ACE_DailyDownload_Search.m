@@ -15,7 +15,8 @@ function ACE_DailyDownload_Search(varargin)
 %   2. SWEPAM ion/plasma velocity GSE-x component Vix > 0 km/s
 %
 % Product choice:
-%   MFI    : mfi_h0, about 16 s cadence, variable Magnitude.
+%   MFI    : mfi_h3, about 1 s cadence, variable Magnitude.
+%            Falls back to mfi_h0, about 16 s cadence, when mfi_h3 is absent.
 %   SWEPAM : swe_h0, about 64 s cadence, variable V_GSE(:,1).
 %   Newer swe_k0/k1 files may exist when swe_h0 is absent, but they only
 %   contain scalar speed Vp, not V_GSE, so they are not used for Vix search.
@@ -46,7 +47,7 @@ parser.CaseSensitive = false;
 
 addParameter(parser, 'StartDate', '1998-01-01', @(x) ischar(x) || isstring(x) || isdatetime(x));
 addParameter(parser, 'EndDate', datetime('today'), @(x) ischar(x) || isstring(x) || isdatetime(x));
-addParameter(parser, 'DataRoot', '/Volumes/SPART-WORK/Data/ACE/', @(x) ischar(x) || isstring(x));
+addParameter(parser, 'DataRoot', 'Z:\SPART-WORK\Data\ACE\', @(x) ischar(x) || isstring(x));
 addParameter(parser, 'Threads', 8, @isnumeric);
 addParameter(parser, 'CheckSize', 1, @isnumeric);
 addParameter(parser, 'ForceRedo', 0, @isnumeric);
@@ -54,6 +55,7 @@ addParameter(parser, 'Timeout', 60, @isnumeric); % kept for old calls; Python ba
 addParameter(parser, 'GapFactor', 3, @isnumeric);
 addParameter(parser, 'DownloaderDir', '', @(x) ischar(x) || isstring(x));
 addParameter(parser, 'PythonScript', '', @(x) ischar(x) || isstring(x));
+addParameter(parser, 'PythonExe', '', @(x) ischar(x) || isstring(x));
 parse(parser, varargin{:});
 
 StartDate = dayOnly(parser.Results.StartDate);
@@ -66,6 +68,7 @@ Timeout = parser.Results.Timeout; %#ok<NASGU>
 GapFactor = parser.Results.GapFactor;
 DownloaderDir = char(parser.Results.DownloaderDir);
 PythonScript = char(parser.Results.PythonScript);
+PythonExe = char(parser.Results.PythonExe);
 
 if EndDate < StartDate
     error('EndDate must be later than StartDate.');
@@ -114,18 +117,21 @@ for ii = 1:numel(allDays)
     fprintf('\n[%d/%d] %s\n', ii, numel(allDays), dateStr);
 
     mfiFile = '';
+    mfiProduct = [];
     sweFile = '';
     dayHadProblem = false;
 
     try
-        mfiFile = downloadAceDailyProduct(thisDate, products.mfi_h0, DataRoot, CheckSize, Threads, PythonScript);
+        [mfiFile, mfiProduct] = downloadAceDailyFirstAvailable(thisDate, ...
+            [products.mfi_h3, products.mfi_h0], DataRoot, CheckSize, Threads, ...
+            PythonScript, PythonExe);
     catch ME
         dayHadProblem = true;
-        logProblem(ProblemFile, thisDate, 'download', products.mfi_h0.key, ME.message);
+        logProblem(ProblemFile, thisDate, 'download', 'mfi_h3_or_mfi_h0', ME.message);
     end
 
     try
-        sweFile = downloadAceDailyProduct(thisDate, products.swe_h0, DataRoot, CheckSize, Threads, PythonScript);
+        sweFile = downloadAceDailyProduct(thisDate, products.swe_h0, DataRoot, CheckSize, Threads, PythonScript, PythonExe);
     catch ME
         dayHadProblem = true;
         logProblem(ProblemFile, thisDate, 'download', products.swe_h0.key, ME.message);
@@ -136,13 +142,18 @@ for ii = 1:numel(allDays)
             [tB, bMag] = readAceBmag(mfiFile);
             bEvents = findContinuousEvents(tB, bMag, bMag > 100, GapFactor);
             appendEvents(EventFile, thisDate, 'Bmag_gt_100nT', bEvents, 'nT', mfiFile);
-            fprintf('  B events: %d\n', numel(bEvents));
+            fprintf('  B events: %d (%s)\n', numel(bEvents), mfiProduct.key);
         else
             fprintf('  B data: missing\n');
         end
     catch ME
         dayHadProblem = true;
-        logProblem(ProblemFile, thisDate, 'read/search', products.mfi_h0.key, ME.message);
+        if isempty(mfiProduct)
+            mfiKey = 'mfi_h3_or_mfi_h0';
+        else
+            mfiKey = mfiProduct.key;
+        end
+        logProblem(ProblemFile, thisDate, 'read/search', mfiKey, ME.message);
     end
 
     try
@@ -201,6 +212,10 @@ end
 
 %% product definitions
 function products = aceProducts()
+products.mfi_h3 = struct( ...
+    'key', 'mfi_h3', ...
+    'localParts', {{'ace', 'mfi', 'h3', 'l2'}});
+
 products.mfi_h0 = struct( ...
     'key', 'mfi_h0', ...
     'localParts', {{'ace', 'mfi', 'h0', 'l2'}});
@@ -211,7 +226,35 @@ products.swe_h0 = struct( ...
 end
 
 %% download
-function localFile = downloadAceDailyProduct(thisDate, product, dataRoot, checkSize, threads, pythonScript)
+function [localFile, productUsed] = downloadAceDailyFirstAvailable(thisDate, productList, dataRoot, checkSize, threads, pythonScript, pythonExe)
+if isempty(productList)
+    error('Product preference list is empty.');
+end
+messages = {};
+
+for ii = 1:numel(productList)
+    product = productList(ii);
+    try
+        localFile = downloadAceDailyProduct(thisDate, product, dataRoot, ...
+            checkSize, threads, pythonScript, pythonExe);
+        productUsed = product;
+        if ii > 1
+            fprintf('  %s fallback succeeded: %s\n', product.key, getFileName(localFile));
+        end
+        return
+    catch ME
+        messages{end + 1} = sprintf('%s: %s', product.key, ME.message); %#ok<AGROW>
+        if ii < numel(productList)
+            fprintf('  %s unavailable, trying %s.\n', product.key, productList(ii + 1).key);
+        end
+    end
+end
+
+error('No ACE CDF found for preferred product list on %s. %s', ...
+    ymd(thisDate), strjoin(messages, ' | '));
+end
+
+function localFile = downloadAceDailyProduct(thisDate, product, dataRoot, checkSize, threads, pythonScript, pythonExe)
 dateRange = [ymd(thisDate), '/', ymd(thisDate)];
 localDir = localProductDir(thisDate, product, dataRoot);
 if ~isfolder(localDir)
@@ -219,7 +262,8 @@ if ~isfolder(localDir)
 end
 
 [filenames, ~] = ACEFilenames(dateRange, 'product', product.key, ...
-    'PythonScript', pythonScript);
+    'PythonScript', pythonScript, ...
+    'PythonExe', pythonExe);
 if isempty(filenames)
     error('No remote CDF found for %s on %s.', product.key, ymd(thisDate));
 end
@@ -238,7 +282,8 @@ ACEFilesDownload_NAS(dateRange, localDir, ...
     'Threads', threads, ...
     'CheckSize', double(checkSize), ...
     'KeepTree', 0, ...
-    'PythonScript', pythonScript);
+    'PythonScript', pythonScript, ...
+    'PythonExe', pythonExe);
 
 if ~isfile(localFile)
     localFile = findLocalDownloadedFile(localDir, thisDate);
@@ -247,6 +292,11 @@ if isempty(localFile) || ~isfile(localFile)
     error('ACEFilesDownload_NAS finished but local CDF was not found for %s on %s.', ...
         product.key, ymd(thisDate));
 end
+end
+
+function name = getFileName(filePath)
+[~, stem, ext] = fileparts(filePath);
+name = [stem, ext];
 end
 
 function localFile = findLocalDownloadedFile(localDir, thisDate)
@@ -564,7 +614,7 @@ end
 txt = fileread(progressFile);
 lines = regexp(txt, '\r?\n', 'split');
 for ii = 1:numel(lines)
-    tok = regexp(lines{ii}, '^(\d{4}-\d{2}-\d{2})\tDONE', 'tokens', 'once');
+    tok = regexp(lines{ii}, '^(\d{4}-\d{2}-\d{2})\tDONE\t', 'tokens', 'once');
     if ~isempty(tok)
         doneDates(tok{1}) = true;
     end

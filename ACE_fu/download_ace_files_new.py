@@ -24,11 +24,22 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from urllib.error import HTTPError as UrlHTTPError
+from urllib.error import URLError
 from urllib.parse import urljoin
+from urllib.request import Request, build_opener, ProxyHandler
 
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+try:
+    import requests
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+
+    HAVE_REQUESTS = True
+except Exception:
+    requests = None
+    HTTPAdapter = None
+    Retry = None
+    HAVE_REQUESTS = False
 
 try:
     import warnings
@@ -91,7 +102,108 @@ ALIASES = {
 _progress_lock = threading.Lock()
 
 
+class SimpleHTTPError(RuntimeError):
+    pass
+
+
+class UrllibResponse:
+    def __init__(self, response):
+        self._response = response
+        self.status_code = response.getcode()
+        self.url = response.geturl()
+        self.headers = dict(response.headers.items())
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        self.close()
+        return False
+
+    def close(self) -> None:
+        self._response.close()
+
+    @property
+    def text(self) -> str:
+        data = self._response.read()
+        charset = self._response.headers.get_content_charset() or "utf-8"
+        return data.decode(charset, errors="replace")
+
+    def iter_content(self, chunk_size: int = 1024 * 256):
+        while True:
+            chunk = self._response.read(chunk_size)
+            if not chunk:
+                break
+            yield chunk
+
+    def raise_for_status(self) -> None:
+        if self.status_code >= 400:
+            raise SimpleHTTPError(f"HTTP {self.status_code} for {self.url}")
+
+
+class UrllibSession:
+    def __init__(self, trust_env: bool = True):
+        proxy_handler = ProxyHandler() if trust_env else ProxyHandler({})
+        self._opener = build_opener(proxy_handler)
+        self.headers = {}
+
+    def get(self, url, headers=None, stream=False, allow_redirects=True, timeout=None):
+        return self._open("GET", url, headers, timeout)
+
+    def head(self, url, headers=None, allow_redirects=True, timeout=None):
+        return self._open("HEAD", url, headers, timeout)
+
+    def _open(self, method: str, url: str, headers, timeout):
+        merged_headers = dict(self.headers)
+        if headers:
+            merged_headers.update(headers)
+        req = Request(url, headers=merged_headers, method=method)
+        try:
+            response = self._opener.open(req, timeout=_timeout_seconds(timeout))
+        except UrlHTTPError as exc:
+            response = exc
+        except URLError as exc:
+            raise OSError(str(exc)) from exc
+        return UrllibResponse(response)
+
+
+def _timeout_seconds(timeout) -> float:
+    if isinstance(timeout, tuple):
+        return float(timeout[-1])
+    if timeout is None:
+        return 45.0
+    return float(timeout)
+
+
+if not HAVE_REQUESTS:
+    class _RequestsExceptions:
+        ChunkedEncodingError = OSError
+        ConnectionError = OSError
+        HTTPError = SimpleHTTPError
+        ReadTimeout = TimeoutError
+        SSLError = OSError
+
+    class _RequestsShim:
+        exceptions = _RequestsExceptions
+
+    requests = _RequestsShim()
+
+
 def _build_session(trust_env: bool = True) -> requests.Session:
+    if not HAVE_REQUESTS:
+        s = UrllibSession(trust_env)
+        s.headers.update(
+            {
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/120.0 Safari/537.36"
+                ),
+                "Accept": "*/*",
+            }
+        )
+        return s
+
     s = requests.Session()
     s.trust_env = trust_env
 
