@@ -1,0 +1,21 @@
+DateUTC,Product,Version,FilePath,Status,Message
+1997-12-08,NONE,0,,MISSING_DAY,No H0-H3 file is present for this UTC day.
+1997-12-09,NONE,0,,MISSING_DAY,No H0-H3 file is present for this UTC day.
+1997-12-10,NONE,0,,MISSING_DAY,No H0-H3 file is present for this UTC day.
+1997-12-11,NONE,0,,MISSING_DAY,No H0-H3 file is present for this UTC day.
+1997-12-12,NONE,0,,MISSING_DAY,No H0-H3 file is present for this UTC day.
+1997-12-13,NONE,0,,MISSING_DAY,No H0-H3 file is present for this UTC day.
+1997-12-15,NONE,0,,MISSING_DAY,No H0-H3 file is present for this UTC day.
+2002-03-16,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020316_v01.cdf,INVALID_FILE_HEADER,The first 16 bytes are all zero; file is an invalid zero-filled placeholder.
+2002-03-17,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020317_v01.cdf,INVALID_FILE_HEADER,The first 16 bytes are all zero; file is an invalid zero-filled placeholder.
+2002-03-20,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020320_v01.cdf,NO_VALID_SAMPLES,File is readable but contains no valid samples for its nominal UTC day.
+2002-03-21,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020321_v01.cdf,INVALID_FILE_HEADER,The first 16 bytes are all zero; file is an invalid zero-filled placeholder.
+2002-03-22,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020322_v01.cdf,NO_VALID_SAMPLES,File is readable but contains no valid samples for its nominal UTC day.
+2002-03-23,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020323_v01.cdf,INVALID_FILE_HEADER,The first 16 bytes are all zero; file is an invalid zero-filled placeholder.
+2002-03-24,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020324_v01.cdf,INVALID_FILE_HEADER,The first 16 bytes are all zero; file is an invalid zero-filled placeholder.
+2002-03-27,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020327_v01.cdf,INVALID_FILE_HEADER,The first 16 bytes are all zero; file is an invalid zero-filled placeholder.
+2002-03-28,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020328_v01.cdf,INVALID_FILE_HEADER,The first 16 bytes are all zero; file is an invalid zero-filled placeholder.
+2002-03-29,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020329_v01.cdf,INVALID_FILE_HEADER,The first 16 bytes are all zero; file is an invalid zero-filled placeholder.
+2002-03-30,H3,1,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2002\03\ac_h3_mfi_20020330_v01.cdf,NO_VALID_SAMPLES,File is readable but contains no valid samples for its nominal UTC day.
+2018-03-04,H3,3,Z:\SPART-WORK\Data\ACE\ace\mfi\h3\l2\2018\03\ac_h3_mfi_20180304_v03.cdf,INVALID_FILE_HEADER,The first 16 bytes are all zero; file is an invalid zero-filled placeholder.
+2018-03-04,NONE,0,,MISSING_DAY,All listed H0-H3 files were unreadable or had no valid samples.

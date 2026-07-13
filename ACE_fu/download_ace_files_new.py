@@ -14,11 +14,13 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import html
+import http.client
 import json
 import os
 import random
 import re
 import sys
+import tempfile
 import threading
 import time
 from dataclasses import dataclass
@@ -28,6 +30,16 @@ from urllib.error import HTTPError as UrlHTTPError
 from urllib.error import URLError
 from urllib.parse import urljoin
 from urllib.request import Request, build_opener, ProxyHandler
+
+
+# Prefer dependencies vendored next to this script.  This keeps the downloader
+# self-contained when MATLAB launches a Python interpreter with no site-wide
+# packages installed.
+SCRIPT_DIR = Path(__file__).resolve().parent
+VENDOR_DIR = SCRIPT_DIR / "_vendor"
+if VENDOR_DIR.is_dir():
+    sys.path.insert(0, str(VENDOR_DIR))
+
 
 try:
     import requests
@@ -40,6 +52,14 @@ except Exception:
     HTTPAdapter = None
     Retry = None
     HAVE_REQUESTS = False
+
+try:
+    from cdflib import CDF as CdflibCDF
+
+    HAVE_CDFLIB = True
+except Exception:
+    CdflibCDF = None
+    HAVE_CDFLIB = False
 
 try:
     import warnings
@@ -100,6 +120,42 @@ ALIASES = {
 }
 
 _progress_lock = threading.Lock()
+_cdflib_warning_lock = threading.Lock()
+_cdflib_warning_emitted = False
+
+
+class ProgressReporter:
+    """Thread-safe, log-friendly progress reporting with strong throttling."""
+
+    def __init__(self, total_bytes: int, min_interval: float = 2.0, min_percent: float = 5.0):
+        self.total_bytes = max(1, int(total_bytes))
+        self.min_interval = float(min_interval)
+        self.min_percent = float(min_percent)
+        self.current_bytes = 0
+        self.started = time.time()
+        self.last_report_time = self.started
+        self.last_report_percent = 0.0
+
+    def update(self, nbytes: int) -> None:
+        with _progress_lock:
+            self.current_bytes += int(nbytes)
+            now = time.time()
+            percent = min(100.0, self.current_bytes / self.total_bytes * 100.0)
+            complete = self.current_bytes >= self.total_bytes
+            enough_time = now - self.last_report_time >= self.min_interval
+            enough_progress = percent - self.last_report_percent >= self.min_percent
+            if not complete and not (enough_time and enough_progress):
+                return
+
+            elapsed = max(now - self.started, 0.001)
+            speed = self.current_bytes / elapsed / 1024 / 1024
+            print(
+                f"Downloaded: {self.current_bytes / 1024 / 1024:.2f} MB "
+                f"[{percent:6.2f}%] {speed:.2f} MB/s",
+                flush=True,
+            )
+            self.last_report_time = now
+            self.last_report_percent = percent
 
 
 class SimpleHTTPError(RuntimeError):
@@ -312,6 +368,10 @@ def fetch_html(url: str, timeout: Tuple[float, float] = (8, 45)) -> str:
                 requests.exceptions.ReadTimeout,
                 requests.exceptions.SSLError,
                 requests.exceptions.HTTPError,
+                http.client.IncompleteRead,
+                http.client.RemoteDisconnected,
+                OSError,
+                TimeoutError,
             ) as exc:
                 last_err = exc
                 if attempt == 6:
@@ -386,6 +446,10 @@ def _head_with_retries(
             requests.exceptions.ReadTimeout,
             requests.exceptions.SSLError,
             requests.exceptions.HTTPError,
+            http.client.IncompleteRead,
+            http.client.RemoteDisconnected,
+            OSError,
+            TimeoutError,
         ) as exc:
             last_err = exc
             if i == attempts:
@@ -407,14 +471,32 @@ def _probe_size_by_range(
                 if r.status_code != 206:
                     raise RuntimeError(f"Range probe expected 206, got {r.status_code}")
                 cr = r.headers.get("Content-Range", "")
-                if "/" not in cr:
+                match = re.fullmatch(r"bytes\s+0-0/(\d+)", cr.strip(), flags=re.IGNORECASE)
+                if match is None:
                     raise RuntimeError(f"Missing/invalid Content-Range: {cr}")
-                total = int(cr.split("/")[-1])
+                total = int(match.group(1))
+                probe_bytes = 0
+                for chunk in r.iter_content(chunk_size=16):
+                    if not chunk:
+                        continue
+                    probe_bytes += len(chunk)
+                    if probe_bytes > 1:
+                        raise RuntimeError(
+                            f"Range probe returned {probe_bytes} bytes; expected exactly 1"
+                        )
+                if probe_bytes != 1:
+                    raise RuntimeError(
+                        f"Range probe returned {probe_bytes} bytes; expected exactly 1"
+                    )
                 return r.url, total
         except (
             requests.exceptions.ConnectionError,
             requests.exceptions.ReadTimeout,
             requests.exceptions.SSLError,
+            http.client.IncompleteRead,
+            http.client.RemoteDisconnected,
+            OSError,
+            TimeoutError,
             RuntimeError,
             ValueError,
         ) as exc:
@@ -453,10 +535,152 @@ def resolve_url_and_size(url: str, timeout: Tuple[float, float] = (8, 45)) -> Tu
     raise RuntimeError(f"Failed to resolve Content-Length for {url}")
 
 
-def download_chunk(args) -> None:
-    session, url, start_byte, end_byte, local_file_path, progress_callback = args
+def _info_value(info, name: str, default=None):
+    if isinstance(info, dict):
+        if name in info:
+            return info[name]
+        lowered = {str(key).lower(): value for key, value in info.items()}
+        return lowered.get(name.lower(), default)
+    return getattr(info, name, default)
+
+
+def _cdf_variable_names(cdf) -> List[str]:
+    info = cdf.cdf_info()
+    names: List[str] = []
+    for field in ("rVariables", "zVariables"):
+        values = _info_value(info, field, []) or []
+        for value in values:
+            if isinstance(value, bytes):
+                value = value.decode("utf-8", errors="replace")
+            names.append(str(value))
+    return names
+
+
+def _value_is_nonempty(value) -> bool:
+    if value is None:
+        return False
+    size = getattr(value, "size", None)
+    if size is not None:
+        try:
+            return int(size) > 0
+        except (TypeError, ValueError):
+            pass
+    try:
+        return len(value) > 0
+    except TypeError:
+        return True
+
+
+def _cdf_variable_has_records(cdf, var_name: str) -> bool:
+    try:
+        inquiry = cdf.varinq(var_name)
+        last_record = _info_value(inquiry, "Last_Rec", None)
+        if last_record is not None and int(last_record) < 0:
+            return False
+    except Exception:
+        # Some older cdflib releases do not expose Last_Rec consistently;
+        # reading one record below is the authoritative fallback.
+        pass
+
+    try:
+        value = cdf.varget(var_name, startrec=0, endrec=0)
+    except TypeError:
+        value = cdf.varget(var_name)
+    return _value_is_nonempty(value)
+
+
+def _warn_cdflib_unavailable() -> None:
+    global _cdflib_warning_emitted
+    with _cdflib_warning_lock:
+        if _cdflib_warning_emitted:
+            return
+        print(
+            "Warning: cdflib is unavailable; only file size and a fast non-zero "
+            "CDF-header check will be performed. MFI Epoch/Magnitude records are "
+            "not being content-validated.",
+            file=sys.stderr,
+        )
+        _cdflib_warning_emitted = True
+
+
+def validate_local_cdf(
+    path: Path,
+    product_key: str,
+    expected_size: Optional[int] = None,
+    use_cdflib: bool = True,
+) -> Tuple[bool, str]:
+    """Validate size, a non-zero CDF header, and optionally CDF contents."""
+    try:
+        if not path.is_file():
+            return False, "file does not exist"
+        actual_size = path.stat().st_size
+        if expected_size is not None and actual_size != expected_size:
+            return False, f"size mismatch: {actual_size} != {expected_size}"
+        if actual_size < 16:
+            return False, f"file is too short to be a CDF: {actual_size} bytes"
+        with path.open("rb") as handle:
+            header = handle.read(16)
+        if len(header) < 16:
+            return False, "could not read the first 16 bytes"
+        if not any(header):
+            return False, "the first 16 bytes are all zero"
+    except OSError as exc:
+        return False, f"basic file validation failed: {exc}"
+
+    if not use_cdflib:
+        return True, "basic CDF validation passed (cdflib validation disabled)"
+    if not HAVE_CDFLIB:
+        _warn_cdflib_unavailable()
+        return True, "basic CDF validation passed (cdflib unavailable)"
+
+    cdf = None
+    try:
+        cdf = CdflibCDF(str(path))
+        names = _cdf_variable_names(cdf)
+        if not names:
+            return False, "cdflib found no CDF variables"
+
+        if str(product_key).lower().startswith("mfi_"):
+            by_lower = {name.lower(): name for name in names}
+            missing = [name for name in ("Epoch", "Magnitude") if name.lower() not in by_lower]
+            if missing:
+                return False, f"MFI CDF is missing variable(s): {', '.join(missing)}"
+            for required in ("Epoch", "Magnitude"):
+                actual_name = by_lower[required.lower()]
+                if not _cdf_variable_has_records(cdf, actual_name):
+                    return False, f"MFI variable {actual_name} has no records"
+        return True, "cdflib content validation passed"
+    except Exception as exc:
+        return False, f"cdflib could not validate the CDF: {exc}"
+    finally:
+        if cdf is not None:
+            try:
+                cdf.close()
+            except Exception:
+                pass
+
+
+def _new_part_path(final_path: Path) -> Path:
+    descriptor, name = tempfile.mkstemp(
+        prefix=f".{final_path.name}.", suffix=".part", dir=str(final_path.parent)
+    )
+    os.close(descriptor)
+    return Path(name)
+
+
+def download_chunk(args) -> Tuple[int, int, int]:
+    (
+        session,
+        url,
+        start_byte,
+        end_byte,
+        content_size,
+        local_file_path,
+        progress_callback,
+    ) = args
     timeout = (8, 45)
     current_pos = start_byte
+    total_written = 0
     max_retries = 10
     attempt = 0
     base_headers = {"Accept-Encoding": "identity"}
@@ -473,71 +697,137 @@ def download_chunk(args) -> None:
                         f"Expected 206 for range request, got {response.status_code}"
                     )
                 content_range = response.headers.get("Content-Range", "")
-                if not content_range.startswith("bytes"):
+                match = re.fullmatch(
+                    r"bytes\s+(\d+)-(\d+)/(\d+)", content_range.strip(), flags=re.IGNORECASE
+                )
+                if match is None:
                     raise RuntimeError(f"Missing/invalid Content-Range: {content_range}")
-                try:
-                    cr_range = content_range.split(" ")[1].split("/")[0]
-                    cr_start = int(cr_range.split("-")[0])
-                except Exception as exc:
-                    raise RuntimeError(f"Unparseable Content-Range: {content_range}") from exc
+                cr_start, cr_end, cr_total = (int(value) for value in match.groups())
                 if cr_start != current_pos:
                     raise RuntimeError(f"Content-Range start mismatch: {cr_start} != {current_pos}")
+                if cr_end != end_byte:
+                    raise RuntimeError(f"Content-Range end mismatch: {cr_end} != {end_byte}")
+                if cr_total != content_size:
+                    raise RuntimeError(f"Content-Range total mismatch: {cr_total} != {content_size}")
+                if cr_end < cr_start:
+                    raise RuntimeError(f"Invalid Content-Range endpoints: {content_range}")
 
+                response_written = 0
                 with open(local_file_path, "r+b") as file:
                     file.seek(current_pos)
                     for chunk in response.iter_content(chunk_size=1024 * 256):
                         if not chunk:
                             continue
+                        next_pos = current_pos + len(chunk)
+                        if next_pos > cr_end + 1 or next_pos > end_byte + 1:
+                            raise RuntimeError(
+                                f"Range body exceeds declared endpoint {cr_end}: "
+                                f"next byte would be {next_pos - 1}"
+                            )
                         file.write(chunk)
-                        current_pos += len(chunk)
+                        current_pos = next_pos
+                        response_written += len(chunk)
+                        total_written += len(chunk)
                         progress_callback(len(chunk))
+                    file.flush()
+
+                declared_bytes = cr_end - cr_start + 1
+                if response_written != declared_bytes:
+                    raise RuntimeError(
+                        f"Range body length mismatch for {cr_start}-{cr_end}: "
+                        f"wrote {response_written}, expected {declared_bytes}"
+                    )
+                if current_pos != cr_end + 1:
+                    raise RuntimeError(
+                        f"Range write stopped at byte {current_pos - 1}, expected {cr_end}"
+                    )
         except (
             requests.exceptions.ChunkedEncodingError,
             requests.exceptions.ConnectionError,
             requests.exceptions.ReadTimeout,
             requests.exceptions.SSLError,
+            http.client.IncompleteRead,
+            http.client.RemoteDisconnected,
+            OSError,
+            TimeoutError,
             RuntimeError,
         ) as exc:
             attempt += 1
-            if attempt > max_retries:
+            if attempt >= max_retries:
                 raise RuntimeError(
                     f"Failed downloading range {start_byte}-{end_byte} after "
                     f"{max_retries} retries. Last error: {exc}"
                 ) from exc
             _sleep_backoff(attempt, cap=6.0)
 
+    expected_written = end_byte - start_byte + 1
+    if total_written != expected_written:
+        raise RuntimeError(
+            f"Range {start_byte}-{end_byte} wrote {total_written} bytes; "
+            f"expected {expected_written}"
+        )
+    return start_byte, end_byte, total_written
+
 
 def stream_download(
     session: requests.Session, final_url: str, local_file_path: Path, expected_size: Optional[int]
 ) -> None:
     headers = {"Accept-Encoding": "identity"}
-    start_time = time.time()
-    current_size = 0
-    with session.get(
-        final_url, headers=headers, stream=True, allow_redirects=True, timeout=(8, 45)
-    ) as r:
-        r.raise_for_status()
-        with open(local_file_path, "wb") as f:
-            for chunk in r.iter_content(chunk_size=1024 * 256):
-                if not chunk:
-                    continue
-                f.write(chunk)
-                current_size += len(chunk)
-                elapsed = max(time.time() - start_time, 0.001)
-                speed = current_size / elapsed / 1024 / 1024
-                if expected_size:
-                    pct = current_size / expected_size * 100
-                    msg = (
-                        f"\rDownloaded: {current_size / 1024 / 1024:.2f} MB "
-                        f"[{pct:6.2f}%] {speed:.2f} MB/s"
-                    )
-                else:
-                    msg = (
-                        f"\rDownloaded: {current_size / 1024 / 1024:.2f} MB "
-                        f"{speed:.2f} MB/s"
-                    )
-                print(msg, end="", flush=True)
-    print()
+    max_retries = 6
+    last_error: Optional[BaseException] = None
+
+    for attempt in range(1, max_retries + 1):
+        current_size = 0
+        reporter = ProgressReporter(expected_size) if expected_size is not None else None
+        try:
+            with session.get(
+                final_url, headers=headers, stream=True, allow_redirects=True, timeout=(8, 45)
+            ) as response:
+                response.raise_for_status()
+                with open(local_file_path, "wb") as file:
+                    for chunk in response.iter_content(chunk_size=1024 * 256):
+                        if not chunk:
+                            continue
+                        next_size = current_size + len(chunk)
+                        if expected_size is not None and next_size > expected_size:
+                            raise RuntimeError(
+                                f"Stream exceeded expected size: {next_size} > {expected_size}"
+                            )
+                        file.write(chunk)
+                        current_size = next_size
+                        if reporter is not None:
+                            reporter.update(len(chunk))
+                    file.flush()
+
+            if expected_size is not None and current_size != expected_size:
+                raise RuntimeError(
+                    f"Stream size mismatch: wrote {current_size}, expected {expected_size}"
+                )
+            return
+        except (
+            requests.exceptions.ChunkedEncodingError,
+            requests.exceptions.ConnectionError,
+            requests.exceptions.HTTPError,
+            requests.exceptions.ReadTimeout,
+            requests.exceptions.SSLError,
+            http.client.IncompleteRead,
+            http.client.RemoteDisconnected,
+            OSError,
+            TimeoutError,
+            RuntimeError,
+        ) as exc:
+            last_error = exc
+            if attempt >= max_retries:
+                break
+            print(
+                f"\nStream download attempt {attempt}/{max_retries} failed: {exc}; retrying.",
+                file=sys.stderr,
+            )
+            _sleep_backoff(attempt, cap=6.0)
+
+    raise RuntimeError(
+        f"Stream download failed after {max_retries} attempts. Last error: {last_error}"
+    ) from last_error
 
 
 def range_download(
@@ -557,22 +847,10 @@ def range_download(
     with open(local_file_path, "wb") as file:
         file.truncate(content_size)
 
-    start_time = time.time()
-    current_size = 0
+    reporter = ProgressReporter(content_size)
 
     def progress_callback(nbytes: int) -> None:
-        nonlocal current_size
-        with _progress_lock:
-            current_size += nbytes
-            elapsed_time = max(time.time() - start_time, 0.001)
-            pct = (current_size / content_size) * 100
-            speed = current_size / elapsed_time / 1024 / 1024
-            print(
-                f"\rDownloaded: {current_size / 1024 / 1024:.2f} MB "
-                f"[{pct:6.2f}%] {speed:.2f} MB/s",
-                end="",
-                flush=True,
-            )
+        reporter.update(nbytes)
 
     futures = []
     from concurrent.futures import ThreadPoolExecutor
@@ -581,11 +859,42 @@ def range_download(
         for i in range(num_threads):
             start_byte = i * chunk_size
             end_byte = start_byte + chunk_size - 1 if i < num_threads - 1 else content_size - 1
-            args = (session, final_url, start_byte, end_byte, str(local_file_path), progress_callback)
-            futures.append(executor.submit(download_chunk, args))
-        for future in futures:
-            future.result()
-    print()
+            args = (
+                session,
+                final_url,
+                start_byte,
+                end_byte,
+                content_size,
+                str(local_file_path),
+                progress_callback,
+            )
+            futures.append((executor.submit(download_chunk, args), start_byte, end_byte))
+
+        total_written = 0
+        for future, expected_start, expected_end in futures:
+            actual_start, actual_end, written = future.result()
+            if (actual_start, actual_end) != (expected_start, expected_end):
+                raise RuntimeError(
+                    f"Range result mismatch: got {actual_start}-{actual_end}, "
+                    f"expected {expected_start}-{expected_end}"
+                )
+            expected_written = expected_end - expected_start + 1
+            if written != expected_written:
+                raise RuntimeError(
+                    f"Range {expected_start}-{expected_end} wrote {written} bytes; "
+                    f"expected {expected_written}"
+                )
+            total_written += written
+
+    if total_written != content_size:
+        raise RuntimeError(
+            f"Combined ranges wrote {total_written} bytes; expected {content_size}"
+        )
+    actual_size = local_file_path.stat().st_size
+    if actual_size != content_size:
+        raise RuntimeError(
+            f"Range output size mismatch: {actual_size} != {content_size}"
+        )
 
 
 def target_path(out_dir: Path, item: dict, keep_tree: bool) -> Path:
@@ -594,29 +903,50 @@ def target_path(out_dir: Path, item: dict, keep_tree: bool) -> Path:
     return out_dir / item["filename"]
 
 
-def is_complete(path: Path, size: Optional[int], check_size: bool) -> bool:
-    if not path.is_file():
-        return False
-    if not check_size:
-        return True
-    if size is None or size <= 0:
-        return False
-    return path.stat().st_size == size
+def is_complete(
+    path: Path,
+    size: Optional[int],
+    check_size: bool,
+    product_key: str = "",
+    validate_cdf: bool = True,
+) -> bool:
+    expected_size = size if check_size else None
+    valid, _message = validate_local_cdf(
+        path, product_key, expected_size=expected_size, use_cdflib=validate_cdf
+    )
+    return valid
 
 
-def download_one(item: dict, out_dir: Path, threads: int, check_size: bool, keep_tree: bool) -> str:
+def download_one(
+    item: dict,
+    out_dir: Path,
+    threads: int,
+    check_size: bool,
+    keep_tree: bool,
+    validate_cdf: bool = True,
+) -> str:
     local_path = target_path(out_dir, item, keep_tree)
     local_path.parent.mkdir(parents=True, exist_ok=True)
 
-    final_url, content_size, session, range_hint = resolve_url_and_size(item["url"])
+    final_url, content_size, session, _range_hint = resolve_url_and_size(item["url"])
     item["remote_bytes"] = content_size
     item["local_path"] = str(local_path)
 
-    if is_complete(local_path, content_size, check_size):
+    existing_expected_size = content_size if check_size else None
+    existing_valid, existing_message = validate_local_cdf(
+        local_path,
+        item.get("product", ""),
+        expected_size=existing_expected_size,
+        use_cdflib=validate_cdf,
+    )
+    if existing_valid:
         return "skip"
 
-    if local_path.exists() and check_size:
-        print(f"Incomplete old file, re-downloading: {local_path.name}")
+    if local_path.exists():
+        print(
+            f"Existing file failed validation, re-downloading: {local_path.name} "
+            f"({existing_message})"
+        )
 
     range_ok = False
     if threads > 1:
@@ -625,23 +955,46 @@ def download_one(item: dict, out_dir: Path, threads: int, check_size: bool, keep
             if total2 > 0:
                 final_url = _final2
                 content_size = total2
+                item["remote_bytes"] = content_size
                 range_ok = True
         except Exception:
             range_ok = False
 
-    if threads > 1 and range_ok and range_hint:
-        range_download(session, final_url, local_path, content_size, threads)
-    elif threads > 1 and range_ok:
-        range_download(session, final_url, local_path, content_size, threads)
-    else:
-        stream_download(session, final_url, local_path, content_size)
+    part_path = _new_part_path(local_path)
+    item["part_path"] = str(part_path)
+    try:
+        if threads > 1 and range_ok:
+            range_download(session, final_url, part_path, content_size, threads)
+        else:
+            stream_download(session, final_url, part_path, content_size)
 
-    if check_size and local_path.stat().st_size != content_size:
-        raise RuntimeError(
-            f"Size check failed for {local_path.name}: "
-            f"{local_path.stat().st_size} != {content_size}"
+        actual_size = part_path.stat().st_size
+        if actual_size != content_size:
+            raise RuntimeError(
+                f"Strict size check failed for {local_path.name}: "
+                f"{actual_size} != {content_size}"
+            )
+
+        valid, validation_message = validate_local_cdf(
+            part_path,
+            item.get("product", ""),
+            expected_size=content_size,
+            use_cdflib=validate_cdf,
         )
-    return "download"
+        if not valid:
+            raise RuntimeError(
+                f"Downloaded CDF failed validation for {local_path.name}: "
+                f"{validation_message}"
+            )
+
+        os.replace(part_path, local_path)
+        return "download"
+    finally:
+        if part_path.exists():
+            try:
+                part_path.unlink()
+            except OSError as exc:
+                print(f"Warning: could not remove temporary file {part_path}: {exc}", file=sys.stderr)
 
 
 def show_products() -> None:
@@ -663,6 +1016,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--out", default=".", help="Output directory")
     parser.add_argument("--threads", type=int, default=8, help="Download threads per file")
     parser.add_argument("--check-size", default="1", help="1/0, verify local size with Content-Length")
+    parser.add_argument(
+        "--validate-cdf",
+        default="1",
+        help="1/0, validate CDF contents with cdflib when available (default: 1)",
+    )
     parser.add_argument("--keep-tree", default="0", help="1/0, save as product/year/filename")
     parser.add_argument("--list-only", action="store_true", help="Only crawl and print matched files")
     parser.add_argument("--json", action="store_true", help="Print list-only result as JSON")
@@ -686,6 +1044,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     out_dir = Path(args.out).expanduser()
     keep_tree = parse_bool(args.keep_tree)
     check_size = parse_bool(args.check_size)
+    validate_cdf = parse_bool(args.validate_cdf)
 
     files = crawl_products(product_keys, start, end)
 
@@ -711,10 +1070,38 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     downloaded = 0
     skipped = 0
+    failures: List[dict] = []
     for idx, item in enumerate(files, start=1):
         print(f"[{idx}/{len(files)}] {item['filename']}")
         t0 = time.time()
-        status = download_one(item, out_dir, args.threads, check_size, keep_tree)
+        try:
+            status = download_one(
+                item,
+                out_dir,
+                args.threads,
+                check_size,
+                keep_tree,
+                validate_cdf=validate_cdf,
+            )
+        except KeyboardInterrupt:
+            raise
+        except Exception as exc:
+            error_text = f"{type(exc).__name__}: {exc}"
+            item["error"] = error_text
+            failures.append(
+                {
+                    "product": item.get("product", ""),
+                    "date": item.get("date", ""),
+                    "filename": item.get("filename", ""),
+                    "error": error_text,
+                }
+            )
+            print(
+                f"FAILED [{idx}/{len(files)}] {item['filename']}: {error_text}",
+                file=sys.stderr,
+                flush=True,
+            )
+            continue
         dt_s = max(time.time() - t0, 0.001)
         local = Path(item.get("local_path", target_path(out_dir, item, keep_tree)))
         mb = local.stat().st_size / 1024 / 1024 if local.exists() else 0.0
@@ -726,7 +1113,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             print(f"Saved: {local} ({mb:.2f} MB, {mb / dt_s:.2f} MB/s)")
 
     print("========== ACE download finished ==========")
-    print(f"Downloaded: {downloaded}; skipped: {skipped}; total: {len(files)}")
+    print(
+        f"Downloaded: {downloaded}; skipped: {skipped}; "
+        f"failed: {len(failures)}; total: {len(files)}"
+    )
+    if failures:
+        print(
+            "One or more files failed; all remaining files were attempted. "
+            "See the FAILED records above.",
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 

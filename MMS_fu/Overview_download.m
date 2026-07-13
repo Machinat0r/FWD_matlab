@@ -2,8 +2,8 @@ close all
 clear;clc
 
 global ParentDir 
-ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
-DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
+ParentDir = 'Z:\SPART-WORK\Data\MMS\'; 
+DownloadDir = 'Z:\SPART-WORK\Data\MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 % TT = '2017-07-25T22:09:48.000Z/2017-07-25T22:09:53.000Z';
@@ -17,7 +17,7 @@ TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 % TT = '2019-08-16T09:29:35.000/2019-08-16T09:29:43.000';
 % % % % % % TT = '2017-06-30T23:17:45.000/2017-06-30T23:19:50.000';
 % TT = '2020-08-03T01:45:23.000Z/2020-08-03T01:45:38.000Z'; % case 16-long
-TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'; 
+% % % TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z'; 
 % TT = '2021-07-17T17:25:18.000Z/2021-07-17T17:25:25.000Z'; % case 15
 % TT = '2019-08-16T08:25:00.000Z/2019-08-16T08:25:15.000Z'; % case 13
 % TT = '2017-06-17T10:36:45.000Z/2017-06-17T10:37:00.000Z'; % case 17
@@ -34,13 +34,13 @@ TT = '2020-08-03T01:45:27.500Z/2020-08-03T01:45:28.800Z';
  % TT = '2018-07-03T15:50:14.500Z/2018-07-03T15:50:22.500Z';
   % TT = '2021-09-04T20:01:00.000Z/2021-09-04T20:01:20.000Z';
 % TT = '2018-07-03T17:07:20.000Z/2018-07-03T17:07:35.000Z';
-
+TT = '2015-09-19T07:43:20.000Z/2015-09-19T07:43:40.000Z'; 
 
 tint=irf.tint(TT);
 Datelist = regexp(TT,'\d+-\d+-\d+','match');
 Datelist{2} = datestr(datenum(Datelist{2},'yyyy-mm-dd')+1,'yyyy-mm-dd');
 Date = [Datelist{1},'/',Datelist{2}];
-ic = 1:3;
+ic = 1;
 iic = 1:4;
 % % % try
 % % % filenames1 = SDCFilenames(Date,iic,'inst','fgm','drm','brst');
