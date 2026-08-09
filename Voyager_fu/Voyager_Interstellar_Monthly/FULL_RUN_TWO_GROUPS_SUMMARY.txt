@@ -1,0 +1,35 @@
+Voyager 太阳风层顶外两组绘图：全量运行摘要
+生成时间：2026-08-04（Asia/Shanghai）
+
+程序入口：run_voyager_two_groups.m
+数据根目录：Z:\SPART-WORK\Data\Voyager
+
+第一组：HighestPrecision_Segments
+- 审校 VIM MAG，名义时间分辨率 48 秒
+- 分段条件：相邻记录间隔 > 7200 秒
+- 图内断线条件：相邻记录间隔 > 240 秒
+- 不使用 COHO 补线，不生成插值值
+- 有效分段图：8304 张
+  - Voyager 1：6453 段，2,286,528 条记录，2012-08-25 至 2025-06-30
+  - Voyager 2：1851 段，698,391 条记录，2018-11-05 至 2022-12-31
+- Voyager 1 2013-01：59 段（用于校准切段阈值）
+- 仅有一个样本的孤立段未成图
+
+第二组：UniformLowPrecision_Monthly_Raw
+- 统一使用 COHO 1 小时产品
+- 直接绘制实际仪器记录；不调用 fillmissing、interp1、retime 或重采样
+- 生成/插值值：0
+- 月图：178 张
+  - Voyager 1：152 个月
+  - Voyager 2：26 个月
+
+验收结果
+- 高精度清单 8304 行，PNG 8304 张，状态全部 ok
+- 低精度清单 178 行，PNG 178 张，状态全部 ok
+- 缺失 PNG：0
+- 文件名/连续编号错误：0
+- 两个输出文件夹的子目录数：0
+
+主要清单
+- HighestPrecision_Segments\HighestPrecision_Segments_manifest.csv
+- UniformLowPrecision_Monthly_Raw\UniformLowPrecision_Monthly_Raw_manifest.csv
