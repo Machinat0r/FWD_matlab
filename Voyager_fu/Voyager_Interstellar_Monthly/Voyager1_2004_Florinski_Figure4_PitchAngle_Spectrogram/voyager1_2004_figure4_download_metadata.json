@@ -1,0 +1,19 @@
+{
+  "paper": "Florinski, Decker, and le Roux (2008), JGR, 113, A07103",
+  "doi": "10.1029/2007JA012859",
+  "figure": 4,
+  "figure_days": "2004 DOY 221-224",
+  "plot_interval": "2004-08-05/2004-08-15 (end exclusive)",
+  "LECP_dataset": "VOYAGER-1_LECP_LEV-2-DAILY-AVG",
+  "LECP_request": "https://cdaweb.gsfc.nasa.gov/WS/cdasr/1/dataviews/sp_phys/datasets/VOYAGER-1_LECP_LEV-2-DAILY-AVG/data/20040801T000000Z,20040901T000000Z/FHDU_SectoredFluxes,FHDU_SectoredFluxUncertainties?format=cdf",
+  "LECP_generated_file": "https://cdaweb.gsfc.nasa.gov/tmp/ws1QIkhK/voyager-1_lecps_lev-2-daily-avg_20040826225036_20040831022500_cdaweb.cdf",
+  "LECP_database_file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\Voyager_fu\\Voyager_Interstellar_Monthly\\Voyager1_Selected_Event_Data\\voyager1\\lecp\\1d\\l2\\sectored_flux\\2004\\08\\voyager1_lecp_lev2_daily_sectored_20040801_20040831.cdf",
+  "LECP_level1_rates_dataset": "VOYAGER-1_LECP_LEV-1-RATES",
+  "LECP_level1_rates_request": "https://cdaweb.gsfc.nasa.gov/WS/cdasr/1/dataviews/sp_phys/datasets/VOYAGER-1_LECP_LEV-1-RATES/data/20040801T000000Z,20040901T000000Z/FHDU_SectoredRates,FHDU_SectoredRateUncertainties?format=cdf",
+  "LECP_level1_rates_generated_file": "https://cdaweb.gsfc.nasa.gov/tmp/wsRxokHo/voyager-1_lecps_lev-1-rates_20040801040324_20040831151300_cdaweb.cdf",
+  "LECP_level1_rates_database_file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\Voyager_fu\\Voyager_Interstellar_Monthly\\Voyager1_Selected_Event_Data\\voyager1\\lecp\\level1\\sectored_rates\\2004\\08\\voyager1_lecp_lev1_sectored_rates_20040801_20040831.cdf",
+  "MAG_dataset": "VOYAGER1_COHO1HR_MERGED_MAG_PLASMA",
+  "MAG_request": "https://cdaweb.gsfc.nasa.gov/WS/cdasr/1/dataviews/sp_phys/datasets/VOYAGER1_COHO1HR_MERGED_MAG_PLASMA/data/20040801T000000Z,20040901T000000Z/ABS_B,BR,BT,BN,V,protonDensity,protonTemp,protonFlux1_LECP,protonFlux2_LECP,protonFlux3_LECP?format=cdf",
+  "MAG_generated_file": "https://cdaweb.gsfc.nasa.gov/tmp/wsy6zxE4/voyager1_coho1hrs_merged_mag_plasma_20040801000000_20040901000000_cdaweb.cdf",
+  "MAG_database_file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\Voyager_fu\\Voyager_Interstellar_Monthly\\Voyager1_Selected_Event_Data\\voyager1\\coho\\1hr\\l2\\merged_mag_plasma\\2004\\08\\voyager1_coho1hr_merged_mag_plasma_20040801_v01.cdf"
+}

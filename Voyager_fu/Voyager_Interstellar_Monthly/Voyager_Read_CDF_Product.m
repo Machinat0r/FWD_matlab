@@ -25,6 +25,14 @@ if ~isfolder(cacheRoot)
     if ~ok, error('VoyagerCDF:CacheCreateFailed', '%s', message); end
 end
 
+% Reuse a previously validated binary conversion directly. This avoids
+% launching Python once per monthly CDF during short batch plotting jobs.
+metadataFile = findExistingCache(cacheRoot, sourceFile, profile);
+if ~isempty(metadataFile)
+    product = readBinaryCache(metadataFile);
+    return
+end
+
 bridgeFile = fullfile(programRoot, 'voyager_cdf_bridge.py');
 if ~isfile(bridgeFile)
     error('VoyagerCDF:BridgeMissing', 'Missing CDF bridge: %s', bridgeFile);
@@ -44,6 +52,62 @@ if isempty(match)
         'CDF bridge did not return a cache path. Output:\n%s', output);
 end
 product = readBinaryCache(strtrim(match{1}));
+end
+
+function metadataFile = findExistingCache(cacheRoot, sourceFile, profile)
+persistent indexedRoot cacheIndex
+convertedRoot = fullfile(cacheRoot, 'converted');
+metadataFile = '';
+if ~isfolder(convertedRoot)
+    return
+end
+if isempty(indexedRoot) || ~strcmp(indexedRoot, convertedRoot)
+    cacheIndex = containers.Map('KeyType', 'char', 'ValueType', 'char');
+    entries = dir(fullfile(convertedRoot, '*.json'));
+    [~, order] = sort([entries.datenum], 'descend');
+    entries = entries(order);
+    for ii = 1:numel(entries)
+        candidate = fullfile(entries(ii).folder, entries(ii).name);
+        try
+            item = jsondecode(fileread(candidate));
+            if ~isfield(item, 'source_file') || ~isfield(item, 'profile') || ...
+                    ~isfield(item, 'source_size') || ...
+                    ~isfield(item, 'binary_file') || ...
+                    ~isfield(item, 'binary_size')
+                continue
+            end
+            binaryFile = fullfile(entries(ii).folder, item.binary_file);
+            binaryInfo = dir(binaryFile);
+            if isempty(binaryInfo) || ...
+                    binaryInfo(1).bytes ~= double(item.binary_size)
+                continue
+            end
+            key = [char(item.profile), '|', char(item.source_file)];
+            if ~isKey(cacheIndex, key)
+                cacheIndex(key) = candidate;
+            end
+        catch
+            % Ignore incomplete or unrelated cache metadata.
+        end
+    end
+    indexedRoot = convertedRoot;
+end
+key = [profile, '|', sourceFile];
+if isKey(cacheIndex, key)
+    candidate = cacheIndex(key);
+    try
+        item = jsondecode(fileread(candidate));
+        sourceInfo = dir(sourceFile);
+        binaryInfo = dir(fullfile(fileparts(candidate), item.binary_file));
+        if ~isempty(sourceInfo) && ~isempty(binaryInfo) && ...
+                sourceInfo(1).bytes == double(item.source_size) && ...
+                binaryInfo(1).bytes == double(item.binary_size)
+            metadataFile = candidate;
+        end
+    catch
+        metadataFile = '';
+    end
+end
 end
 
 function product = readBinaryCache(metadataFile)

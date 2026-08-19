@@ -1,0 +1,31 @@
+{
+  "EventID": "KH005",
+  "StartUTC": "2015-10-01T18:01:24Z",
+  "EndUTC": "2015-10-01T18:09:00Z",
+  "Engine": "FOTE_Taylor_Expansion + IRFU c_4_grad",
+  "SmoothSeconds": 5,
+  "MinQualityDurationSeconds": 5,
+  "RawCommonSamples": 2772,
+  "CommonSamples": 2772,
+  "FigurePdf": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\MMS_fu\\codex\\kh_events\\KH005\\matlab_irfu_quality40_smooth5s_continuous5s\\pdf\\KH005_20151001180124_20151001180900_MATLAB_IRFU_FOTE_FOTEV_VI_5s_native_time_mean_rawpanels_quality40_continuous5s.pdf",
+  "FigurePng": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\MMS_fu\\codex\\kh_events\\KH005\\matlab_irfu_quality40_smooth5s_continuous5s\\png\\KH005_20151001180124_20151001180900_MATLAB_IRFU_FOTE_FOTEV_VI_5s_native_time_mean_rawpanels_quality40_continuous5s.png",
+  "TimeSeries": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\MMS_fu\\codex\\kh_events\\KH005\\matlab_irfu_quality40_smooth5s_continuous5s\\data\\timeseries\\KH005_20151001180124_20151001180900_MATLAB_IRFU_FOTE_FOTEV_VI_5s_native_time_mean_rawpanels_quality40_continuous5s_timeseries.csv",
+  "MatFile": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\MMS_fu\\codex\\kh_events\\KH005\\matlab_irfu_quality40_smooth5s_continuous5s\\data\\mat\\KH005_20151001180124_20151001180900_MATLAB_IRFU_FOTE_FOTEV_VI_5s_native_time_mean_rawpanels_quality40_continuous5s.mat",
+  "Summary": {
+    "BQuality40": 2235,
+    "VQuality40": 1474,
+    "BAsQuality40": 266,
+    "BBsQuality40": 230,
+    "VAsQuality40": 172,
+    "VBsQuality40": 256,
+    "MinQualityDurationSeconds": 5,
+    "BQuality40Continuous": 1682,
+    "VQuality40Continuous": 221,
+    "BAsQuality40Continuous": 201,
+    "BBsQuality40Continuous": 175,
+    "VAsQuality40Continuous": 58,
+    "VBsQuality40Continuous": 28,
+    "ScrewSame": 41,
+    "ScrewOpposite": 4
+  }
+}

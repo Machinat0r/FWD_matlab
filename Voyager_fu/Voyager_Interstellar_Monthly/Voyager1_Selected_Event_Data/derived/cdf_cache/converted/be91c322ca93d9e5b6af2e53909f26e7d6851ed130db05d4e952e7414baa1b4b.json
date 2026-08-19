@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "bridge_version": "1.1.0",
+  "source_file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\Voyager_fu\\Voyager_Interstellar_Monthly\\Voyager1_Selected_Event_Data\\voyager1\\coho\\1hr\\l2\\merged_mag_plasma\\2002\\08\\voyager1_coho1hr_merged_mag_plasma_20020801_v01.cdf",
+  "source_size": 64307,
+  "source_mtime_ns": 1787151350760296500,
+  "profile": "coho",
+  "created_utc": "2026-08-19T14:57:29.631948+00:00",
+  "binary_file": "be91c322ca93d9e5b6af2e53909f26e7d6851ed130db05d4e952e7414baa1b4b.bin",
+  "binary_size": 65560,
+  "variables": [
+    {
+      "name": "Epoch",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 0,
+      "count": 745,
+      "is_time": true,
+      "cdf_type": "CDF_EPOCH",
+      "attributes": {
+        "FIELDNAM": "Time",
+        "CATDESC": "Time, beginning of interval",
+        "VALIDMIN": 62987673600000.0,
+        "VALIDMAX": 63745056000000.0,
+        "SCALEMIN": 62987673600000.0,
+        "SCALEMAX": 63745056000000.0,
+        "UNITS": "ms",
+        "FORMAT": "E14.8",
+        "MONOTON": "INCREASE",
+        "VAR_TYPE": "support_data",
+        "DICT_KEY": "time>epoch",
+        "FILLVAL": -1e+31,
+        "LABLAXIS": "Epoch",
+        "SCALETYP": "LINEAR",
+        "DIM_SIZES": 0
+      }
+    },
+    {
+      "name": "ABS_B",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 5960,
+      "count": 745,
+      "is_time": false,
+      "cdf_type": "CDF_FLOAT",
+      "attributes": {
+        "FIELDNAM": "Field Magnitude Avg.",
+        "CATDESC": "B Field Magnitude (average of fine scale magnitudes)",
+        "VALIDMIN": 0.0,
+        "VALIDMAX": 1000.0,
+        "UNITS": "nT",
+        "FORMAT": "F8.3",
+        "VAR_TYPE": "data",
+        "FILLVAL": -9.999999848243207e+30,
+        "DEPEND_0": "Epoch",
+        "LABLAXIS": "Field Magnitude Avg.",
+        "DISPLAY_TYPE": "time_series",
+        "DIM_SIZES": 0
+      }
+    },
+    {
+      "name": "BR",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 11920,
+      "count": 745,
+      "is_time": false,
+      "cdf_type": "CDF_FLOAT",
+      "attributes": {
+        "FIELDNAM": "BR (RTN)",
+        "CATDESC": "BR in RTN (Radial-Tangential-Normal) coordinate system (w/ uncertainty)",
+        "VALIDMIN": -1000.0,
+        "VALIDMAX": 1000.0,
+        "UNITS": "nT",
+        "FORMAT": "f8.3",
+        "VAR_TYPE": "data",
+        "FILLVAL": -9.999999848243207e+30,
+        "DEPEND_0": "Epoch",
+        "LABLAXIS": "BR_(RTN)",
+        "DISPLAY_TYPE": "time_series",
+        "DELTA_PLUS_VAR": "br_uncertainty",
+        "DELTA_MINUS_VAR": "br_uncertainty",
+        "DIM_SIZES": 0
+      }
+    },
+    {
+      "name": "BT",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 17880,
+      "count": 745,
+      "is_time": false,
+      "cdf_type": "CDF_FLOAT",
+      "attributes": {
+        "FIELDNAM": "BT (RTN)",
+        "CATDESC": "BT in RTN coordinate system (w/ uncertainty)",
+        "VALIDMIN": -1000.0,
+        "VALIDMAX": 1000.0,
+        "UNITS": "nT",
+        "FORMAT": "f8.3",
+        "VAR_TYPE": "data",
+        "FILLVAL": -9.999999848243207e+30,
+        "DEPEND_0": "Epoch",
+        "LABLAXIS": "BT_(RTN)",
+        "DISPLAY_TYPE": "time_series",
+        "DELTA_PLUS_VAR": "bt_uncertainty",
+        "DELTA_MINUS_VAR": "bt_uncertainty",
+        "DIM_SIZES": 0
+      }
+    },
+    {
+      "name": "BN",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 23840,
+      "count": 745,
+      "is_time": false,
+      "cdf_type": "CDF_FLOAT",
+      "attributes": {
+        "FIELDNAM": "BN (RTN)",
+        "CATDESC": "BN in RTN coordinate system (w/ uncertainty)",
+        "VALIDMIN": -1000.0,
+        "VALIDMAX": 1000.0,
+        "UNITS": "nT",
+        "FORMAT": "f8.3",
+        "VAR_TYPE": "data",
+        "FILLVAL": -9.999999848243207e+30,
+        "DEPEND_0": "Epoch",
+        "LABLAXIS": "BN_(RTN)",
+        "DISPLAY_TYPE": "time_series",
+        "DELTA_PLUS_VAR": "bn_uncertainty",
+        "DELTA_MINUS_VAR": "bn_uncertainty",
+        "DIM_SIZES": 0
+      }
+    },
+    {
+      "name": "V",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 29800,
+      "count": 745,
+      "is_time": false,
+      "cdf_type": "CDF_FLOAT",
+      "attributes": {
+        "FIELDNAM": "Bulk Flow Speed",
+        "CATDESC": "Bulk Flow Speed",
+        "VALIDMIN": 0.0,
+        "VALIDMAX": 1200.0,
+        "UNITS": "km/s",
+        "FORMAT": "F7.1",
+        "VAR_TYPE": "data",
+        "FILLVAL": -9.999999848243207e+30,
+        "DEPEND_0": "Epoch",
+        "LABLAXIS": "Bulk Flow Speed",
+        "DISPLAY_TYPE": "time_series",
+        "DIM_SIZES": 0
+      }
+    },
+    {
+      "name": "protonDensity",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 35760,
+      "count": 745,
+      "is_time": false,
+      "cdf_type": "CDF_FLOAT",
+      "attributes": {
+        "FIELDNAM": "Proton density",
+        "CATDESC": "Proton density",
+        "VALIDMIN": 0.0,
+        "VALIDMAX": 1000.0,
+        "UNITS": "n/cc",
+        "FORMAT": "f9.5",
+        "VAR_TYPE": "data",
+        "FILLVAL": -9.999999848243207e+30,
+        "DEPEND_0": "Epoch",
+        "LABLAXIS": "SW_proton_dens",
+        "DISPLAY_TYPE": "time_series",
+        "DIM_SIZES": 0
+      }
+    },
+    {
+      "name": "protonTemp",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 41720,
+      "count": 745,
+      "is_time": false,
+      "cdf_type": "CDF_FLOAT",
+      "attributes": {
+        "FIELDNAM": "Proton temperature",
+        "CATDESC": "Proton Temperature (calculated from thermal speed width T=60.5*Vth*Vth)",
+        "VALIDMIN": 0.0,
+        "VALIDMAX": 10000000.0,
+        "UNITS": "deg K",
+        "FORMAT": "f9.0",
+        "VAR_TYPE": "data",
+        "FILLVAL": -9.999999848243207e+30,
+        "DEPEND_0": "Epoch",
+        "LABLAXIS": "Radial_proton_temp",
+        "DISPLAY_TYPE": "time_series",
+        "DIM_SIZES": 0
+      }
+    },
+    {
+      "name": "protonFlux1_LECP",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 47680,
+      "count": 745,
+      "is_time": false,
+      "cdf_type": "CDF_FLOAT",
+      "attributes": {
+        "FIELDNAM": "H 0.57-1.78 MeV, LECP",
+        "CATDESC": "Proton Flux 0.57 - 1.78 energy bins, MeV, LECP",
+        "VALIDMIN": 0.0,
+        "VALIDMAX": 999900.0,
+        "UNITS": "1/(cm^2 sec ster MeV)",
+        "FORMAT": "e10.3",
+        "VAR_TYPE": "data",
+        "FILLVAL": -9.999999848243207e+30,
+        "DEPEND_0": "Epoch",
+        "LABLAXIS": "H 0.57-1.78 MeV, LECP",
+        "DISPLAY_TYPE": "time_series",
+        "DIM_SIZES": 0
+      }
+    },
+    {
+      "name": "protonFlux2_LECP",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 53640,
+      "count": 745,
+      "is_time": false,
+      "cdf_type": "CDF_FLOAT",
+      "attributes": {
+        "FIELDNAM": "H 3.40-17.6 MeV, LECP",
+        "CATDESC": "Proton Flux 3.40 - 17.6 energy bins, MeV, LECP",
+        "VALIDMIN": 0.0,
+        "VALIDMAX": 999900.0,
+        "UNITS": "1/(cm^2 sec ster MeV)",
+        "FORMAT": "e10.3",
+        "VAR_TYPE": "data",
+        "FILLVAL": -9.999999848243207e+30,
+        "DEPEND_0": "Epoch",
+        "LABLAXIS": "H 3.40-17.6 MeV, LECP",
+        "DISPLAY_TYPE": "time_series",
+        "DIM_SIZES": 0
+      }
+    },
+    {
+      "name": "protonFlux3_LECP",
+      "shape": [
+        745
+      ],
+      "offset_bytes": 59600,
+      "count": 745,
+      "is_time": false,
+      "cdf_type": "CDF_FLOAT",
+      "attributes": {
+        "FIELDNAM": "H 22.0-31.0 MeV, LECP",
+        "CATDESC": "Proton Flux 22.0 - 31.0 energy bins, MeV, LECP",
+        "VALIDMIN": 0.0,
+        "VALIDMAX": 999900.0,
+        "UNITS": "1/(cm^2 sec ster MeV)",
+        "FORMAT": "e10.3",
+        "VAR_TYPE": "data",
+        "FILLVAL": -9.999999848243207e+30,
+        "DEPEND_0": "Epoch",
+        "LABLAXIS": "H 22.0-31.0 MeV, LECP",
+        "DISPLAY_TYPE": "time_series",
+        "DIM_SIZES": 0
+      }
+    }
+  ]
+}

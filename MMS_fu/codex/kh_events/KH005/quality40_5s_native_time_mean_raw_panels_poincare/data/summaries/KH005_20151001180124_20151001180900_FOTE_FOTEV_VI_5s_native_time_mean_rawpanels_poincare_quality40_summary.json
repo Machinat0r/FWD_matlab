@@ -1,0 +1,88 @@
+{
+  "event_id": "KH005",
+  "start_utc": "2015-10-01T18:01:24Z",
+  "stop_utc": "2015-10-01T18:09:00Z",
+  "velocity_field": "Vi",
+  "smooth_samples": 1,
+  "smooth_seconds": 5.0,
+  "smoothing_method": "centered arithmetic mean on each product's native timestamps before common-time alignment",
+  "native_smoothing_diagnostics": [
+    {
+      "spacecraft": 1,
+      "product": "B",
+      "cadence_seconds": 0.007812601,
+      "sample_rate_hz": 127.99834523739275,
+      "nominal_window_samples": 640
+    },
+    {
+      "spacecraft": 1,
+      "product": "V",
+      "cadence_seconds": 0.15,
+      "sample_rate_hz": 6.666666666666667,
+      "nominal_window_samples": 33
+    },
+    {
+      "spacecraft": 2,
+      "product": "B",
+      "cadence_seconds": 0.007812587,
+      "sample_rate_hz": 127.99857460787318,
+      "nominal_window_samples": 640
+    },
+    {
+      "spacecraft": 2,
+      "product": "V",
+      "cadence_seconds": 0.15,
+      "sample_rate_hz": 6.666666666666667,
+      "nominal_window_samples": 33
+    },
+    {
+      "spacecraft": 3,
+      "product": "B",
+      "cadence_seconds": 0.0078126,
+      "sample_rate_hz": 127.99836162097127,
+      "nominal_window_samples": 640
+    },
+    {
+      "spacecraft": 3,
+      "product": "V",
+      "cadence_seconds": 0.15,
+      "sample_rate_hz": 6.666666666666667,
+      "nominal_window_samples": 33
+    },
+    {
+      "spacecraft": 4,
+      "product": "B",
+      "cadence_seconds": 0.007812599,
+      "sample_rate_hz": 127.99837800455393,
+      "nominal_window_samples": 640
+    },
+    {
+      "spacecraft": 4,
+      "product": "V",
+      "cadence_seconds": 0.15,
+      "sample_rate_hz": 6.666666666666667,
+      "nominal_window_samples": 33
+    }
+  ],
+  "raw_common_samples": 2764,
+  "common_samples": 2730,
+  "median_cadence_seconds": 0.15,
+  "summary": {
+    "B_quality40": 2277,
+    "V_quality40": 1498,
+    "B_As_quality40": 803,
+    "B_Bs_quality40": 616,
+    "V_As_quality40": 420,
+    "V_Bs_quality40": 426,
+    "screw_same": 233,
+    "screw_opposite": 235,
+    "B_PI_nonzero": 0,
+    "V_PI_nonzero": 0,
+    "B_PI_and_quality40": 0,
+    "V_PI_and_quality40": 0,
+    "B_and_V_PI_nonzero": 0
+  },
+  "figure_pdf": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\MMS_fu\\codex\\kh_events\\KH005\\quality40_5s_native_time_mean_raw_panels_poincare\\pdf\\KH005_20151001180124_20151001180900_FOTE_FOTEV_VI_5s_native_time_mean_rawpanels_poincare_quality40.pdf",
+  "timeseries": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\MMS_fu\\codex\\kh_events\\KH005\\quality40_5s_native_time_mean_raw_panels_poincare\\data\\timeseries\\KH005_20151001180124_20151001180900_FOTE_FOTEV_VI_5s_native_time_mean_rawpanels_poincare_quality40_timeseries.csv",
+  "mat_file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\MMS_fu\\codex\\kh_events\\KH005\\quality40_5s_native_time_mean_raw_panels_poincare\\data\\mat\\KH005_20151001180124_20151001180900_FOTE_FOTEV_VI_5s_native_time_mean_rawpanels_poincare_quality40.mat"
+}

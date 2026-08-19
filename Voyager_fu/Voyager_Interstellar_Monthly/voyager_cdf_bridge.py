@@ -30,7 +30,7 @@ except ImportError as exc:  # pragma: no cover - exercised by MATLAB setup check
     ) from exc
 
 
-BRIDGE_VERSION = "1.0.0"
+BRIDGE_VERSION = "1.1.0"
 
 PROFILE_VARIABLES: dict[str, tuple[str, ...]] = {
     "mag48s": (
@@ -95,6 +95,16 @@ PROFILE_VARIABLES: dict[str, tuple[str, ...]] = {
         "dataConfidence",
         "numDetailPoints",
         "scDistance",
+    ),
+    "lecp_sector_daily": (
+        "Epoch",
+        "FHDU_SectoredFluxes",
+        "FHDU_SectoredFluxUncertainties",
+        "FHDU_SectoredRates",
+        "FHDU_SectoredRateUncertainties",
+        "FHDU_Energy",
+        "SectorIterator",
+        "Hydrogen_Channels",
     ),
 }
 

@@ -1,0 +1,5 @@
+Event,Article,DOI,ShockUTC,Direction,PNG,Status
+first_approach_20160624,"McComas et al. (2017); Hospodarsky et al. (2017)",10.1002/2017GL072831; 10.1002/2017GL073177,2016-06-24 08:16:00.000,in,C:\Users\Administrator\Documents\FWD_matlab\Juno_fu\juno_bowshock_20160624_0816_mccomas2017_hospodarsky2017.png,OK
+orbit0_20160717,"Hospodarsky et al. (2017)",10.1002/2017GL073177,2016-07-17 15:33:00.000,out,C:\Users\Administrator\Documents\FWD_matlab\Juno_fu\juno_bowshock_20160717_1533_hospodarsky2017.png,OK
+joseph_case1_20241210,"Joseph et al. (2026), Case I",10.1038/s41467-026-76223-x,2024-12-10 17:24:53.132,out,C:\Users\Administrator\Documents\FWD_matlab\Juno_fu\juno_bowshock_20241210_case1_joseph2026.png,OK
+joseph_case2_20241211,"Joseph et al. (2026), Case II",10.1038/s41467-026-76223-x,2024-12-11 03:06:02.836,in,C:\Users\Administrator\Documents\FWD_matlab\Juno_fu\juno_bowshock_20241211_case2_joseph2026.png,OK

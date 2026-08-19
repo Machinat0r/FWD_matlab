@@ -1,0 +1,82 @@
+{
+  "event_id": "KH005",
+  "start_utc": "2015-10-01T18:01:24Z",
+  "stop_utc": "2015-10-01T18:09:00Z",
+  "velocity_field": "Vi",
+  "smooth_samples": 1,
+  "smooth_seconds": 10.0,
+  "smoothing_method": "centered arithmetic mean on each product's native timestamps before common-time alignment",
+  "native_smoothing_diagnostics": [
+    {
+      "spacecraft": 1,
+      "product": "B",
+      "cadence_seconds": 0.007812601,
+      "sample_rate_hz": 127.99834523739275,
+      "nominal_window_samples": 1280
+    },
+    {
+      "spacecraft": 1,
+      "product": "V",
+      "cadence_seconds": 0.15,
+      "sample_rate_hz": 6.666666666666667,
+      "nominal_window_samples": 67
+    },
+    {
+      "spacecraft": 2,
+      "product": "B",
+      "cadence_seconds": 0.007812587,
+      "sample_rate_hz": 127.99857460787318,
+      "nominal_window_samples": 1280
+    },
+    {
+      "spacecraft": 2,
+      "product": "V",
+      "cadence_seconds": 0.15,
+      "sample_rate_hz": 6.666666666666667,
+      "nominal_window_samples": 67
+    },
+    {
+      "spacecraft": 3,
+      "product": "B",
+      "cadence_seconds": 0.0078126,
+      "sample_rate_hz": 127.99836162097127,
+      "nominal_window_samples": 1280
+    },
+    {
+      "spacecraft": 3,
+      "product": "V",
+      "cadence_seconds": 0.15,
+      "sample_rate_hz": 6.666666666666667,
+      "nominal_window_samples": 67
+    },
+    {
+      "spacecraft": 4,
+      "product": "B",
+      "cadence_seconds": 0.007812599,
+      "sample_rate_hz": 127.99837800455393,
+      "nominal_window_samples": 1280
+    },
+    {
+      "spacecraft": 4,
+      "product": "V",
+      "cadence_seconds": 0.15,
+      "sample_rate_hz": 6.666666666666667,
+      "nominal_window_samples": 67
+    }
+  ],
+  "common_samples": 2764,
+  "median_cadence_seconds": 0.15,
+  "summary": {
+    "B_quality40": 2246,
+    "V_quality40": 1461,
+    "B_As_quality40": 855,
+    "B_Bs_quality40": 685,
+    "V_As_quality40": 349,
+    "V_Bs_quality40": 500,
+    "screw_same": 269,
+    "screw_opposite": 219
+  },
+  "figure_pdf": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\MMS_fu\\codex\\kh_events\\KH005\\quality40_10s_native_time_mean\\pdf\\KH005_20151001180124_20151001180900_FOTE_FOTEV_VI_10s_native_time_mean_quality40.pdf",
+  "timeseries": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\MMS_fu\\codex\\kh_events\\KH005\\quality40_10s_native_time_mean\\data\\timeseries\\KH005_20151001180124_20151001180900_FOTE_FOTEV_VI_10s_native_time_mean_quality40_timeseries.csv",
+  "mat_file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\MMS_fu\\codex\\kh_events\\KH005\\quality40_10s_native_time_mean\\data\\mat\\KH005_20151001180124_20151001180900_FOTE_FOTEV_VI_10s_native_time_mean_quality40.mat"
+}
