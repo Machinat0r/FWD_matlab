@@ -1,0 +1,16 @@
+{
+  "paper_method": "Florinski, Decker, and le Roux (2008), JGR 113 A07103",
+  "doi": "10.1029/2007JA012859",
+  "dataset": "VOYAGER-1_LECP_LEV-1-RATES",
+  "time_interval": "20200622T000000Z/20200909T000000Z",
+  "variables": [
+    "FHDU_SectoredRates",
+    "FHDU_SectoredRateUncertainties"
+  ],
+  "request": "https://cdaweb.gsfc.nasa.gov/WS/cdasr/1/dataviews/sp_phys/datasets/VOYAGER-1_LECP_LEV-1-RATES/data/20200622T000000Z,20200909T000000Z/FHDU_SectoredRates,FHDU_SectoredRateUncertainties?format=cdf",
+  "generated_cdf": "https://cdaweb.gsfc.nasa.gov/tmp/wsmwv0jQ/voyager-1_lecps_lev-1-rates_20200622001522_20200908234942_cdaweb.cdf",
+  "convenience_file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\Voyager_fu\\Voyager_Interstellar_Monthly\\Voyager1_LECP_Sectored_Level1_Rates\\voyager1_lecp_p1_level1_sectored_rates_20200622_20200908.cdf",
+  "database_file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\Voyager_fu\\Voyager_Interstellar_Monthly\\Voyager1_Selected_Event_Data\\voyager1\\lecp\\level1\\sectored_rates\\2020\\06-09\\voyager1_lecp_p1_level1_sectored_rates_20200622_20200908.cdf",
+  "bytes": 550777,
+  "processing": "Original NASA Level-1 sectored rates; no averaging or interpolation"
+}

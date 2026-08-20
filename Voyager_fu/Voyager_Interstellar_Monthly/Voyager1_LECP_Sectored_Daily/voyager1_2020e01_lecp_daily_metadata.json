@@ -1,0 +1,14 @@
+{
+  "paper_method": "Florinski, Decker, and le Roux (2008), doi:10.1029/2007JA012859",
+  "dataset": "VOYAGER-1_LECP_LEV-2-DAILY-AVG",
+  "time_interval": "20200622T000000Z/20200909T000000Z",
+  "variables": [
+    "FHDU_SectoredFluxes",
+    "FHDU_SectoredFluxUncertainties"
+  ],
+  "convenience_file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\Voyager_fu\\Voyager_Interstellar_Monthly\\Voyager1_LECP_Sectored_Daily\\voyager1_lecp_p1_sectored_daily_20200622_20200908.cdf",
+  "database_file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\Voyager_fu\\Voyager_Interstellar_Monthly\\Voyager1_Selected_Event_Data\\voyager1\\lecp\\1d\\l2\\sectored_flux\\2020\\06-09\\voyager1_lecp_p1_sectored_daily_20200622_20200908.cdf",
+  "bytes": 103913,
+  "processing": "Official NASA daily sector flux; no added averaging, interpolation, fit, or background correction",
+  "background_caveat": "Public automated LECP data are not event-specifically background corrected; S8 is retained only as a diagnostic"
+}

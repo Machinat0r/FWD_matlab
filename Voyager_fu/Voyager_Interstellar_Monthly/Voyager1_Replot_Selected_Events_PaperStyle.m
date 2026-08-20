@@ -4,8 +4,8 @@ function report = Voyager1_Replot_Selected_Events_PaperStyle(varargin)
 %   one calendar month after the event end. COHO one-hour MAG observations
 %   are black and daily averages of those one-hour values are gray.
 %   Days with no observation remain gaps. Direct COHO speed, density, and
-%   temperature variables are plotted only when valid values exist. No
-%   physical quantity is derived and no missing value is interpolated.
+%   temperature variables are plotted only when valid values exist. Pitch
+%   angles are derived only when requested; no missing value is interpolated.
 
 programRoot = fileparts(mfilename('fullpath'));
 parser = inputParser;
@@ -41,9 +41,26 @@ addParameter(parser, 'LECPSectoredDailyCDF', fullfile(programRoot, ...
     'Voyager1_LECP_Sectored_Daily', ...
     'voyager1_lecp_hydrogen_sectored_daily_20130301_20220401.cdf'), ...
     @isTextScalar);
-addParameter(parser, 'LECPSectorAverageDays', 3, ...
+% Zero keeps the cadence of the supplied sectored CDF.  A positive odd
+% value requests a centered running mean of daily records.
+addParameter(parser, 'LECPSectorAverageDays', 0, ...
     @(x) isnumeric(x) && isscalar(x) && isfinite(x) && ...
-    x >= 1 && fix(x) == x && mod(x, 2) == 1);
+    x >= 0 && fix(x) == x && (x == 0 || mod(x, 2) == 1));
+addParameter(parser, 'PitchAngleMethod', 'florinski2008', @isTextScalar);
+% Public CDAWeb LECP Level-2 sector fluxes carry no event-specific
+% penetrating-particle background correction.  "none" preserves those
+% published values.  "s8_daily_approx" applies the blocked-sector daily
+% value as an explicitly labelled approximation; Florinski et al. (2008)
+% state that the background was removed, but do not publish that correction
+% series or an automatic algorithm for deriving it.
+addParameter(parser, 'LECPBackgroundMode', 'none', @isTextScalar);
+addParameter(parser, 'MinimumDailyCoverageFraction', 0.50, ...
+    @(x) isnumeric(x) && isscalar(x) && isfinite(x) && x > 0 && x <= 1);
+addParameter(parser, 'MinimumDailySectorSamples', 6, ...
+    @(x) isnumeric(x) && isscalar(x) && isfinite(x) && ...
+    x >= 1 && fix(x) == x);
+addParameter(parser, 'MinimumPitchAngleSpanDeg', 45, ...
+    @(x) isnumeric(x) && isscalar(x) && isfinite(x) && x >= 0 && x < 180);
 addParameter(parser, 'PitchAngleDataFolder', '', @isTextScalar);
 addParameter(parser, 'LineYMarginFraction', 0.06, ...
     @(x) isnumeric(x) && isscalar(x) && isfinite(x) && x > 0);
@@ -62,6 +79,8 @@ opts.CacheRoot = char(opts.CacheRoot);
 opts.PythonExe = char(opts.PythonExe);
 opts.CRSDisplay = lower(char(opts.CRSDisplay));
 opts.LECPSectoredDailyCDF = char(opts.LECPSectoredDailyCDF);
+opts.PitchAngleMethod = lower(char(opts.PitchAngleMethod));
+opts.LECPBackgroundMode = lower(char(opts.LECPBackgroundMode));
 opts.PitchAngleDataFolder = char(opts.PitchAngleDataFolder);
 if ~ismember(opts.CRSDisplay, ...
         {'spectrogram', 'channel_panels', 'lecp_p1_sectors', ...
@@ -69,6 +88,31 @@ if ~ismember(opts.CRSDisplay, ...
     error('VoyagerPaper:CRSDisplay', ...
         ['CRSDisplay must be spectrogram, channel_panels, ', ...
         'lecp_p1_sectors, or lecp_p1_pitch_angle.']);
+end
+if ~ismember(opts.PitchAngleMethod, ...
+        {'florinski2008', 'fullvector_native'})
+    error('VoyagerPaper:PitchAngleMethod', ...
+        ['PitchAngleMethod must be florinski2008 or ', ...
+        'fullvector_native.']);
+end
+if ~ismember(opts.LECPBackgroundMode, {'none', 's8_daily_approx'})
+    error('VoyagerPaper:LECPBackgroundMode', ...
+        ['LECPBackgroundMode must be none or s8_daily_approx. ', ...
+        'The latter is an approximation, not the unpublished LECP-team ', ...
+        'background correction used by Florinski et al. (2008).']);
+end
+if strcmp(opts.CRSDisplay, 'lecp_p1_pitch_angle')
+    if strcmp(opts.PitchAngleMethod, 'florinski2008') && ...
+            opts.LECPSectorAverageDays ~= 1
+        error('VoyagerPaper:FlorinskiCadence', ...
+            ['Florinski et al. (2008) processing requires one UTC-day ', ...
+            'averages: set LECPSectorAverageDays to 1.']);
+    elseif strcmp(opts.PitchAngleMethod, 'fullvector_native') && ...
+            opts.LECPSectorAverageDays ~= 0
+        error('VoyagerPaper:NativeCadence', ...
+            ['fullvector_native keeps the supplied cadence: set ', ...
+            'LECPSectorAverageDays to 0.']);
+    end
 end
 if isempty(opts.CatalogFile)
     opts.CatalogFile = fullfile(opts.OutputFolder, ...
@@ -122,7 +166,7 @@ if ismember(opts.CRSDisplay, ...
     try
         if ~isfile(opts.LECPSectoredDailyCDF)
             error('VoyagerPaper:LECPSectorSourceMissing', ...
-                'LECP sectored daily CDF is unavailable: %s', ...
+                'LECP sectored CDF is unavailable: %s', ...
                 opts.LECPSectoredDailyCDF);
         end
         lecpSectored = Voyager_Read_CDF_Product( ...
@@ -185,23 +229,39 @@ for ii = 1:height(catalog)
     if strcmp(opts.CRSDisplay, 'channel_panels')
         productTag = [productTag, '_CRSchannels'];
     elseif strcmp(opts.CRSDisplay, 'lecp_p1_sectors')
-        productTag = [productTag, sprintf('_LECP_P1_sectors_%dd', ...
-            opts.LECPSectorAverageDays)];
+        if opts.LECPSectorAverageDays == 0
+            productTag = [productTag, '_LECP_P1_sectors_1h'];
+        else
+            productTag = [productTag, sprintf('_LECP_P1_sectors_%dd', ...
+                opts.LECPSectorAverageDays)];
+        end
     elseif strcmp(opts.CRSDisplay, 'lecp_p1_pitch_angle')
-        productTag = [productTag, sprintf('_LECP_P1_pitch_angle_%dd', ...
-            opts.LECPSectorAverageDays)];
+        if strcmp(opts.PitchAngleMethod, 'florinski2008')
+            productTag = [productTag, ...
+                '_LECP_P1_pitch_angle_Florinski2008_1d'];
+        else
+            productTag = [productTag, ...
+                '_LECP_P1_pitch_angle_fullVector_native'];
+        end
     end
     fileName = sprintf('V1_%s_%s_%s_%s.png', ...
         catalog.EventID{ii}, datestr(catalog.StartUTC(ii), 'yyyymmdd'), ...
         datestr(catalog.EndUTCInclusive(ii), 'yyyymmdd'), productTag); %#ok<DATST>
     figureFiles{ii} = fullfile(opts.OutputFolder, fileName);
     if strcmp(opts.CRSDisplay, 'lecp_p1_pitch_angle')
-        pitchAngleFiles{ii} = fullfile(opts.PitchAngleDataFolder, ...
-            sprintf(['V1_%s_%s_%s_LECP_P1_nominalRT_pitch_angle_', ...
-            '%dd.csv'], catalog.EventID{ii}, ...
-            datestr(catalog.StartUTC(ii), 'yyyymmdd'), ...
-            datestr(catalog.EndUTCInclusive(ii), 'yyyymmdd'), ...
-            opts.LECPSectorAverageDays)); %#ok<DATST>
+        if strcmp(opts.PitchAngleMethod, 'florinski2008')
+            pitchAngleFiles{ii} = fullfile(opts.PitchAngleDataFolder, ...
+                sprintf(['V1_%s_%s_%s_LECP_P1_Florinski2008_', ...
+                'pitch_angle_1d.csv'], catalog.EventID{ii}, ...
+                datestr(catalog.StartUTC(ii), 'yyyymmdd'), ...
+                datestr(catalog.EndUTCInclusive(ii), 'yyyymmdd'))); %#ok<DATST>
+        else
+            pitchAngleFiles{ii} = fullfile(opts.PitchAngleDataFolder, ...
+                sprintf(['V1_%s_%s_%s_LECP_P1_fullVector_', ...
+                'pitch_angle_native.csv'], catalog.EventID{ii}, ...
+                datestr(catalog.StartUTC(ii), 'yyyymmdd'), ...
+                datestr(catalog.EndUTCInclusive(ii), 'yyyymmdd'))); %#ok<DATST>
+        end
     end
     mag1hRecords(ii) = finiteMagRecordCount(cohoData{ii});
     cohoRecords(ii) = variableRecordCount(cohoData{ii}, 'Epoch');
@@ -266,7 +326,31 @@ fprintf('Replotted %d events in %s\n', height(report), opts.OutputFolder);
 end
 
 function catalog = readEventCatalog(catalogFile)
-catalog = readtable(catalogFile, 'TextType', 'string');
+% R2026a can crash inside readtable on some Windows installations with
+% third-party virtual display drivers.  This catalog is a simple quoted CSV,
+% so read it with textscan and construct the table explicitly.
+fid = fopen(catalogFile, 'rt');
+if fid < 0
+    error('VoyagerPaper:CatalogOpen', ...
+        'Unable to open event catalog: %s', catalogFile);
+end
+cleanup = onCleanup(@() fclose(fid));
+headerLine = fgetl(fid);
+if ~ischar(headerLine)
+    error('VoyagerPaper:CatalogEmpty', ...
+        'Event catalog is empty: %s', catalogFile);
+end
+variableNames = cellstr(split(string(headerLine), ','));
+formatSpec = repmat('%q', 1, numel(variableNames));
+columns = textscan(fid, formatSpec, 'Delimiter', ',', ...
+    'EndOfLine', '\n', 'ReturnOnError', false, ...
+    'Whitespace', '');
+clear cleanup
+catalog = table;
+for ii = 1:numel(variableNames)
+    field = matlab.lang.makeValidName(strtrim(variableNames{ii}));
+    catalog.(field) = string(columns{ii});
+end
 required = {'EventID', 'StartUTC', 'EndUTCInclusive', 'EndUTCExclusive'};
 if ~all(ismember(required, catalog.Properties.VariableNames))
     error('VoyagerPaper:CatalogColumns', ...
@@ -587,7 +671,7 @@ elseif strcmp(opts.CRSDisplay, 'lecp_p1_pitch_angle')
     axesList(end + 1, 1) = axPitch; hold(axPitch, 'on'); %#ok<AGROW>
     pitchAngleTable = plotLECPP1PitchAngleFlux(axPitch, ...
         lecpSectored, mag, eventRow.PlotStartUTC, ...
-        eventRow.PlotEndUTCExclusive, opts.LECPSectorAverageDays);
+        eventRow.PlotEndUTCExclusive, opts);
     set(axPitch, 'YAxisLocation', 'left');
     ylabel(axPitch, 'PA (deg)', 'FontSize', 11);
     xlabel(axPitch, 'UTC', 'FontSize', 11);
@@ -704,6 +788,31 @@ for ii = 1:numel(fields)
         daily.(fields{ii}) = series.Value;
     else
         daily.(fields{ii}) = nan(numel(daysGrid), 1);
+    end
+end
+end
+
+function hourly = hourlyMagneticMeans(mag, startTime, endTime)
+hourGrid = (dateshift(startTime, 'start', 'hour'):hours(1): ...
+    dateshift(endTime - seconds(1), 'start', 'hour')).';
+hourly = struct;
+hourly.Epoch = hourGrid + minutes(30);
+fields = {'F1', 'BR', 'BT', 'BN'};
+for ii = 1:numel(fields)
+    if isfield(mag, 'Epoch') && isfield(mag, fields{ii})
+        values = nan(numel(hourGrid), 1);
+        sourceHour = dateshift(mag.Epoch(:), 'start', 'hour');
+        sourceValue = mag.(fields{ii});
+        sourceValue = sourceValue(:);
+        for jj = 1:numel(hourGrid)
+            use = sourceHour == hourGrid(jj) & isfinite(sourceValue);
+            if any(use)
+                values(jj) = mean(sourceValue(use), 'omitnan');
+            end
+        end
+        hourly.(fields{ii}) = values;
+    else
+        hourly.(fields{ii}) = nan(numel(hourGrid), 1);
     end
 end
 end
@@ -843,15 +952,24 @@ for ii = 1:numel(sectorPairs)
     valid = all(isfinite(current), 2);
     pairFlux(valid, ii) = mean(current(valid, :), 2);
 end
-[time, pairFlux] = centeredDailyAverageNoInterpolation( ...
-    time, pairFlux, averageDays);
+    if averageDays > 0
+        [time, pairFlux] = centeredDailyAverageNoInterpolation( ...
+            time, pairFlux, averageDays);
+        gapBreakHours = 36;
+    else
+        [time, order] = sort(time(:));
+        pairFlux = pairFlux(order, :);
+        [time, uniqueAt] = unique(time, 'stable');
+        pairFlux = pairFlux(uniqueAt, :);
+        gapBreakHours = 1.5;
+    end
 
 colors = [0.00 0.28 0.92; 0.90 0.08 0.08; 0.08 0.52 0.10];
 labels = {'Sectors 1 & 5', 'Sectors 3 & 7', 'Sectors 2 & 6'};
 handles = gobjects(0, 1);
 for ii = 1:size(pairFlux, 2)
     handle = plotGapLine(ax, time, pairFlux(:, ii), colors(ii, :), ...
-        1.15, 36, true);
+        1.15, gapBreakHours, true);
     if isgraphics(handle)
         set(handle, 'Marker', '.', 'MarkerSize', 5.5, ...
             'MarkerEdgeColor', colors(ii, :));
@@ -870,17 +988,24 @@ end
 legend(ax, handles, labels(1:numel(handles)), ...
     'Location', 'northeast', 'Box', 'on', 'FontSize', 9, ...
     'Interpreter', 'none');
-text(ax, 0.01, 0.08, sprintf('%d-day average; no interpolation', ...
-    averageDays), 'Units', 'normalized', 'FontSize', 8, ...
-    'Color', [0.25 0.25 0.25], 'Interpreter', 'none');
+if averageDays > 0
+    processingText = sprintf('%d-day average; no interpolation', averageDays);
+else
+    processingText = 'native source cadence; no added averaging/interpolation';
+end
+text(ax, 0.01, 0.08, processingText, 'Units', 'normalized', ...
+    'FontSize', 8, 'Color', [0.25 0.25 0.25], 'Interpreter', 'none');
 end
 
 function output = plotLECPP1PitchAngleFlux( ...
-        ax, data, mag, startTime, endTime, averageDays)
-% Calculate nominal LECP sector-center pitch angles.  The sector geometry
-% follows the published V1 disk: +T is right, +R is down, and the scan plane
-% is treated as the nominal RT plane.  No SEDR attitude correction or
-% interpolation is applied.
+        ax, data, mag, startTime, endTime, opts)
+% Construct LECP P1 pitch angles following Florinski et al. (2008).
+% The seven active sectors are averaged separately over a UTC day and their
+% entry vectors are dotted with the complete daily mean MAG vector.  The
+% nominal LECP scan plane is taken to be parallel to RT, as in the paper.
+% Background handling is explicit because the paper's LECP-team correction
+% series is not included in the public CDAWeb products.  No interpolation,
+% fit, or time-dependent SEDR attitude correction is used.
 output = table;
 required = {'Epoch', 'FHDU_Energy'};
 if ~all(isfield(data, required)) || isempty(data.Epoch)
@@ -890,12 +1015,20 @@ end
 
 if isfield(data, 'FHDU_SectoredFluxes')
     sectoredValues = data.FHDU_SectoredFluxes;
+    sourceValueName = 'Flux';
     valueName = 'Flux';
+    sourceToIntensityFactor = 1;
+    uncertaintyField = 'FHDU_SectoredFluxUncertainties';
     colorBarLabel = 'log_{10} J';
 elseif isfield(data, 'FHDU_SectoredRates')
     sectoredValues = data.FHDU_SectoredRates;
-    valueName = 'Rate';
-    colorBarLabel = 'log_{10} rate (counts s^{-1})';
+    sourceValueName = 'Rate';
+    valueName = 'Flux';
+    % Florinski et al. give G=0.44 cm^2 sr for Ch1.  The channel width is
+    % 1.78-0.57=1.21 MeV, so J=(rate-background)/(G*dE).
+    sourceToIntensityFactor = 1 / (0.44 * (1.78 - 0.57));
+    uncertaintyField = 'FHDU_SectoredRateUncertainties';
+    colorBarLabel = 'log_{10} J';
 else
     emptyPanel(ax, 'No recorded LECP P1 sectored measurement');
     return
@@ -921,84 +1054,266 @@ if ndims(sectoredValues) ~= 3 || ...
 end
 
 use = data.Epoch >= startTime & data.Epoch < endTime;
-time = data.Epoch(use);
-sectorFlux = squeeze(sectoredValues(use, p1Index, 1:8));
-if isempty(time) || isempty(sectorFlux)
+sourceTime = data.Epoch(use);
+rawSector = squeeze(sectoredValues(use, p1Index, 1:8));
+if isempty(sourceTime) || isempty(rawSector)
     emptyPanel(ax, 'No LECP P1 sectored measurement in this interval');
     return
 end
-sectorFlux = reshape(sectorFlux, numel(time), 8);
-sectorFlux(~isfinite(sectorFlux) | sectorFlux <= 0) = nan;
-[time, sectorFlux] = centeredDailyAverageNoInterpolation( ...
-    time, sectorFlux, averageDays);
+rawSector = reshape(double(rawSector), numel(sourceTime), 8);
+rawSector(~isfinite(rawSector) | rawSector < 0) = nan;
 
-dailyMag = dailyMagneticMeans(mag, startTime, endTime);
-[present, magIndex] = ismember(dateshift(time, 'start', 'day'), ...
-    dateshift(dailyMag.Epoch, 'start', 'day'));
+sourceSigma = nan(size(rawSector));
+if isfield(data, uncertaintyField)
+    allSigma = data.(uncertaintyField);
+    if ndims(allSigma) == 3 && size(allSigma, 1) == numel(data.Epoch) && ...
+            size(allSigma, 2) >= p1Index && size(allSigma, 3) >= 8
+        sourceSigma = squeeze(allSigma(use, p1Index, 1:8));
+        sourceSigma = reshape(double(sourceSigma), numel(sourceTime), 8);
+        sourceSigma(~isfinite(sourceSigma) | sourceSigma < 0) = nan;
+    end
+end
+
+[sourceTime, order] = sort(sourceTime(:));
+rawSector = rawSector(order, :);
+sourceSigma = sourceSigma(order, :);
+[sourceTime, uniqueAt] = unique(sourceTime, 'stable');
+rawSector = rawSector(uniqueAt, :);
+sourceSigma = sourceSigma(uniqueAt, :);
+
+if strcmp(opts.PitchAngleMethod, 'florinski2008')
+    [time, rawSector, rawSigma, minimumSectorSamples, ...
+        coverageFraction, requiredSamples, sectorSampleCount] = ...
+        florinskiDailySectorAverage( ...
+        sourceTime, rawSector, sourceSigma, startTime, endTime, ...
+        opts.MinimumDailyCoverageFraction, opts.MinimumDailySectorSamples);
+    matchedMag = magneticVectorMeans(mag, startTime, endTime, 'day');
+    lecpBin = dateshift(time, 'start', 'day');
+    magBin = dateshift(matchedMag.Epoch, 'start', 'day');
+    magVariableNames = {'BR_daily_nT', 'BT_daily_nT', 'BN_daily_nT'};
+    valueCadenceSuffix = '1d';
+    cellHalfWidthDays = 0.5;
+    methodText = ["Florinski et al. (2008) angle construction: " + ...
+        "per-sector 24 h mean; mu=vhat dot <B>/|<B>|; " + ...
+        "nominal scan plane parallel to RT; no SEDR correction"];
+else
+    time = sourceTime;
+    rawSigma = sourceSigma;
+    complete = all(isfinite(rawSector(:, 1:7)), 2);
+    sectorSampleCount = double(isfinite(rawSector));
+    minimumSectorSamples = min(sectorSampleCount(:, 1:7), [], 2);
+    coverageFraction = double(complete);
+    requiredSamples = ones(numel(time), 1);
+    matchedMag = magneticVectorMeans(mag, startTime, endTime, 'hour');
+    lecpBin = dateshift(time, 'start', 'hour');
+    magBin = dateshift(matchedMag.Epoch, 'start', 'hour');
+    magVariableNames = {'BR_hourly_nT', 'BT_hourly_nT', 'BN_hourly_nT'};
+    valueCadenceSuffix = 'native';
+    if numel(time) > 1
+        cellHalfWidthDays = max(1 / (24 * 60), ...
+            median(days(diff(time)), 'omitnan') / 2);
+    else
+        cellHalfWidthDays = 1 / 48;
+    end
+    methodText = ["native-cadence diagnostic using Florinski geometry; " + ...
+        "mu=vhat dot B/|B|; " + ...
+        "nominal scan plane parallel to RT; no SEDR correction"];
+end
+
+% S8 is blocked by the sun shield and is retained as a background diagnostic.
+% Instrument documentation says that the background must be determined from
+% context with help from S8.  It does not support blindly equating every S8
+% daily value with the correction.  Keep the public Level-2 values by default;
+% the optional S8 mode is explicitly labelled as an approximation.
+sectorValue = rawSector;
+sectorSigma = rawSigma;
+background = rawSector(:, 8);
+backgroundSigma = rawSigma(:, 8);
+backgroundApplied = strcmp(opts.LECPBackgroundMode, 's8_daily_approx');
+if backgroundApplied
+    for sector = 1:7
+        sectorValue(:, sector) = rawSector(:, sector) - background;
+        hasSigma = isfinite(rawSigma(:, sector)) & ...
+            isfinite(backgroundSigma);
+        sectorSigma(hasSigma, sector) = sqrt( ...
+            rawSigma(hasSigma, sector).^2 + backgroundSigma(hasSigma).^2);
+    end
+    methodText = methodText + ...
+        "; approximate background: same-day blocked S8 value subtracted";
+else
+    methodText = methodText + ...
+        "; public source values retained without background correction";
+end
+sectorValue(~isfinite(sectorValue) | sectorValue <= 0) = nan;
+sectorValue(:, 1:7) = sectorValue(:, 1:7) * sourceToIntensityFactor;
+sectorSigma(:, 1:7) = sectorSigma(:, 1:7) * sourceToIntensityFactor;
+sectorValue(:, 8) = background * sourceToIntensityFactor;
+sectorSigma(:, 8) = backgroundSigma * sourceToIntensityFactor;
+if sourceToIntensityFactor ~= 1
+    methodText = methodText + ...
+        "; Ch1 rate converted with G=0.44 cm^2 sr and dE=1.21 MeV";
+end
+
+[present, magIndex] = ismember(lecpBin, magBin);
 br = nan(numel(time), 1); bt = br; bn = br;
-br(present) = dailyMag.BR(magIndex(present));
-bt(present) = dailyMag.BT(magIndex(present));
-bn(present) = dailyMag.BN(magIndex(present));
+magSamples = zeros(numel(time), 1);
+magDirectionRMSDeg = nan(numel(time), 1);
+br(present) = matchedMag.BR(magIndex(present));
+bt(present) = matchedMag.BT(magIndex(present));
+bn(present) = matchedMag.BN(magIndex(present));
+magSamples(present) = matchedMag.SampleCount(magIndex(present));
+magDirectionRMSDeg(present) = ...
+    matchedMag.DirectionRMSDeg(magIndex(present));
 bMagnitude = sqrt(br.^2 + bt.^2 + bn.^2);
+bAzimuthDeg = mod(atan2d(bt, br), 360);
+bElevationDeg = atan2d(bn, hypot(br, bt));
 
-% Angles are measured counter-clockwise from +T in plot coordinates, where
-% +R points downward.  Sector 1 is upper-left and sector numbering proceeds
-% counter-clockwise in the published Decker et al. disk.  uR/uT describe
-% the telescope boresight; a particle entering the telescope travels in the
-% opposite direction.  Following the published PAD construction, pitch
-% cosine uses the magnetic-field direction projected into the scan plane.
+% Published disk orientation: +T is right and +R is down.  The disk vectors
+% below are telescope look/boresight directions.  A detected particle enters
+% along the opposite vector.  Its nominal N component is zero because the
+% paper treats the LECP scan plane as nearly parallel to RT.
 sectorPlotAngle = 112.5 + (0:7) * 45;
-uT = cosd(sectorPlotAngle);
-uR = -sind(sectorPlotAngle);
-scanPlaneMagnitude = hypot(br, bt);
+boresightUT = cosd(sectorPlotAngle);
+boresightUR = -sind(sectorPlotAngle);
+particleUT = -boresightUT;
+particleUR = -boresightUR;
+particleUN = zeros(size(particleUR));
+
+pitchCosine = nan(numel(time), 8);
 pitchAngle = nan(numel(time), 8);
 for sector = 1:8
-    cosine = -(br * uR(sector) + bt * uT(sector)) ./ ...
-        scanPlaneMagnitude;
-    cosine = max(-1, min(1, cosine));
-    pitchAngle(:, sector) = acosd(cosine);
+    pitchCosine(:, sector) = ...
+        (br * particleUR(sector) + bt * particleUT(sector) + ...
+        bn * particleUN(sector)) ./ bMagnitude;
+    pitchCosine(:, sector) = max(-1, min(1, ...
+        pitchCosine(:, sector)));
+    pitchAngle(:, sector) = acosd(pitchCosine(:, sector));
 end
-pitchAngle(~isfinite(scanPlaneMagnitude) | scanPlaneMagnitude <= 0, :) = nan;
+invalidB = ~isfinite(bMagnitude) | bMagnitude <= 0;
+pitchCosine(invalidB, :) = nan;
+pitchAngle(invalidB, :) = nan;
 
-output = table(time, br, bt, bn, ...
-    'VariableNames', {'EpochUTC', 'BR_daily_nT', 'BT_daily_nT', ...
-    'BN_daily_nT'});
-for sector = 1:8
-    output.(sprintf('PA_S%d_deg', sector)) = pitchAngle(:, sector);
-    output.(sprintf('%s_S%d_%dd', valueName, sector, averageDays)) = ...
-        sectorFlux(:, sector);
+activeSectors = 1:7;
+pitchSpanDeg = nan(numel(time), 1);
+activeSectorCount = zeros(numel(time), 1);
+relativeUncertaintyMedian = nan(numel(time), 1);
+padUsable = false(numel(time), 1);
+quality = strings(numel(time), 1);
+for ii = 1:numel(time)
+    validActive = isfinite(sectorValue(ii, activeSectors)) & ...
+        sectorValue(ii, activeSectors) > 0 & ...
+        isfinite(pitchAngle(ii, activeSectors));
+    activeSectorCount(ii) = nnz(validActive);
+    currentPitch = pitchAngle(ii, activeSectors(validActive));
+    if ~isempty(currentPitch)
+        pitchSpanDeg(ii) = max(currentPitch) - min(currentPitch);
+    end
+    rel = sectorSigma(ii, activeSectors) ./ ...
+        sectorValue(ii, activeSectors);
+    rel = rel(isfinite(rel) & rel >= 0);
+    if ~isempty(rel)
+        relativeUncertaintyMedian(ii) = median(rel);
+    end
+
+    reasons = strings(0, 1);
+    if minimumSectorSamples(ii) < requiredSamples(ii)
+        reasons(end + 1) = sprintf( ...
+            'insufficient per-sector samples (%d<%d)', ...
+            minimumSectorSamples(ii), requiredSamples(ii)); %#ok<AGROW>
+    end
+    if magSamples(ii) < 1 || invalidB(ii)
+        reasons(end + 1) = 'no valid mean vector magnetic field'; %#ok<AGROW>
+    end
+    if activeSectorCount(ii) < 7
+        reasons(end + 1) = sprintf( ...
+            'only %d/7 active sectors valid after selected background handling', ...
+            activeSectorCount(ii)); %#ok<AGROW>
+    end
+    if isfinite(pitchSpanDeg(ii)) && ...
+            pitchSpanDeg(ii) <= opts.MinimumPitchAngleSpanDeg
+        reasons(end + 1) = sprintf( ...
+            'pitch-angle span %.1f deg <= %.1f deg', ...
+            pitchSpanDeg(ii), opts.MinimumPitchAngleSpanDeg); %#ok<AGROW>
+    end
+    if isfinite(magDirectionRMSDeg(ii)) && magDirectionRMSDeg(ii) > 20
+        reasons(end + 1) = sprintf( ...
+            'within-bin MAG direction RMS %.1f deg > 20 deg', ...
+            magDirectionRMSDeg(ii)); %#ok<AGROW>
+    end
+    if isfinite(relativeUncertaintyMedian(ii)) && ...
+            relativeUncertaintyMedian(ii) > 1
+        reasons(end + 1) = sprintf( ...
+            'median relative flux uncertainty %.2f > 1', ...
+            relativeUncertaintyMedian(ii)); %#ok<AGROW>
+    end
+    if isempty(reasons)
+        padUsable(ii) = true;
+        quality(ii) = 'usable';
+    else
+        quality(ii) = "excluded: " + strjoin(reasons, '; ');
+    end
 end
-output.PitchAngleMethod = repmat( ...
-    ["particle entering along nominal RT scan-plane sector axis; " + ...
-    "B projected into scan plane; no SEDR attitude correction"], ...
+
+output = table(time, br, bt, bn, bMagnitude, bAzimuthDeg, ...
+    bElevationDeg, magSamples, magDirectionRMSDeg, minimumSectorSamples, ...
+    requiredSamples, coverageFraction, activeSectorCount, pitchSpanDeg, ...
+    relativeUncertaintyMedian, padUsable, quality, ...
+    'VariableNames', [{'EpochUTC'}, magVariableNames, ...
+    {'BMeanMagnitude_nT', 'BAzimuth_R_to_T_deg', 'BElevation_deg', ...
+    'MAGVectorSampleCount', 'MAGDirectionRMS_deg', ...
+    'LECPMinimumSectorSampleCount', 'LECPRequiredSampleCount', ...
+    'LECPCoverageFraction', 'ValidActiveSectorCount', ...
+    'PitchAngleSpan_deg', 'MedianRelativeUncertainty', ...
+    'PADUsable', 'PADQuality'}]);
+for sector = 1:8
+    output.(sprintf('Mu_S%d', sector)) = pitchCosine(:, sector);
+    output.(sprintf('PA_S%d_deg', sector)) = pitchAngle(:, sector);
+    output.(sprintf('Raw%s_S%d_%s', sourceValueName, sector, ...
+        valueCadenceSuffix)) = rawSector(:, sector);
+    output.(sprintf('%s_S%d_%s', valueName, sector, ...
+        valueCadenceSuffix)) = sectorValue(:, sector);
+    output.(sprintf('%sUncertainty_S%d_%s', valueName, sector, ...
+        valueCadenceSuffix)) = sectorSigma(:, sector);
+    output.(sprintf('Samples_S%d_%s', sector, valueCadenceSuffix)) = ...
+        sectorSampleCount(:, sector);
+end
+output.(sprintf('S8_Diagnostic_%s_%s', sourceValueName, ...
+    valueCadenceSuffix)) = background;
+output.SourceToDifferentialFluxFactor = repmat( ...
+    sourceToIntensityFactor, height(output), 1);
+output.BackgroundCorrectionMode = repmat( ...
+    string(opts.LECPBackgroundMode), height(output), 1);
+output.BackgroundCorrectionApplied = repmat( ...
+    backgroundApplied, height(output), 1);
+output.PitchAngleMethod = repmat(methodText, height(output), 1);
+output.SectorAxisAssumption = repmat( ...
+    "eight 45-deg nominal look axes; scan plane parallel to RT", ...
     height(output), 1);
 
-% Sector 8 is behind the LECP sun shield.  Its pitch angle is retained in
-% the exported table, while its low-energy flux is excluded from the PA
-% distribution panel to avoid mixing shield/background counts with S1-S7.
-displaySectors = 1:7;
-displayFlux = sectorFlux(:, displaySectors);
-displayPitch = pitchAngle(:, displaySectors);
-validFlux = displayFlux(isfinite(displayFlux) & displayFlux > 0 & ...
-    isfinite(displayPitch));
+displayFlux = sectorValue(:, activeSectors);
+displayPitch = pitchAngle(:, activeSectors);
+usableRows = padUsable;
+validFlux = displayFlux(repmat(usableRows, 1, 7) & ...
+    isfinite(displayFlux) & displayFlux > 0 & isfinite(displayPitch));
 if isempty(validFlux)
-    emptyPanel(ax, 'No paired LECP flux and magnetic-field direction');
+    emptyPanel(ax, ['No daily PAD passed the Florinski-style ', ...
+        'coverage/geometry checks']);
     return
 end
 colorLimits = robustColorLimits(log10(validFlux));
 
 for ii = 1:numel(time)
+    if ~padUsable(ii), continue, end
     valid = isfinite(displayPitch(ii, :)) & ...
         isfinite(displayFlux(ii, :)) & displayFlux(ii, :) > 0;
-    if ~any(valid), continue, end
     currentPitch = displayPitch(ii, valid);
     currentFlux = displayFlux(ii, valid);
     [currentPitch, order] = sort(currentPitch);
     currentFlux = currentFlux(order);
 
-    % Opposing/symmetric look directions can have indistinguishable pitch
-    % angles.  Merge only samples separated by <=2 deg; this is averaging of
-    % measurements at the same pitch angle, not interpolation.
+    % A spectrogram cannot show two sector values at exactly the same PA.
+    % Only for display, sector centers within 2 deg are represented by their
+    % arithmetic mean.  Every original sector value remains in the CSV.
     group = cumsum([1, diff(currentPitch) > 2]);
     groupIDs = unique(group, 'stable');
     mergedPitch = nan(1, numel(groupIDs));
@@ -1008,11 +1323,6 @@ for ii = 1:numel(time)
         mergedPitch(jj) = mean(currentPitch(inGroup), 'omitnan');
         mergedFlux(jj) = mean(currentFlux(inGroup), 'omitnan');
     end
-    validMerged = isfinite(mergedPitch) & ...
-        isfinite(mergedFlux) & mergedFlux > 0;
-    mergedPitch = mergedPitch(validMerged);
-    mergedFlux = mergedFlux(validMerged);
-    if isempty(mergedPitch), continue, end
 
     if numel(mergedPitch) == 1
         pitchEdges = [max(0, mergedPitch - 22.5), ...
@@ -1026,8 +1336,10 @@ for ii = 1:numel(time)
     end
     xCenter = datenum(time(ii)); %#ok<DATNM>
     for jj = 1:numel(mergedPitch)
-        xData = [xCenter - 0.5, xCenter + 0.5; ...
-            xCenter - 0.5, xCenter + 0.5];
+        xData = [xCenter - cellHalfWidthDays, ...
+            xCenter + cellHalfWidthDays; ...
+            xCenter - cellHalfWidthDays, ...
+            xCenter + cellHalfWidthDays];
         yData = [pitchEdges(jj), pitchEdges(jj); ...
             pitchEdges(jj + 1), pitchEdges(jj + 1)];
         colorData = log10(mergedFlux(jj)) * ones(2);
@@ -1050,6 +1362,132 @@ text(ax, 0.99, 0.94, '0.57-1.78 MeV', ...
     'Units', 'normalized', 'HorizontalAlignment', 'right', ...
     'VerticalAlignment', 'top', 'Color', [0 0 0], ...
     'FontSize', 9, 'Interpreter', 'none');
+if strcmp(opts.PitchAngleMethod, 'florinski2008')
+    processingLabel = '24 h sector means; full vector B';
+else
+    processingLabel = 'native cadence; full vector B';
+end
+if backgroundApplied
+    processingLabel = [processingLabel, '; S8 daily background approximation'];
+else
+    processingLabel = [processingLabel, '; public flux, background uncorrected'];
+end
+text(ax, 0.01, 0.05, processingLabel, 'Units', 'normalized', ...
+    'HorizontalAlignment', 'left', 'VerticalAlignment', 'bottom', ...
+    'Color', [0.15 0.15 0.15], 'FontSize', 8, 'Interpreter', 'none');
+end
+
+function [outputTime, outputValues, outputSigma, minimumSectorSamples, ...
+        coverageFraction, requiredSamples, sectorSampleCount] = ...
+        florinskiDailySectorAverage(time, values, sigma, startTime, ...
+        endTime, minimumCoverageFraction, minimumDailySectorSamples)
+% Average each active motor sector over the same UTC day.  A Level-1 CDF
+% record can contain only a subset of sectors, so coverage is assessed from
+% S1-S7 only.  S8 is a blocked diagnostic direction and is not required for
+% a PAD unless the caller explicitly requests the S8 approximation.
+dayGrid = (dateshift(startTime, 'start', 'day'):caldays(1): ...
+    dateshift(endTime - seconds(1), 'start', 'day')).';
+outputTime = dayGrid + hours(12);
+outputValues = nan(numel(dayGrid), 8);
+outputSigma = nan(numel(dayGrid), 8);
+minimumSectorSamples = zeros(numel(dayGrid), 1);
+coverageFraction = zeros(numel(dayGrid), 1);
+sectorSampleCount = zeros(numel(dayGrid), 8);
+
+uniqueTime = unique(sort(time(:)));
+if numel(uniqueTime) > 1
+    cadenceHours = median(hours(diff(uniqueTime)), 'omitnan');
+else
+    cadenceHours = 24;
+end
+if ~isfinite(cadenceHours) || cadenceHours <= 0
+    cadenceHours = 24;
+end
+sourceIsDailyAverage = cadenceHours >= 12;
+requiredSamples = ones(numel(dayGrid), 1);
+
+for ii = 1:numel(dayGrid)
+    inDay = time >= dayGrid(ii) & time < dayGrid(ii) + caldays(1);
+    for sector = 1:8
+        sectorSampleCount(ii, sector) = ...
+            nnz(inDay & isfinite(values(:, sector)));
+    end
+    minimumSectorSamples(ii) = min(sectorSampleCount(ii, 1:7));
+    maximumSectorSamples = max(sectorSampleCount(ii, 1:7));
+    if maximumSectorSamples > 0
+        coverageFraction(ii) = ...
+            minimumSectorSamples(ii) / maximumSectorSamples;
+    end
+    if sourceIsDailyAverage
+        requiredSamples(ii) = 1;
+    else
+        requiredSamples(ii) = max(minimumDailySectorSamples, ...
+            ceil(minimumCoverageFraction * maximumSectorSamples));
+    end
+    if minimumSectorSamples(ii) < requiredSamples(ii)
+        continue
+    end
+    for sector = 1:8
+        useSector = inDay & isfinite(values(:, sector));
+        outputValues(ii, sector) = ...
+            mean(values(useSector, sector), 'omitnan');
+        currentSigma = sigma(useSector, sector);
+        if all(isfinite(currentSigma))
+            outputSigma(ii, sector) = ...
+                sqrt(sum(currentSigma.^2)) / sectorSampleCount(ii, sector);
+        end
+    end
+end
+end
+
+function output = magneticVectorMeans(mag, startTime, endTime, binType)
+% Average BR, BT, and BN over identical records and retain a direction RMS.
+if strcmp(binType, 'day')
+    binStart = (dateshift(startTime, 'start', 'day'):caldays(1): ...
+        dateshift(endTime - seconds(1), 'start', 'day')).';
+    binEnd = binStart + caldays(1);
+    outputTime = binStart + hours(12);
+else
+    binStart = (dateshift(startTime, 'start', 'hour'):hours(1): ...
+        dateshift(endTime - seconds(1), 'start', 'hour')).';
+    binEnd = binStart + hours(1);
+    outputTime = binStart + minutes(30);
+end
+
+number = numel(binStart);
+output = struct('Epoch', outputTime, 'BR', nan(number, 1), ...
+    'BT', nan(number, 1), 'BN', nan(number, 1), ...
+    'SampleCount', zeros(number, 1), ...
+    'DirectionRMSDeg', nan(number, 1));
+if ~isfield(mag, 'Epoch') || ~all(isfield(mag, {'BR', 'BT', 'BN'}))
+    return
+end
+
+br = mag.BR(:); bt = mag.BT(:); bn = mag.BN(:);
+for ii = 1:number
+    use = mag.Epoch >= binStart(ii) & mag.Epoch < binEnd(ii) & ...
+        isfinite(br) & isfinite(bt) & isfinite(bn);
+    output.SampleCount(ii) = nnz(use);
+    if ~any(use), continue, end
+    output.BR(ii) = mean(br(use), 'omitnan');
+    output.BT(ii) = mean(bt(use), 'omitnan');
+    output.BN(ii) = mean(bn(use), 'omitnan');
+    meanVector = [output.BR(ii), output.BT(ii), output.BN(ii)];
+    meanMagnitude = norm(meanVector);
+    sampleVectors = [br(use), bt(use), bn(use)];
+    sampleMagnitude = sqrt(sum(sampleVectors.^2, 2));
+    validDirection = sampleMagnitude > 0 & isfinite(sampleMagnitude) & ...
+        isfinite(meanMagnitude) & meanMagnitude > 0;
+    if any(validDirection)
+        directionCosine = sampleVectors(validDirection, :) * ...
+            meanVector.' ./ (sampleMagnitude(validDirection) * ...
+            meanMagnitude);
+        directionCosine = max(-1, min(1, directionCosine));
+        directionDifference = acosd(directionCosine);
+        output.DirectionRMSDeg(ii) = ...
+            sqrt(mean(directionDifference.^2, 'omitnan'));
+    end
+end
 end
 
 function addLECPSectorDisk(parentAx, mag, eventStart, eventEnd)
