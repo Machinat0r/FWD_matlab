@@ -1,7 +1,7 @@
 close all
 clear,clc
 
-ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+ParentDir = 'Z:\SPART-WORK\Data\MMS/'; 
 mms.db_init('local_file_db',ParentDir);
 
 ic = 1;
@@ -36,14 +36,14 @@ ic = 1;
 %%%% 
 
 % d=dataobj('F:\mms\mms1\fpi\brst\l2\des-dist\mms1_fpi_brst_l2_des-dist_20151016130524_v2.1.0.cdf');
-% b=dataobj('F:\mms\mms1\fgm\brst\l2\2016\01\mms1_fgm_brst_l2_20151016130524_v4.**.*.cdf');
+% b=dataobj('F:\mms\mms1\fgm\brst\l2\2016\01\mms1_fgm_brst_2_20151016130524_v4.**.*.cdf');
 % tint = irf.tint('2015-10-16T13:05:40.00Z/2015-10-16T13:06:10.00Z');
 % d=dataobj('D:\MATLAB\mms_db\data\mms1\fpi\fast\l2\des-dist\2015\12\mms1_fpi_fast_l2_des-dist_20151231000000_v2.1.0.cdf');
 % energye=get_variable(d,'mms1_des_energy_fast');
 % % % 
 % % % tint = irf.tint('2019-08-05T16:24:00.00Z/2019-08-05T16:25:00.00Z');
 
-tint = irf.tint('2018-07-03T15:50:14.500Z/2018-07-03T15:50:22.500Z');
+tint = irf.tint('2021-07-22T11:19:25.000Z/2021-07-22T11:20:00.000Z');
 c_eval('d_path = mms.get_filepath(''mms?_fpi_brst_l2_des-dist'',tint);',ic);
 c_eval('b_path = mms.get_filepath(''mms?_fgm_brst_l2'',tint);',ic);
 d=dataobj(d_path);
@@ -239,9 +239,9 @@ end
 % E1 = [30 300];  
 % E2 = [300 20000];
 % E3 = [20000 30000];
-E1 = [30 100];  
-E2 = [100 30000];
-E3 = [3000 30000];
+E1 = [30 700];  
+E2 = [700 6600];
+E3 = [6600 30000];
 % E4 = [21.8808505,28.059874999999998];
 % E5 = [28.059874999999998,35.9838005];
 % E6 = [35.9838005,46.1453755];

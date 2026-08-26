@@ -346,6 +346,7 @@ grid(ax2, 'on');
 ax3 = nexttile(layout); hold(ax3, 'on');
 lecpNames = productVariableNames(data, 'LECP');
 plotParticleChannels(ax3, data, lecpNames, 'LECP', opts.GapBreakHours);
+applyLogAxisPadding(ax3, data, lecpNames, 1.20, 2.00);
 ylabel(ax3, {'LECP proton flux', 'cm^{-2} s^{-1} sr^{-1} MeV^{-1}'}, ...
     'FontSize', 11);
 grid(ax3, 'on');
@@ -411,6 +412,7 @@ if isempty(names) || ~isfield(data, 'Epoch')
     emptyPanel(ax, sprintf('%s proton flux -- no recorded value', instrument));
     return
 end
+
 colors = turbo(max(numel(names), 2));
 labels = cell(numel(names), 1);
 hasData = false;
@@ -425,6 +427,26 @@ if hasData
         'FontSize', 8);
 else
     emptyPanel(ax, sprintf('No recorded %s proton flux', instrument));
+end
+end
+
+function applyLogAxisPadding(ax, data, names, lowerFactor, upperFactor)
+% Leave multiplicative headroom around every recorded positive channel
+% value.  MATLAB's automatic log limit can end exactly at the largest
+% sample, causing markers at yearly peaks to touch or cross the panel edge.
+positiveValues = zeros(0, 1);
+for ii = 1:numel(names)
+    if ~isfield(data, names{ii}), continue, end
+    current = double(data.(names{ii})(:));
+    current = current(isfinite(current) & current > 0);
+    positiveValues = [positiveValues; current]; %#ok<AGROW>
+end
+if isempty(positiveValues), return, end
+
+lower = min(positiveValues) / lowerFactor;
+upper = max(positiveValues) * upperFactor;
+if isfinite(lower) && isfinite(upper) && lower > 0 && upper > lower
+    ylim(ax, [lower upper]);
 end
 end
 

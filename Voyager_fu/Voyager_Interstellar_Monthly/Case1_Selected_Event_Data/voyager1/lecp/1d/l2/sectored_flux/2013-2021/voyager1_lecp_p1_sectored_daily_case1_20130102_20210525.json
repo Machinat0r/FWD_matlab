@@ -1,0 +1,13 @@
+{
+  "dataset": "VOYAGER-1_LECP_LEV-2-DAILY-AVG",
+  "time_interval": "20130102T000000Z/20210526T000000Z",
+  "variables": [
+    "FHDU_SectoredFluxes",
+    "FHDU_SectoredFluxUncertainties"
+  ],
+  "request": "https://cdaweb.gsfc.nasa.gov/WS/cdasr/1/dataviews/sp_phys/datasets/VOYAGER-1_LECP_LEV-2-DAILY-AVG/data/20130102T000000Z,20210526T000000Z/FHDU_SectoredFluxes,FHDU_SectoredFluxUncertainties?format=cdf",
+  "generated_cdf": "https://cdaweb.gsfc.nasa.gov/tmp/wsSYxYDt/voyager-1_lecps_lev-2-daily-avg_20130102001321_20210521000843_cdaweb.cdf",
+  "file": "C:\\Users\\Administrator\\Documents\\FWD_matlab\\Voyager_fu\\Voyager_Interstellar_Monthly\\Case1_Selected_Event_Data\\voyager1\\lecp\\1d\\l2\\sectored_flux\\2013-2021\\voyager1_lecp_p1_sectored_daily_case1_20130102_20210525.cdf",
+  "bytes": 1325574,
+  "processing": "Official NASA daily sector flux; no interpolation, fit, or added background correction"
+}
