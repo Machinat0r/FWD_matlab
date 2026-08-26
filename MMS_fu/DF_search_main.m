@@ -1,8 +1,8 @@
 %------written by Wending Fu, Nov.2023 in Beijing------------
 clear;clc;
 global ParentDir OutputDir
-ParentDir = 'Z:/Data/MMS/'; 
-DownloadDir = 'C:/MMS/';
+ParentDir = '/Volumes/SPART-WORK/Data/MMS/'; 
+DownloadDir = '/Users/fwd/Documents/MATLAB/MMS/';
 TempDir = [DownloadDir,'temp/'];mkdir(TempDir);
 
 Date = '2019-08-05/2019-08-06';
