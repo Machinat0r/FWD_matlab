@@ -91,7 +91,7 @@ for ic=1:1
 c_eval(['B?_ts=mms.get_data(''B_gsm_brst'',tint,?);'],ic);
 c_eval(['Bt?_ts=B?_ts.abs;'],ic); 
 c_eval(['B?=irf.ts2mat(B?_ts);'],ic);
-c_eval(['B?_gsm=irf_gse2gsm(B?,-1);'],ic);
+% c_eval(['B?_gsm=irf_gse2gsm(B?,-1);'],ic);
 c_eval(['Bt?=irf.ts2mat(Bt?_ts);'],ic);
 end
 
@@ -241,7 +241,7 @@ end
 % E3 = [20000 30000];
 E1 = [30 700];  
 E2 = [700 6600];
-E3 = [6600 30000];
+E3 = [500 700];
 % E4 = [21.8808505,28.059874999999998];
 % E5 = [28.059874999999998,35.9838005];
 % E6 = [35.9838005,46.1453755];
@@ -418,7 +418,7 @@ set(h(2),'yscale','lin');
 set(h(2),'ytick',[45 90 135],'fontsize',12,'TickDir','in');
 caxis(h(2),[6.2 6.7]);
 ylabel(h(2),{'PAD(deg)'},'fontsize',13,'Interpreter','tex');
-irf_legend(h(2),'0.03-0.6 keV',[0.04 0.85],'fontsize',15,'color','k');
+irf_legend(h(2),'0.03-0.7 keV',[0.04 0.85],'fontsize',15,'color','k');
 %%
 h(i_subplot)=irf_subplot(n_subplots,1,-i_subplot);i_subplot=i_subplot+1;
 % h(3)=irf_panel('epad2');

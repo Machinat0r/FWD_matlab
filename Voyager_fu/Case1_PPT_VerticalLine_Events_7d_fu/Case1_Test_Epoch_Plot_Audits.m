@@ -1,0 +1,266 @@
+function report = Case1_Test_Epoch_Plot_Audits()
+%Case1_Test_Epoch_Plot_Audits Verify both 45-event official-product PAD sets.
+%   Run after all daily and hourly nativeCDF_Epoch MAT audits are complete.
+%   Each cadence's original CDFs are read once with the existing IRFU reader.
+%   Source records, Epoch, flux, sigma, provenance and 3-D angles are checked.
+%   Genuine empty event windows are valid and retain their selection audit.
+%   No figure, CDF, CSV, resampled flux or new scientific product is written.
+%
+%   Author: Codex, following the manual MATLAB style in MMS_fu
+%   Modified: 2026-09-03
+
+%% configuration and protection of the MATLAB path
+cfg = Case1_Config;
+originalPath = path;
+pathCleanup = onCleanup(@() path(originalPath));
+Case1_Add_IRFU_Path(cfg.IRFURoot);
+catalog = Case1_Event_Catalog;
+catalog = catalog(catalog.Spacecraft == 1, :);
+cadences = {'day', 'hour'};
+folders = {'1d', '1h'};
+sourceGroups = {cfg.LECPNativeDailyCDFs, cfg.LECPNativeHourlyCDFs};
+currentCadence = ""; currentEvent = "";
+report = struct;
+report.StartedUTC = datetime('now', 'TimeZone', 'UTC');
+report.TestFile = [mfilename('fullpath'), '.m'];
+report.TestSHA256 = Case1_File_SHA256(report.TestFile);
+report.MATLABVersion = version;
+report.Scope = ['Regression of 45 daily and 45 hourly saved PAD audits; ', ...
+    'no scientific treatment or figure modification.'];
+report.AngleTolerance_deg = 1e-10;
+report.VectorTolerance = 1e-12;
+report.Checks = table('Size', [0 7], ...
+    'VariableTypes', {'string', 'string', 'string', 'logical', ...
+    'double', 'double', 'string'}, ...
+    'VariableNames', {'Cadence', 'EventID', 'Check', 'Passed', ...
+    'Measured', 'Limit', 'Detail'});
+report.Events = table('Size', [0 10], ...
+    'VariableTypes', {'string', 'string', 'string', 'string', ...
+    'double', 'double', 'double', 'double', 'logical', 'string'}, ...
+    'VariableNames', {'Cadence', 'EventID', 'AuditFile', 'AuditSHA256', ...
+    'Rows', 'ExpectedRows', 'PADUsableRows', 'NegativeDeltaTRejected', ...
+    'Passed', 'Error'});
+report.Sources = cell(2, 1);
+report.FatalError = "";
+
+try
+    addCheck('catalog_has_45_v1_events', height(catalog) == 45, height(catalog), 45, ...
+        'The fixed Case 1 Voyager 1 catalog.');
+    for ic = 1:2
+        currentCadence = string(cadences{ic});
+        currentEvent = "";
+        source = Case1_Read_LECP_CDFs(sourceGroups{ic});
+        report.Sources{ic} = source.SourceManifest;
+        auditFolder = fullfile(cfg.DataRoot, 'voyager1', 'lecp', folders{ic}, ...
+            'derived', 'pitch_angle', '2013-2021', 'predicted_ck');
+        entries = dir(fullfile(auditFolder, '*_nativeCDF_Epoch.mat'));
+        addCheck('cadence_has_45_audit_files', numel(entries) == 45, numel(entries), 45, ...
+            'One completed original-Epoch audit per event and cadence.');
+
+        for ie = 1:height(catalog)
+            currentEvent = string(catalog.EventID(ie));
+            firstCheck = height(report.Checks) + 1;
+            auditFile = ""; auditSHA = ""; eventError = "";
+            nRows = NaN; nExpected = NaN; nUsable = NaN; nNegative = NaN;
+            try
+                pattern = ['V1_', char(currentEvent), '_*_predictedCK_', ...
+                    folders{ic}, '_nativeCDF_Epoch.mat'];
+                found = dir(fullfile(auditFolder, pattern));
+                addCheck('one_event_audit', isscalar(found), numel(found), 1, pattern);
+                if ~isscalar(found)
+                    error('VoyagerCase1:AuditCount', 'Expected exactly one event MAT audit.');
+                end
+                auditFile = string(fullfile(found.folder, found.name));
+                auditSHA = string(Case1_File_SHA256(char(auditFile)));
+                saved = load(char(auditFile));
+                T = saved.pitchAngleTable;
+                selection = saved.recordSelection;
+                startTime = catalog.StartUTC(ie) - days(cfg.ContextDays);
+                endTime = catalog.EndUTCExclusive(ie) + days(cfg.ContextDays);
+                inWindow = source.Epoch >= startTime & source.Epoch < endTime;
+                expectedRows = find(inWindow & ~(source.DeltaT(:) < 0));
+                negativeRows = find(inWindow & source.DeltaT(:) < 0);
+                nRows = height(T); nExpected = numel(expectedRows);
+                nNegative = numel(negativeRows); nUsable = 0;
+                addCheck('selection_counts', selection.InputRecords == nnz(inWindow) && ...
+                    selection.RetainedRecords == nExpected && ...
+                    selection.NegativeDeltaTRejected == nNegative, ...
+                    selection.RetainedRecords, nExpected, 'Window and negative-duration counts.');
+                addCheck('selection_original_rows', ...
+                    isequal(selection.KeptSourceRows(:), expectedRows), ...
+                    numel(selection.KeptSourceRows), nExpected, ...
+                    'Independent mask: inWindow and not(DeltaT<0).');
+                E = selection.ExcludedRecords;
+                expectedNegativeFile = source.SourceManifest.SourceFile( ...
+                    source.SourceFileIndex(negativeRows));
+                addCheck('negative_exclusion_provenance', ...
+                    isequal(E.SourceRow(:), negativeRows) && ...
+                    isequal(E.EpochUTC, source.Epoch(negativeRows)) && ...
+                    isequaln(E.DeltaT_s(:), source.DeltaT(negativeRows)) && ...
+                    isequal(string(E.SourceCDF), expectedNegativeFile) && ...
+                    isequal(E.SourceCDFRecord(:), source.SourceRecordNumber(negativeRows)), ...
+                    height(E), nNegative, 'Every excluded original file, row, Epoch and signed DeltaT.');
+                addCheck('policy_and_no_background', ...
+                    string(selection.Policy) == "epoch_drop_negative_deltat" && ...
+                    string(saved.opts.AccumulationPolicy) == "epoch_drop_negative_deltat" && ...
+                    string(saved.opts.PADCadence) == currentCadence && ...
+                    string(saved.opts.LECPBackgroundMode) == "none" && ...
+                    saved.opts.LECPSectorAverageDays == 0, ...
+                    double(saved.opts.LECPSectorAverageDays), 0, ...
+                    'Original product values and approved Epoch policy.');
+                addCheck('all_native_sources_identified', ...
+                    isequal(string(saved.sourceCDF(:)), source.SourceManifest.SourceFile) && ...
+                    isequal(string(saved.sourceLECP.SourceFile), source.SourceManifest.SourceFile) && ...
+                    isequal(string(saved.sourceLECP.SHA256), source.SourceManifest.SHA256) && ...
+                    all(string(saved.sourceLECP.Cadence) == currentCadence), ...
+                    height(saved.sourceLECP), height(source.SourceManifest), ...
+                    'Raw source file identities and SHA256 hashes.');
+                addCheck('window_row_count_exact', nRows == nExpected, nRows, nExpected, ...
+                    'No implicit UTC rebinning or duration-based omission.');
+                if isempty(T)
+                    addCheck('empty_table_has_no_retained_source', nExpected == 0, nExpected, 0, ...
+                        'Genuine source gap or all-negative records; independent selection audit exists.');
+                else
+                    nUsable = nnz(T.PADUsable);
+                    addCheck('epoch_and_deltaT_exact', ...
+                        isequal(T.EpochUTC, source.Epoch(expectedRows)) && ...
+                        isequaln(T.DeltaT_s(:), source.DeltaT(expectedRows)) && ...
+                        ~any(T.DeltaT_s < 0), nRows, nExpected, ...
+                        'Original fractional-second Epoch and positive/NaN duration retained.');
+                    expectedFile = source.SourceManifest.SourceFile( ...
+                        source.SourceFileIndex(expectedRows));
+                    addCheck('source_file_and_record_exact', ...
+                        isequal(T.SourceRow(:), expectedRows) && ...
+                        isequal(string(T.SourceCDF), expectedFile) && ...
+                        isequal(T.SourceCDFRecord(:), source.SourceRecordNumber(expectedRows)), ...
+                        nRows, nExpected, 'Direct mapping to original annual CDF rows.');
+
+                    rawFlux = reshape(source.FHDU_SectoredFluxes(expectedRows, 10, 1:8), nExpected, 8);
+                    rawSigma = reshape(source.FHDU_SectoredFluxUncertainties(expectedRows, 10, 1:8), nExpected, 8);
+                    rawFlux(~isfinite(rawFlux) | rawFlux < 0) = NaN;
+                    rawSigma(~isfinite(rawSigma) | rawSigma < 0) = NaN;
+                    expectedFlux = rawFlux;
+                    expectedFlux(:, 1:7) = positiveOnly(rawFlux(:, 1:7));
+                    actualRaw = readSectors(T, 'RawFlux_S%d_%s', folders{ic});
+                    actualFlux = readSectors(T, 'Flux_S%d_%s', folders{ic});
+                    actualSigma = readSectors(T, 'FluxUncertainty_S%d_%s', folders{ic});
+                    addCheck('original_raw_flux_exact', isequaln(actualRaw, rawFlux), ...
+                        nnz(isfinite(actualRaw)), nnz(isfinite(rawFlux)), ...
+                        'No source-sector averaging, interpolation or scaling.');
+                    addCheck('valid_flux_and_sigma_exact', ...
+                        isequaln(actualFlux, expectedFlux) && isequaln(actualSigma, rawSigma), ...
+                        nnz(isfinite(actualFlux)), nnz(isfinite(expectedFlux)), ...
+                        'Existing positive-flux validity gate only; uncertainty unchanged.');
+                    addCheck('no_background_or_flux_scaling', ...
+                        ~any(T.BackgroundCorrectionApplied) && ...
+                        all(string(T.BackgroundCorrectionMode) == "none") && ...
+                        all(T.SourceToDifferentialFluxFactor == 1), ...
+                        nnz(T.BackgroundCorrectionApplied), 0, 'No S8 subtraction or rate conversion.');
+                    addCheck('mag_bin_contains_original_epoch', ...
+                        isequal(T.MAGBinStartUTC, dateshift(T.EpochUTC, 'start', cadences{ic})), ...
+                        nRows, nExpected, 'Day/hour B-bin key; LECP Epoch itself is not rounded.');
+                    pointing = T.Properties.UserData;
+                    addCheck('attitude_time_is_original_epoch', ...
+                        isequal(pointing.TimeUTC, T.EpochUTC) && ...
+                        isequal(pointing.RecordSelection.KeptSourceRows(:), expectedRows) && ...
+                        string(pointing.FluxTimePolicy) == "epoch_drop_negative_deltat", ...
+                        numel(pointing.TimeUTC), nRows, 'No noon or half-hour time shift.');
+
+                    particle = nan(nRows, 8, 3);
+                    pa = nan(nRows, 8); mu = pa;
+                    for is = 1:8
+                        particle(:, is, 1) = T.(sprintf('ParticleUR_S%d', is));
+                        particle(:, is, 2) = T.(sprintf('ParticleUT_S%d', is));
+                        particle(:, is, 3) = T.(sprintf('ParticleUN_S%d', is));
+                        pa(:, is) = T.(sprintf('PA_S%d_deg', is));
+                        mu(:, is) = T.(sprintf('Mu_S%d', is));
+                    end
+                    addCheck('stored_direction_and_angles_exact', ...
+                        isequaln(particle, pointing.ParticleRTN) && ...
+                        isequaln(mu, pointing.Mu) && isequaln(pa, pointing.PitchAngle_deg), ...
+                        nRows, nExpected, 'Table and complete pointing audit agree.');
+                    if ic == 1
+                        B = [T.BR_daily_nT, T.BT_daily_nT, T.BN_daily_nT];
+                    else
+                        B = [T.BR_hourly_nT, T.BT_hourly_nT, T.BN_hourly_nT];
+                    end
+                    bNorm = sqrt(sum(B.^2, 2));
+                    goodB = all(isfinite(B), 2) & bNorm > 0;
+                    expectedMu = nan(nRows, 8);
+                    for is = 1:8
+                        u = reshape(particle(:, is, :), nRows, 3);
+                        good = goodB & all(isfinite(u), 2);
+                        expectedMu(good, is) = sum(B(good, :).*u(good, :), 2)./bNorm(good);
+                    end
+                    finiteMu = isfinite(expectedMu);
+                    expectedMu(finiteMu) = max(-1, min(1, expectedMu(finiteMu)));
+                    expectedPA = acosd(expectedMu);
+                    [muPassed, muError] = equalWithin(mu, expectedMu, report.VectorTolerance);
+                    [paPassed, paError] = equalWithin(pa, expectedPA, report.AngleTolerance_deg);
+                    addCheck('mu_full_RTN_dot_product', muPassed, muError, report.VectorTolerance, ...
+                        'Independent sum(u.*B)/norm(B); missing B remains missing.');
+                    addCheck('PA_equals_acosd_mu', paPassed, paError, report.AngleTolerance_deg, ...
+                        'Numerical tolerance only; no scientific screening threshold.');
+                    expectedUsable = all(isfinite(actualFlux(:, 1:7)) & ...
+                        actualFlux(:, 1:7) > 0 & isfinite(pa(:, 1:7)), 2);
+                    addCheck('only_seven_sector_validity_gate', isequal(T.PADUsable, expectedUsable), ...
+                        nnz(T.PADUsable), nnz(expectedUsable), ...
+                        'No count, coverage, spread, B-RMS or uncertainty threshold.');
+                end
+            catch ME
+                eventError = string(getReport(ME, 'extended', 'hyperlinks', 'off'));
+                addCheck('event_audit_completed', false, NaN, NaN, string(ME.message));
+            end
+            eventPassed = all(report.Checks.Passed(firstCheck:end)) && strlength(eventError) == 0;
+            report.Events(end+1, :) = {currentCadence, currentEvent, auditFile, auditSHA, ...
+                nRows, nExpected, nUsable, nNegative, eventPassed, eventError};
+        end
+        fprintf('Completed %s audit validation: %d events.\n', cadences{ic}, height(catalog));
+    end
+catch ME
+    report.FatalError = string(getReport(ME, 'extended', 'hyperlinks', 'off'));
+    addCheck('test_execution_completed', false, NaN, NaN, string(ME.message));
+end
+
+%% validation MAT only; existing plot/audit products remain untouched
+report.CompletedUTC = datetime('now', 'TimeZone', 'UTC');
+report.Passed = all(report.Checks.Passed) && all(report.Events.Passed) && ...
+    height(report.Events) == 90 && strlength(report.FatalError) == 0;
+folder = fullfile(cfg.DataRoot, 'voyager1', 'lecp', 'validation', 'epoch_anchor');
+if ~isfolder(folder), mkdir(folder); end
+report.AuditFile = fullfile(folder, ['epoch_plot_audits_regression_', ...
+    char(datetime('now', 'TimeZone', 'UTC', 'Format', 'yyyyMMdd_HHmmss_SSS')), '.mat']);
+save(report.AuditFile, 'report');
+fprintf('Epoch plot-audit regression: passed=%d; events=%d/90; checks=%d/%d\n', ...
+    report.Passed, nnz(report.Events.Passed), nnz(report.Checks.Passed), height(report.Checks));
+fprintf('Test audit: %s\n', report.AuditFile);
+if any(~report.Checks.Passed), disp(report.Checks(~report.Checks.Passed, :)); end
+if any(~report.Events.Passed), disp(report.Events(~report.Events.Passed, :)); end
+
+    function addCheck(name, passed, measured, limit, detail)
+        report.Checks(end+1, :) = {currentCadence, currentEvent, string(name), ...
+            logical(passed), double(measured), double(limit), string(detail)};
+    end
+end
+
+function value = positiveOnly(value)
+% Preserve the existing S1-S7 finite-positive-flux plotting requirement.
+value(~isfinite(value) | value <= 0) = NaN;
+end
+
+function value = readSectors(T, pattern, cadence)
+value = nan(height(T), 8);
+for ii = 1:8
+    value(:, ii) = T.(sprintf(pattern, ii, cadence));
+end
+end
+
+function [passed, maximumError] = equalWithin(value, reference, tolerance)
+% Missingness must match exactly; tolerance applies only to finite algebra.
+sameMissing = isequal(isnan(value), isnan(reference));
+finite = isfinite(value) & isfinite(reference);
+difference = abs(value(finite)-reference(finite));
+if isempty(difference), maximumError = 0; else, maximumError = max(difference); end
+passed = sameMissing && ~any(isinf(value), 'all') && ~any(isinf(reference), 'all') && ...
+    all(difference <= tolerance);
+end
