@@ -1,23 +1,28 @@
-function result = Case1_Validate_3d_L1_Plots(baselineFile,cadenceFilter)
+function result = Case1_Validate_3d_L1_Plots(baselineFile,cadenceFilter,expectedEvents)
 %Case1_Validate_3d_L1_Plots Independent requested-event L1-first regression.
 %   Validate [D-3,D+4) UTC, both PAD cadences, original-CDF calculations,
 %   three-dimensional pointing, and actual overview/peak PNG/MAT artifacts.
 %   BASELINEFILE identifies the 45 requested events and existing audit paths;
 %   no old L2-preservation condition is imposed under the new L1 priority.
 %   Optional CADENCEFILTER is '1d' or '1h'; default checks all 90 audits.
+%   EXPECTEDEVENTS defaults to 45. Supply 1 with an explicit supplemental
+%   one-event baseline to reuse these checks without scanning old events.
 %   No figures, production data, source CDFs or old audits are modified.
 
 %% fixed scope and existing source reader
-assert(nargin>=1 && isfile(baselineFile),'Supply the saved 90-audit baseline.');
+assert(nargin>=1 && isfile(baselineFile),'Supply the explicit event/audit baseline.');
+if nargin<3, expectedEvents=45; end
+validateattributes(expectedEvents,{'numeric'},{'scalar','integer','positive','finite'});
 if nargin<2, cadenceFilter=["1d","1h"]; end
 cadenceFilter=unique(string(cadenceFilter(:).'),'stable');
 assert(all(ismember(cadenceFilter,["1d","1h"])),'Use 1d and/or 1h.');
 loaded=load(baselineFile,'baseline'); baseline=loaded.baseline;
 items=baseline.Items(ismember(string({baseline.Items.Cadence}),cadenceFilter));
 catalog=baseline.Catalog;
-assert(height(catalog)==45 && all(catalog.Spacecraft==1), ...
-    'This test is restricted to the 45 requested V1 events.');
-assert(numel(items)==45*numel(unique(cadenceFilter)),'Incomplete baseline scope.');
+assert(height(catalog)==expectedEvents && all(catalog.Spacecraft==1) && ...
+    numel(unique(string(catalog.EventID)))==expectedEvents, ...
+    'Baseline must contain exactly the requested number of distinct V1 events.');
+assert(numel(items)==expectedEvents*numel(unique(cadenceFilter)),'Incomplete baseline scope.');
 Case1_Add_IRFU_Path('C:/Users/Administrator/Documents/irfu-matlab-master');
 result=struct('BaselineFile',string(baselineFile), ...
     'BaselineSHA256',string(Case1_File_SHA256(baselineFile)), ...
@@ -306,6 +311,8 @@ for c=unique(cadenceFilter)
     result.Summary=[result.Summary;row]; %#ok<AGROW>
 end
 result.ExpectedPNGCount=45*nnz(cadenceFilter=="1d")+90*nnz(cadenceFilter=="1h");
+result.ExpectedPNGCount=expectedEvents*result.ExpectedPNGCount/45;
+result.ExpectedEvents=expectedEvents;
 result.PNGInventoryComplete=height(result.Artifacts)==result.ExpectedPNGCount && ...
     numel(unique(result.Artifacts.File))==result.ExpectedPNGCount;
 result.CompletedUTC=datetime('now','TimeZone','UTC');

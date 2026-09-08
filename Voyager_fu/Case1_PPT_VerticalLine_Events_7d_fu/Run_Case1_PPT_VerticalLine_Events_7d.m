@@ -25,6 +25,8 @@ addParameter(parser, 'ContextDays', [], ...
 addParameter(parser, 'LECPSourcePriority', '', @(x) ischar(x) || isstring(x));
 addParameter(parser, 'EventIDs', {}, ...
     @(x) ischar(x) || isstring(x) || iscellstr(x));
+% Explicit catalog allows supplementary events without altering the original.
+addParameter(parser, 'EventCatalog', table, @istable);
 parse(parser, varargin{:});
 opts = parser.Results;
 
@@ -61,6 +63,17 @@ end
 
 %% event catalog
 catalog = Case1_Event_Catalog;
+if ~isempty(opts.EventCatalog)
+    catalog = opts.EventCatalog;
+    needed = {'EventID','StartUTC','EndUTCInclusive','EndUTCExclusive', ...
+        'Spacecraft','SourceSlide','SourceLine'};
+    assert(all(ismember(needed, catalog.Properties.VariableNames)), ...
+        'The explicit event catalog lacks required columns.');
+    assert(numel(unique(string(catalog.EventID))) == height(catalog), ...
+        'The explicit event catalog contains duplicate EventIDs.');
+    assert(isdatetime(catalog.StartUTC) && isdatetime(catalog.EndUTCExclusive) && ...
+        all(catalog.EndUTCExclusive > catalog.StartUTC), 'Invalid catalog dates.');
+end
 if ~isempty(opts.EventIDs)
     requestedIDs = string(opts.EventIDs);
     selected = ismember(string(catalog.EventID), requestedIDs(:));

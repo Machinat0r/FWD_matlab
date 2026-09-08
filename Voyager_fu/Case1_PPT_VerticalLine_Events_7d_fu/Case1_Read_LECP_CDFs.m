@@ -70,6 +70,8 @@ for jj = 1:numel(recordFields)
 end
 [epoch, order] = sort(product.Epoch);
 sourceFileIndex = repelem((1:numel(sourceFiles)).', records);
+% A single input file makes repelem return a row; record metadata is N-by-1.
+sourceFileIndex = sourceFileIndex(:);
 sourceRecord = cell(numel(sourceFiles), 1);
 for ii = 1:numel(sourceFiles), sourceRecord{ii} = (1:records(ii)).'; end
 sourceRecord = vertcat(sourceRecord{:});

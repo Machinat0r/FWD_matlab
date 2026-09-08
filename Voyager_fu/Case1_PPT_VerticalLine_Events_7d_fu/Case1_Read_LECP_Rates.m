@@ -68,6 +68,8 @@ for jj = 1:numel(fields)
     product.(fields{jj}) = cat(1, values{:});
 end
 fileIndex = repelem((1:numel(sourceFiles)).', records);
+% Match the record-column convention even when only one year is requested.
+fileIndex = fileIndex(:);
 recordNumber = cell(numel(sourceFiles), 1);
 for ii = 1:numel(sourceFiles), recordNumber{ii} = (1:records(ii)).'; end
 recordNumber = vertcat(recordNumber{:});

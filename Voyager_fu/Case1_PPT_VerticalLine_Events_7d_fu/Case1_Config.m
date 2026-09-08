@@ -3,7 +3,7 @@ function cfg = Case1_Config()
 %   All formal Voyager data paths point to the classified archive on Z:.
 %
 %   Author: Codex, following the manual MATLAB style in MMS_fu
-%   Modified: 2026-09-02
+%   Modified: 2026-09-07
 
 %% project paths
 cfg.CodeRoot = fileparts(mfilename('fullpath'));
@@ -55,7 +55,8 @@ cfg.AccumulationPolicy = 'epoch_drop_negative_deltat';
 cfg.LECPSectorAverageDays = 0; % Keep official product values without re-averaging.
 cfg.PitchAngleMethod = 'predicted_ck';
 cfg.LECPBackgroundMode = 'none';
-cfg.PitchMergeToleranceDeg = 2;
+% Deprecated compatibility value; current overview renderer never merges.
+cfg.PitchMergeToleranceDeg = 0;
 cfg.ExportPitchAngleTable = false;
 % User display convention (2026-09-03); original CDF bounds stay unchanged.
 cfg.P1DisplayEnergyMeV = [0.57 1.78];

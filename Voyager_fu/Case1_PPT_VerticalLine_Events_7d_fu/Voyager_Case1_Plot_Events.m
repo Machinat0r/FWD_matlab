@@ -9,7 +9,7 @@ function report = Voyager_Case1_Plot_Events(varargin)
 %   uses native rotation interpolation; no missing B or flux is interpolated.
 %
 %   Author: Codex, following the manual MATLAB style in MMS_fu
-%   Modified: 2026-09-02
+%   Modified: 2026-09-07
 
 %% input parser
 programRoot = fileparts(mfilename('fullpath'));
@@ -52,6 +52,10 @@ addParameter(parser, 'LECPSourcePriority', 'l2_first', @isTextScalar);
 addParameter(parser, 'LECPLevel1CDFs', {}, ...
     @(x) ischar(x) || isstring(x) || iscellstr(x));
 addParameter(parser, 'PADCadence', 'day', @isTextScalar);
+addParameter(parser, 'LECPBottomMode', 'pad', @isTextScalar);
+addParameter(parser, 'BaselineUTC', [], @(x) isempty(x) || ...
+    (isdatetime(x) && numel(x) == 2 && all(~isnat(x))));
+addParameter(parser, 'SectorColorMode', 'normalized', @isTextScalar);
 addParameter(parser, 'HourlyAttitudeApproved', true, @isLogicalScalar);
 % User-approved: discard negative DeltaT, retain original Epoch and values.
 addParameter(parser, 'AccumulationPolicy', 'epoch_drop_negative_deltat', @isTextScalar);
@@ -76,7 +80,9 @@ addParameter(parser, 'AttitudeDailyHourUTC', 12, ...
 % state that the background was removed, but do not publish that correction
 % series or an automatic algorithm for deriving it.
 addParameter(parser, 'LECPBackgroundMode', 'none', @isTextScalar);
-addParameter(parser, 'PitchMergeToleranceDeg', 2, ...
+% Deprecated compatibility input.  Overview PAD rendering always keeps
+% S1--S7 separate; this value is recorded only and never changes a cell.
+addParameter(parser, 'PitchMergeToleranceDeg', 0, ...
     @(x) isnumeric(x) && isscalar(x) && isfinite(x) && x >= 0);
 addParameter(parser, 'ColorPercentiles', [1 99], ...
     @(x) isnumeric(x) && numel(x) == 2 && all(isfinite(x)) && ...
@@ -119,6 +125,21 @@ if logical(opts.LECPLevel1Fallback) && ...
         'L1 fallback requires V1 original rate CDFs and no background subtraction.');
 end
 opts.PADCadence = validatestring(opts.PADCadence, {'day', 'hour'});
+opts.LECPBottomMode = validatestring(opts.LECPBottomMode, ...
+    {'pad', 'pad_difference', 'sector'});
+opts.SectorColorMode = validatestring(opts.SectorColorMode, ...
+    {'normalized', 'absolute'});
+if ~strcmp(opts.LECPBottomMode, 'pad')
+    assert(strcmp(opts.CRSDisplay, 'lecp_p1_pitch_angle') && ...
+        strcmp(opts.LECPBackgroundMode, 'none') && ~opts.ExportPeakPAD, ...
+        'Bottom variants require the LECP overview, background mode none, and no peak export.');
+end
+if strcmp(opts.LECPBottomMode, 'pad_difference')
+    assert(numel(opts.BaselineUTC) == 2 && ...
+        ~isempty(opts.BaselineUTC.TimeZone) && ...
+        opts.BaselineUTC(2) > opts.BaselineUTC(1), ...
+        'Specify the approved baseline as [start, exclusive end] UTC.');
+end
 opts.AccumulationPolicy = validatestring(opts.AccumulationPolicy, {'epoch_drop_negative_deltat'});
 opts.PitchAngleMethod = lower(char(opts.PitchAngleMethod));
 opts.LECPSectorPointingFile = char(opts.LECPSectorPointingFile);
@@ -237,7 +258,8 @@ codeNames = {'Voyager_Case1_Plot_Events.m','Case1_Config.m', ...
     'Case1_Apply_L1_Fallback.m','Voyager_Read_CDF_Product.m', ...
     'Case1_Select_LECP_Epoch.m','Case1_Predicted_LECP_Pointing.m', ...
     'Case1_Read_Predicted_Attitude.m','Case1_LECP_Geometry.m', ...
-    'Case1_Attitude_Files.m','Case1_Plot_Peak_PAD.m'};
+    'Case1_Attitude_Files.m','Case1_Plot_Peak_PAD.m', ...
+    'Case1_Plot_LECP_Bottom_Variant.m'};
 codeFiles = string(fullfile(programRoot,codeNames)).';
 codeHashes = strings(size(codeFiles));
 for codeIndex = 1:numel(codeFiles)
@@ -356,6 +378,12 @@ for ii = 1:height(catalog)
             productTag = [productTag, '_LECP_P1_pitch_angle_attitudeRequired_1d'];
         end
     end
+    if strcmp(opts.LECPBottomMode, 'pad_difference')
+        productTag = [productTag, '_baseline_difference'];
+    elseif strcmp(opts.LECPBottomMode, 'sector')
+        productTag = strrep(productTag, '_pitch_angle_predictedCK_', '_sector_number_');
+        productTag = [productTag, '_', opts.SectorColorMode];
+    end
     fileName = sprintf('V%d_%s_%s_%s_%s.png', ...
         opts.Spacecraft, catalog.EventID{ii}, ...
         datestr(catalog.StartUTC(ii), 'yyyymmdd'), ...
@@ -459,7 +487,10 @@ for ii = 1:height(catalog)
                     'sourceMAG', 'sourceLECP', 'l1FallbackAudit', 'opts', ...
                     'codeManifest', '-v7.3');
                 pitchAngleAuditFiles{ii} = auditFile;
-                if ~isempty(pitchAngleTable) && ~any(pitchAngleTable.PADUsable)
+                if strcmp(opts.LECPBottomMode, 'sector') && ...
+                        ~isempty(pitchAngleTable) && any(pitchAngleTable.SectorUsable)
+                    status{ii} = 'ok';
+                elseif ~isempty(pitchAngleTable) && ~any(pitchAngleTable.PADUsable)
                     status{ii} = 'pitch_angle_withheld';
                 end
                 if peakNeeded
@@ -898,7 +929,11 @@ elseif strcmp(opts.CRSDisplay, 'lecp_p1_pitch_angle')
         lecpSectored, mag, eventRow.PlotStartUTC, ...
         eventRow.PlotEndUTCExclusive, opts);
     set(axPitch, 'YAxisLocation', 'left');
-    ylabel(axPitch, 'PA (deg)', 'FontSize', 11);
+    if strcmp(opts.LECPBottomMode, 'sector')
+        ylabel(axPitch, 'LECP sector number', 'FontSize', 11);
+    else
+        ylabel(axPitch, 'PA (deg)', 'FontSize', 11);
+    end
     xlabel(axPitch, 'UTC', 'FontSize', 11);
     panelIndex = panelIndex + 1; panelLabel(axPitch, panelIndex);
 else
@@ -956,6 +991,21 @@ if logical(opts.Visible)
     figure(fig);
     drawnow;
     enableVoyagerDataCursor(fig);
+end
+% Retain the actual a--e line coordinates for variant comparison.
+if ~isempty(pitchAngleTable)
+    upperPanels = cell(numel(axesList)-1, 1);
+    for ip = 1:numel(upperPanels)
+        lines = findobj(axesList(ip), 'Type', 'line');
+        item = struct('YLim', get(axesList(ip), 'YLim'), ...
+            'YScale', get(axesList(ip), 'YScale'), 'X', {{}}, 'Y', {{}});
+        for il = 1:numel(lines)
+            item.X{il} = get(lines(il), 'XData');
+            item.Y{il} = get(lines(il), 'YData');
+        end
+        upperPanels{ip} = item;
+    end
+    pitchAngleTable.Properties.UserData.UpperPanelLines = upperPanels;
 end
 if ~isfield(opts, 'WriteOverviewFigure') || opts.WriteOverviewFigure
     exportgraphics(fig, outputFile, 'Resolution', opts.ExportDPI);
@@ -1359,6 +1409,37 @@ if isfield(data, 'SourceProduct')
     coverageFraction(derivedCount) = minimumSectorSamples(derivedCount) ./ ...
         maximumSectorSamples(derivedCount);
 end
+% The sector-number path stops before magnetic matching and PA evaluation.
+if strcmp(opts.LECPBottomMode, 'sector')
+    suffix = '1d';
+    if strcmp(opts.PADCadence, 'hour'), suffix = '1h'; end
+    output = table(time, sourceDeltaT, sourceRows, ...
+        'VariableNames', {'EpochUTC', 'DeltaT_s', 'SourceRow'});
+    for sector = 1:8
+        output.(sprintf('Flux_S%d_%s', sector, suffix)) = rawSector(:, sector);
+        output.(sprintf('FluxUncertainty_S%d_%s', sector, suffix)) = rawSigma(:, sector);
+        output.(sprintf('Samples_S%d_%s', sector, suffix)) = sectorSampleCount(:, sector);
+    end
+    output.SourceCDF = data.SourceManifest.SourceFile(data.SourceFileIndex(sourceRows));
+    output.SourceCDFRecord = data.SourceRecordNumber(sourceRows);
+    output.P1EnergyLower_MeV = repmat(p1Band(1), height(output), 1);
+    output.P1EnergyUpper_MeV = repmat(p1Band(2), height(output), 1);
+    output.PADUsable = false(height(output), 1); % PA has not been calculated.
+    output.SourceProduct = repmat("L2", height(output), 1);
+    if isfield(data, 'SourceProduct')
+        output.SourceProduct = data.SourceProduct(sourceRows);
+        output.L1SourceRecords = data.L1SourceRecords(sourceRows);
+        output.OriginalL2SourceRow = data.OriginalL2SourceRow(sourceRows);
+    end
+    output.Properties.UserData = struct('RecordSelection', recordSelection, ...
+        'PitchAngleCalculated', false, 'MagneticFieldRequired', false, ...
+        'SectorMergeApplied', false, 'P1DisplayEnergyMeV', opts.P1DisplayEnergyMeV);
+    if isfield(data, 'L1FallbackAudit')
+        output.Properties.UserData.L1FallbackAudit = data.L1FallbackAudit;
+    end
+    output = Case1_Plot_LECP_Bottom_Variant(ax, output, opts);
+    return
+end
 matchedMag = magneticVectorMeans(mag, startTime, endTime, opts.PADCadence);
 lecpBin = dateshift(time, 'start', opts.PADCadence);
 magBin = dateshift(matchedMag.Epoch, 'start', opts.PADCadence);
@@ -1535,6 +1616,14 @@ pointingAudit.P1DisplayEnergyPolicy = displayPolicy;
 pointingAudit.FluxTimePolicy = opts.AccumulationPolicy;
 pointingAudit.DisplayCellWidthDays = 2*cellHalfWidthDays;
 pointingAudit.DisplayCellMeaning = 'Nominal product-width glyph centered on original Epoch; not DeltaT coverage';
+pointingAudit.SectorMergeApplied = false;
+pointingAudit.SectorDisplayPolicy = [ ...
+    'S1-S7 remain seven independent cells. No pitch-angle grouping, ', ...
+    'pitch-angle averaging, or flux averaging is applied. Display ', ...
+    'boundaries are midpoint partitions between sorted sector centers ', ...
+    'and are not physical field-of-view edges.'];
+pointingAudit.DeprecatedPitchMergeToleranceDegIgnored = ...
+    opts.PitchMergeToleranceDeg;
 if isfield(data, 'L1FallbackAudit')
     pointingAudit.L1FallbackAudit = data.L1FallbackAudit;
     pointingAudit.SourceRowMeaning = ...
@@ -1550,7 +1639,18 @@ for sector = 1:8
     output.(sprintf('ParticleUT_S%d', sector)) = particleUT(:, sector);
     output.(sprintf('ParticleUN_S%d', sector)) = particleUN(:, sector);
 end
+for sector = activeSectors
+    output.(sprintf('DisplayPA_S%d_deg', sector)) = nan(height(output), 1);
+    output.(sprintf('DisplayFlux_S%d', sector)) = nan(height(output), 1);
+    output.(sprintf('DisplayOrder_S%d', sector)) = nan(height(output), 1);
+    output.(sprintf('DisplayLowerEdge_S%d_deg', sector)) = nan(height(output), 1);
+    output.(sprintf('DisplayUpperEdge_S%d_deg', sector)) = nan(height(output), 1);
+end
 
+if strcmp(opts.LECPBottomMode, 'pad_difference')
+    output = Case1_Plot_LECP_Bottom_Variant(ax, output, opts);
+    return
+end
 displayFlux = sectorValue(:, activeSectors);
 displayPitch = pitchAngle(:, activeSectors);
 usableRows = padUsable;
@@ -1574,44 +1674,41 @@ for ii = 1:numel(time)
     if ~padUsable(ii), continue, end
     valid = isfinite(displayPitch(ii, :)) & ...
         isfinite(displayFlux(ii, :)) & displayFlux(ii, :) > 0;
+    currentSector = activeSectors(valid);
     currentPitch = displayPitch(ii, valid);
     currentFlux = displayFlux(ii, valid);
     [currentPitch, order] = sort(currentPitch);
     currentFlux = currentFlux(order);
+    currentSector = currentSector(order);
 
-    % A spectrogram cannot show two sector values at exactly the same PA.
-    % Only for display, nearby sector centers are represented by their
-    % arithmetic mean. Every original sector value remains in the table.
-    group = cumsum([1, diff(currentPitch) > ...
-        opts.PitchMergeToleranceDeg]);
-    groupIDs = unique(group, 'stable');
-    mergedPitch = nan(1, numel(groupIDs));
-    mergedFlux = nan(1, numel(groupIDs));
-    for jj = 1:numel(groupIDs)
-        inGroup = group == groupIDs(jj);
-        mergedPitch(jj) = mean(currentPitch(inGroup), 'omitnan');
-        mergedFlux(jj) = mean(currentFlux(inGroup), 'omitnan');
-    end
-
-    if numel(mergedPitch) == 1
-        pitchEdges = [max(0, mergedPitch - 22.5), ...
-            min(180, mergedPitch + 22.5)];
+    % Keep every S1--S7 value independent, including coincident or nearly
+    % coincident PA centers.  Midpoints partition display space only; no PA
+    % or flux is averaged and no artificial angular offset is introduced.
+    if numel(currentPitch) == 1
+        pitchEdges = [max(0, currentPitch - 22.5), ...
+            min(180, currentPitch + 22.5)];
     else
-        midpoints = (mergedPitch(1:end-1) + mergedPitch(2:end)) / 2;
-        pitchEdges = [max(0, mergedPitch(1) - ...
-            (midpoints(1) - mergedPitch(1))), midpoints, ...
-            min(180, mergedPitch(end) + ...
-            (mergedPitch(end) - midpoints(end)))];
+        midpoints = (currentPitch(1:end-1) + currentPitch(2:end)) / 2;
+        pitchEdges = [max(0, currentPitch(1) - ...
+            (midpoints(1) - currentPitch(1))), midpoints, ...
+            min(180, currentPitch(end) + ...
+            (currentPitch(end) - midpoints(end)))];
     end
     xCenter = datenum(time(ii)); %#ok<DATNM>
-    for jj = 1:numel(mergedPitch)
+    for jj = 1:numel(currentPitch)
+        sector = currentSector(jj);
+        output.(sprintf('DisplayPA_S%d_deg', sector))(ii) = currentPitch(jj);
+        output.(sprintf('DisplayFlux_S%d', sector))(ii) = currentFlux(jj);
+        output.(sprintf('DisplayOrder_S%d', sector))(ii) = jj;
+        output.(sprintf('DisplayLowerEdge_S%d_deg', sector))(ii) = pitchEdges(jj);
+        output.(sprintf('DisplayUpperEdge_S%d_deg', sector))(ii) = pitchEdges(jj + 1);
         xData = [xCenter - cellHalfWidthDays, ...
             xCenter + cellHalfWidthDays; ...
             xCenter - cellHalfWidthDays, ...
             xCenter + cellHalfWidthDays];
         yData = [pitchEdges(jj), pitchEdges(jj); ...
             pitchEdges(jj + 1), pitchEdges(jj + 1)];
-        colorData = log10(mergedFlux(jj)) * ones(2);
+        colorData = log10(currentFlux(jj)) * ones(2);
         surface(ax, xData, yData, zeros(2), colorData, ...
             'FaceColor', 'flat', 'EdgeColor', 'none', ...
             'HandleVisibility', 'off');
