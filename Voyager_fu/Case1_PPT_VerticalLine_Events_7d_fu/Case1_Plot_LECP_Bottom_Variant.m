@@ -57,14 +57,78 @@ if strcmp(mode, 'pad_difference')
     end
     colorValues = values(repmat(usable, 1, 7) & isfinite(values));
     assert(~isempty(colorValues), 'No drawable baseline-difference PAD.');
-    bound = max(abs(colorValues));
+    bound = prctile(abs(colorValues), opts.ColorPercentiles(2));
     if bound == 0, bound = 1; end
-    limits = [-bound bound];
-    cmap = irf_colormap(ax, 'bluered');
+    if ~isempty(opts.DifferenceColorLimits)
+        bound = opts.DifferenceColorLimits(2);
+    end
+    % Keep the previous daily color limits while averaging each sector.
+    % A complete UTC grid prevents crossing gaps by record index.
+    audit.PADDisplayAverageDays = opts.PADDisplayAverageDays;
+    if opts.PADDisplayAverageDays == 3
+        utcDay = dateshift(time,'start','day');
+        assert(numel(unique(utcDay)) == numel(utcDay), ...
+            'Three-day averaging requires at most one input record per UTC day.');
+        dayGrid = (min(utcDay):days(1):max(utcDay)).';
+        [~, gridIndex] = ismember(utcDay,dayGrid);
+        gridValues = nan(numel(dayGrid),7);
+        gridValues(gridIndex,:) = values;
+        averagedGrid = movmean(gridValues,3,1,'omitnan');
+        sampleCounts = movsum(double(isfinite(gridValues)),3,1);
+        values = averagedGrid(gridIndex,:);
+        for sector = 1:7
+            output.(sprintf('DifferenceFlux3d_S%d',sector)) = values(:,sector);
+            output.(sprintf('AverageDayCount_S%d',sector)) = ...
+                sampleCounts(gridIndex,sector);
+        end
+        audit.AverageWindowStartUTC = utcDay-days(1);
+        audit.AverageWindowEndUTCExclusive = utcDay+days(2);
+        audit.AveragePolicy = ['Centered UTC day-1/day/day+1 arithmetic mean ', ...
+            'of signed differences independently per sector; finite days only, ', ...
+            'including partial windows at plot endpoints. Original center-day ', ...
+            'PAD mask and PA retained; missing center days are not filled.'];
+        audit.ColorRangeReference = 'Unaveraged daily differences; unchanged color scale.';
+        colorValues = values(repmat(usable,1,7) & isfinite(values));
+    end
+    audit.NegativeDisplayAsMissing = logical(opts.DifferenceNegativeAsMissing);
+    audit.NegativeCellsHidden = 0;
+    if opts.DifferenceNegativeAsMissing
+        negative = values < 0;
+        audit.NegativeCellsHidden = nnz(negative & repmat(usable,1,7));
+        audit.NegativePolicy = ['After temporal averaging, negative differences ', ...
+            'become NaN separately per sector. Zero remains valid. Signed daily ', ...
+            'and averaged differences retained in audit. Original seven-sector ', ...
+            'PA geometry and center-day mask unchanged; no gap expansion.'];
+        for sector = 1:7
+            output.(sprintf('NegativeDifferenceMasked_S%d',sector)) = negative(:,sector);
+        end
+        values(negative) = NaN;
+        colorValues = values(repmat(usable,1,7) & isfinite(values));
+    end
+    limits = [0 bound];
+    if ~isempty(opts.DifferenceColorLimits)
+        audit.ColorRangeReference = 'Explicit common limits for baseline comparisons.';
+    end
+    audit.ColorLimitPolicy = 'Linear difference scale from zero to the existing upper bound; negative values use the lowest color, upper tails saturate for display only.';
+    if opts.DifferenceNegativeAsMissing
+        audit.ColorLimitPolicy = 'Linear scale from zero; negative differences are blank; upper tails saturate for display only.';
+    end
+    audit.AbsoluteDifferenceColorPercentile = opts.ColorPercentiles(2);
+    audit.ColorSaturatedCellCount = nnz(colorValues<0 | colorValues>bound);
+    audit.NegativeCellsShownAtLowestColor = nnz(colorValues<0);
+    audit.ColorMapName = 'turbo';
+    cmap = turbo(256);
     label = {'\DeltaJ', '(cm^{-2} s^{-1} sr^{-1} MeV^{-1})'};
-    note = sprintf('Sector baseline: %s to %s UTC; signed J - baseline', ...
+    note = sprintf('Sector baseline: %s to %s UTC; J - baseline; values below 0 use lowest color', ...
         datestr(interval(1), 'dd-mmm-yyyy'), ...
         datestr(interval(2)-seconds(1), 'dd-mmm-yyyy'));
+    if opts.PADDisplayAverageDays == 3
+        note = ['3-day centered sector mean; ', note];
+        label{1} = '\langle\DeltaJ\rangle_{3d}';
+    end
+    if opts.DifferenceNegativeAsMissing
+        note = strrep(note,'values below 0 use lowest color','negative differences blank');
+    end
 else
     %% sector-number map: no magnetic field or attitude requirement
     usable = allSeven;
@@ -132,9 +196,11 @@ for row = find(usable).'
             if strcmp(opts.SectorColorMode, 'absolute'), colorValue = log10(value); end
         end
         output.(sprintf('DisplayValue_S%d', sector))(row) = value;
+        if ~isfinite(colorValue), continue, end
         surface(ax, [x-halfWidth x+halfWidth; x-halfWidth x+halfWidth], ...
             [low low; high high], zeros(2), ones(2)*colorValue, ...
-            'FaceColor', 'flat', 'EdgeColor', 'none', 'HandleVisibility', 'off');
+            'FaceColor', 'flat', 'EdgeColor', 'none', 'HandleVisibility', 'off', ...
+            'UserData', struct('Sector',sector,'Value',value,'BottomMode',mode));
     end
 end
 view(ax, 2);
@@ -150,8 +216,15 @@ cb = colorbar(ax, 'Location', 'eastoutside');
 cb.Label.String = label;
 cb.Label.Interpreter = 'tex';
 cb.FontSize = 8;
-text(ax, 0.01, 0.025, note, 'Units', 'normalized', ...
-    'FontSize', 8, 'Interpreter', 'none', 'VerticalAlignment', 'bottom');
+if strcmp(mode, 'pad_difference')
+    cb.Ticks = linspace(limits(1),limits(2),5);
+    labels = string(compose('%.3g',cb.Ticks));
+    labels(1) = "<= " + labels(1);
+    if opts.DifferenceNegativeAsMissing, labels(1) = "0"; end
+    cb.TickLabels = labels;
+end
+% User request: method notes belong in the audit, not inside the figure.
+audit.ProcessingNote = note;
+audit.ProcessingNoteShownInFigure = false;
 output.Properties.UserData = audit;
 end
-

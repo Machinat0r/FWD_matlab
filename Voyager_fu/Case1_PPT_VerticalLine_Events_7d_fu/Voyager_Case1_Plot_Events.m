@@ -53,9 +53,14 @@ addParameter(parser, 'LECPLevel1CDFs', {}, ...
     @(x) ischar(x) || isstring(x) || iscellstr(x));
 addParameter(parser, 'PADCadence', 'day', @isTextScalar);
 addParameter(parser, 'LECPBottomMode', 'pad', @isTextScalar);
+addParameter(parser, 'PADDisplayAverageDays', 1, ...
+    @(x) isnumeric(x) && isscalar(x) && ismember(x,[1 3]));
 addParameter(parser, 'BaselineUTC', [], @(x) isempty(x) || ...
     (isdatetime(x) && numel(x) == 2 && all(~isnat(x))));
+addParameter(parser, 'DifferenceColorLimits', [], @(x) isempty(x) || ...
+    (isnumeric(x) && numel(x)==2 && all(isfinite(x)) && x(1)==0 && x(2)>0));
 addParameter(parser, 'SectorColorMode', 'normalized', @isTextScalar);
+addParameter(parser, 'DifferenceNegativeAsMissing', false, @isLogicalScalar);
 addParameter(parser, 'HourlyAttitudeApproved', true, @isLogicalScalar);
 % User-approved: discard negative DeltaT, retain original Epoch and values.
 addParameter(parser, 'AccumulationPolicy', 'epoch_drop_negative_deltat', @isTextScalar);
@@ -127,6 +132,11 @@ end
 opts.PADCadence = validatestring(opts.PADCadence, {'day', 'hour'});
 opts.LECPBottomMode = validatestring(opts.LECPBottomMode, ...
     {'pad', 'pad_difference', 'sector'});
+if opts.PADDisplayAverageDays > 1
+    assert(strcmp(opts.LECPBottomMode,'pad_difference') && ...
+        strcmp(opts.PADCadence,'day'), ...
+        'Three-day sector averaging is supported for daily difference PAD only.');
+end
 opts.SectorColorMode = validatestring(opts.SectorColorMode, ...
     {'normalized', 'absolute'});
 if ~strcmp(opts.LECPBottomMode, 'pad')
@@ -1041,6 +1051,13 @@ target = eventObject.Target;
 if isgraphics(target)
     targetType = lower(get(target, 'Type'));
     if ismember(targetType, {'surface', 'image'})
+        cellInfo = get(target, 'UserData');
+        if isstruct(cellInfo) && isfield(cellInfo,'BottomMode')
+            textOutput{end+1} = sprintf('Sector: S%d',cellInfo.Sector);
+            textOutput{end+1} = sprintf('%s value: %.6g', ...
+                cellInfo.BottomMode,cellInfo.Value);
+            return
+        end
         colorData = get(target, 'CData');
         colorData = colorData(isfinite(colorData));
         if ~isempty(colorData)

@@ -1,4 +1,4 @@
-function result = Run_Case1_2020E01_BottomVariants(varargin)
+function [result, displayTables] = Run_Case1_2020E01_BottomVariants(varargin)
 %Run_Case1_2020E01_BottomVariants Two requested daily overview variants.
 %   Scientific inputs are original website CDF files on Z:. Result tables
 %   and MAT audits are outputs only. Default window: 2020-06-22--09-08 UTC.
@@ -10,6 +10,15 @@ function result = Run_Case1_2020E01_BottomVariants(varargin)
 parser = inputParser;
 addParameter(parser, 'Modes', ["pad_difference", "sector"]);
 addParameter(parser, 'SectorColorMode', 'normalized');
+addParameter(parser, 'DifferenceNegativeAsMissing', false, ...
+    @(x) islogical(x) && isscalar(x));
+addParameter(parser, 'BaselineUTC', [], @(x) isempty(x) || ...
+    (isdatetime(x) && numel(x)==2 && all(~isnat(x))));
+addParameter(parser, 'OutputRoot', '', @(x) ischar(x) || isstring(x));
+addParameter(parser, 'DifferenceColorLimits', [], @(x) isempty(x) || ...
+    (isnumeric(x) && numel(x)==2 && all(isfinite(x)) && x(1)==0 && x(2)>0));
+addParameter(parser, 'PADDisplayAverageDays', 1, ...
+    @(x) isnumeric(x) && isscalar(x) && ismember(x,[1 3]));
 parse(parser, varargin{:});
 options = parser.Results;
 modes = string(options.Modes);
@@ -17,6 +26,7 @@ assert(all(ismember(modes, ["pad_difference", "sector"])));
 cfg = Case1_Config;
 Case1_Add_IRFU_Path(cfg.IRFURoot);
 root = fullfile(fileparts(cfg.OutputRoot), '2020E01_Variants');
+if strlength(string(options.OutputRoot))>0, root=char(options.OutputRoot); end
 reportFolder = fullfile(root, 'report');
 if ~isfolder(reportFolder), mkdir(reportFolder); end
 diary(fullfile(reportFolder, 'run.log'));
@@ -41,11 +51,25 @@ l2 = Case1_Read_LECP_CDFs(dailyFiles);
 l1 = Case1_Read_LECP_Rates(rateFiles);
 nearStart = datetime(2020,6,29,'TimeZone','UTC');
 nearEnd = datetime(2020,7,8,'TimeZone','UTC');
+if ~isempty(options.BaselineUTC)
+    assert(~isempty(options.BaselineUTC.TimeZone), 'Baseline requires UTC-aware times.');
+    options.BaselineUTC.TimeZone = 'UTC';
+    nearStart = options.BaselineUTC(1);
+    nearEnd = options.BaselineUTC(2);
+    assert(nearEnd>nearStart, 'Baseline must have positive duration.');
+    assert(nearStart>=datetime(2020,6,22,'TimeZone','UTC') && ...
+        nearEnd<=datetime(2020,9,8,'TimeZone','UTC'), ...
+        'Baseline must lie inside the current plotted window.');
+end
 p = Case1_Apply_L1_Fallback(l2, l1, nearStart, nearEnd, 'day', 'l1_first');
 flux = reshape(p.FHDU_SectoredFluxes(:,10,1:7), numel(p.Epoch), 7);
 flux(~isfinite(flux) | flux <= 0) = NaN;
 candidateStart = (nearStart:days(1):datetime(2020,7,3,'TimeZone','UTC')).';
 candidateEnd = candidateStart + days(5);
+if ~isempty(options.BaselineUTC)
+    candidateStart = nearStart;
+    candidateEnd = nearEnd;
+end
 score = nan(size(candidateStart));
 sectorMean = nan(numel(score),7);
 counts = zeros(numel(score),7);
@@ -91,12 +115,18 @@ result = struct('BaselineUTC',baselineUTC, ...
     'BaselineCandidates',baselineCandidates, ...
     'GeneratedUTC',datetime('now','TimeZone','UTC'));
 result.Reports = cell(numel(modes),1);
+displayTables = cell(numel(modes),1);
 referenceUpper = [];
 for k = 1:numel(modes)
     mode = modes(k);
+    averageDays = 1;
+    if mode == "pad_difference", averageDays = options.PADDisplayAverageDays; end
     out = fullfile(root,char(mode));
     report = Voyager_Case1_Plot_Events(common{:}, ...
         'LECPBottomMode',char(mode), 'BaselineUTC',baselineUTC, ...
+        'PADDisplayAverageDays',averageDays, ...
+        'DifferenceColorLimits',options.DifferenceColorLimits, ...
+        'DifferenceNegativeAsMissing',options.DifferenceNegativeAsMissing, ...
         'SectorColorMode',options.SectorColorMode, ...
         'OutputFolder',out, 'ReportFolder',fullfile(out,'report'), ...
         'ReportTag',char(mode), 'PitchAngleDataFolder',fullfile(out,'audit'));
@@ -105,10 +135,13 @@ for k = 1:numel(modes)
     a = load(string(report.PitchAngleAuditFile(1)),'pitchAngleTable','opts');
     T = a.pitchAngleTable;
     audit = T.Properties.UserData;
+    displayTables{k} = struct('Table',T,'Options',a.opts);
     assert(~audit.SectorMergeApplied);
     plotted = T.BottomPanelUsable;
     displayed = T{:,cellstr(compose('DisplayValue_S%d',1:7))};
-    assert(all(sum(isfinite(displayed(plotted,:)),2)==7));
+    if mode ~= "pad_difference" || ~options.DifferenceNegativeAsMissing
+        assert(all(sum(isfinite(displayed(plotted,:)),2)==7));
+    end
     if isempty(referenceUpper)
         referenceUpper = audit.UpperPanelLines;
     else
@@ -121,7 +154,24 @@ for k = 1:numel(modes)
         b = mean(J(ref,:),1,'omitnan');
         assert(max(abs(b-sectorMean(best,:)))<1e-10);
         expected = J-b;
-        assert(isequaln(displayed(plotted,:),expected(plotted,:)));
+        if averageDays == 3
+            dailyDifference = expected;
+            utcDay = dateshift(T.EpochUTC,'start','day');
+            for row = 1:height(T)
+                inWindow = utcDay >= utcDay(row)-days(1) & ...
+                    utcDay < utcDay(row)+days(2);
+                expected(row,:) = mean(dailyDifference(inWindow,:),1,'omitnan');
+            end
+        end
+        result.SignedNegativeDifferenceCells = nnz(expected(plotted,:)<0);
+        if options.DifferenceNegativeAsMissing
+            expected(expected<0) = NaN;
+        end
+        actualValues = displayed(plotted,:);
+        expectedValues = expected(plotted,:);
+        assert(isequal(isnan(actualValues),isnan(expectedValues)));
+        validValues = isfinite(expectedValues);
+        assert(all(abs(actualValues(validValues)-expectedValues(validValues))<1e-10));
         result.NegativeDifferenceCells = nnz(displayed<0);
         result.BaselineSectorFlux = b;
     else
