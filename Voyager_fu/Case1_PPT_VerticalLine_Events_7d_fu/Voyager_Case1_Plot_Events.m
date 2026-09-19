@@ -131,11 +131,11 @@ if logical(opts.LECPLevel1Fallback) && ...
 end
 opts.PADCadence = validatestring(opts.PADCadence, {'day', 'hour'});
 opts.LECPBottomMode = validatestring(opts.LECPBottomMode, ...
-    {'pad', 'pad_difference', 'sector'});
+    {'pad', 'pad_difference', 'pad_ratio', 'sector'});
 if opts.PADDisplayAverageDays > 1
-    assert(strcmp(opts.LECPBottomMode,'pad_difference') && ...
+    assert(ismember(opts.LECPBottomMode,{'pad_difference','pad_ratio'}) && ...
         strcmp(opts.PADCadence,'day'), ...
-        'Three-day sector averaging is supported for daily difference PAD only.');
+        'Three-day sector averaging requires a daily baseline PAD.');
 end
 opts.SectorColorMode = validatestring(opts.SectorColorMode, ...
     {'normalized', 'absolute'});
@@ -144,7 +144,7 @@ if ~strcmp(opts.LECPBottomMode, 'pad')
         strcmp(opts.LECPBackgroundMode, 'none') && ~opts.ExportPeakPAD, ...
         'Bottom variants require the LECP overview, background mode none, and no peak export.');
 end
-if strcmp(opts.LECPBottomMode, 'pad_difference')
+if ismember(opts.LECPBottomMode, {'pad_difference','pad_ratio'})
     assert(numel(opts.BaselineUTC) == 2 && ...
         ~isempty(opts.BaselineUTC.TimeZone) && ...
         opts.BaselineUTC(2) > opts.BaselineUTC(1), ...
@@ -390,6 +390,8 @@ for ii = 1:height(catalog)
     end
     if strcmp(opts.LECPBottomMode, 'pad_difference')
         productTag = [productTag, '_baseline_difference'];
+    elseif strcmp(opts.LECPBottomMode, 'pad_ratio')
+        productTag = [productTag, '_baseline_ratio'];
     elseif strcmp(opts.LECPBottomMode, 'sector')
         productTag = strrep(productTag, '_pitch_angle_predictedCK_', '_sector_number_');
         productTag = [productTag, '_', opts.SectorColorMode];
@@ -1664,7 +1666,7 @@ for sector = activeSectors
     output.(sprintf('DisplayUpperEdge_S%d_deg', sector)) = nan(height(output), 1);
 end
 
-if strcmp(opts.LECPBottomMode, 'pad_difference')
+if ismember(opts.LECPBottomMode, {'pad_difference','pad_ratio'})
     output = Case1_Plot_LECP_Bottom_Variant(ax, output, opts);
     return
 end

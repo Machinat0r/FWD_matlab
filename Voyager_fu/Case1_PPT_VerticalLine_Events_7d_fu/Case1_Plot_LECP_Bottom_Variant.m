@@ -1,5 +1,5 @@
 function output = Case1_Plot_LECP_Bottom_Variant(ax, output, opts)
-%Case1_Plot_LECP_Bottom_Variant Baseline-difference PAD or sector heat map.
+%Case1_Plot_LECP_Bottom_Variant Baseline difference/ratio PAD or sector map.
 %   Input comes from the current raw-CDF pipeline in this same run.
 %   Keep all S1--S7 values independent. No angular or sector averaging.
 %   BaselineUTC is an explicitly approved half-open interval.
@@ -14,6 +14,10 @@ time = output.EpochUTC;
 fluxValid = isfinite(flux) & flux > 0;
 allSeven = all(fluxValid, 2);
 mode = opts.LECPBottomMode;
+isRatio = strcmp(mode,'pad_ratio');
+isBaselinePAD = ismember(mode,{'pad_difference','pad_ratio'});
+quantity = 'DifferenceFlux';
+if isRatio, quantity = 'BaselineRatio'; end
 audit = output.Properties.UserData;
 audit.SectorMergeApplied = false;
 audit.BottomMode = mode;
@@ -24,8 +28,8 @@ audit.DisplayWidthMeaning = 'Nominal cadence glyph, not original exposure suppor
 output.SectorUsable = allSeven;
 values = nan(size(flux));
 
-%% approved sector-specific temporal baseline subtraction
-if strcmp(mode, 'pad_difference')
+%% approved sector-specific temporal baseline operation
+if isBaselinePAD
     interval = opts.BaselineUTC;
     interval.TimeZone = 'UTC';
     inBaseline = time >= interval(1) & time < interval(2);
@@ -36,6 +40,12 @@ if strcmp(mode, 'pad_difference')
     counts = sum(isfinite(selected), 1);
     assert(all(counts > 0), 'A sector has no finite positive baseline flux.');
     values = flux - baseline;
+    if isRatio
+        assert(all(isfinite(baseline) & baseline>0), ...
+            'Each ratio denominator must be finite and positive.');
+        values = flux ./ baseline;
+        values(~fluxValid) = NaN;
+    end
     usable = logical(output.PADUsable);
     pitch = output{:, cellstr(compose('PA_S%d_deg', 1:7))};
     audit.BaselineUTC = interval;
@@ -48,12 +58,22 @@ if strcmp(mode, 'pad_difference')
         'within the approved interval, independently for each sector; ', ...
         'missing/nonpositive source flux excluded. Subtract in linear flux units.'];
     audit.DifferencePolicy = 'Signed J_s(t)-baseline_s; negatives and zeros retained.';
+    audit.BaselineOperation = 'subtract';
+    if isRatio
+        audit.BaselineOperation = 'divide';
+        audit.BaselinePolicy = ['Separate S1--S7 arithmetic means of positive ', ...
+            'finite daily/hourly flux in BaselineUTC. Divide each sector ', ...
+            'by its own fixed mean; do not normalize across sectors.'];
+        audit = rmfield(audit,'DifferencePolicy');
+        audit.RatioPolicy = ['J_s(t)/baseline_s, dimensionless; values below ', ...
+            'one retained. No denominator uncertainty is propagated.'];
+    end
     audit.PitchAngleCalculated = true;
     audit.MagneticFieldRequired = true;
     for sector = 1:7
         output.(sprintf('BaselineFlux_S%d', sector)) = ...
             repmat(baseline(sector), height(output), 1);
-        output.(sprintf('DifferenceFlux_S%d', sector)) = values(:, sector);
+        output.(sprintf('%s_S%d', quantity, sector)) = values(:, sector);
     end
     colorValues = values(repmat(usable, 1, 7) & isfinite(values));
     assert(~isempty(colorValues), 'No drawable baseline-difference PAD.');
@@ -77,7 +97,7 @@ if strcmp(mode, 'pad_difference')
         sampleCounts = movsum(double(isfinite(gridValues)),3,1);
         values = averagedGrid(gridIndex,:);
         for sector = 1:7
-            output.(sprintf('DifferenceFlux3d_S%d',sector)) = values(:,sector);
+            output.(sprintf('%s3d_S%d',quantity,sector)) = values(:,sector);
             output.(sprintf('AverageDayCount_S%d',sector)) = ...
                 sampleCounts(gridIndex,sector);
         end
@@ -88,11 +108,16 @@ if strcmp(mode, 'pad_difference')
             'including partial windows at plot endpoints. Original center-day ', ...
             'PAD mask and PA retained; missing center days are not filled.'];
         audit.ColorRangeReference = 'Unaveraged daily differences; unchanged color scale.';
+        if isRatio
+            audit.AveragePolicy = strrep(audit.AveragePolicy, ...
+                'signed differences','dimensionless ratios');
+            audit.ColorRangeReference = 'Unaveraged daily ratios.';
+        end
         colorValues = values(repmat(usable,1,7) & isfinite(values));
     end
-    audit.NegativeDisplayAsMissing = logical(opts.DifferenceNegativeAsMissing);
+    audit.NegativeDisplayAsMissing = logical(opts.DifferenceNegativeAsMissing) && ~isRatio;
     audit.NegativeCellsHidden = 0;
-    if opts.DifferenceNegativeAsMissing
+    if opts.DifferenceNegativeAsMissing && ~isRatio
         negative = values < 0;
         audit.NegativeCellsHidden = nnz(negative & repmat(usable,1,7));
         audit.NegativePolicy = ['After temporal averaging, negative differences ', ...
@@ -128,6 +153,19 @@ if strcmp(mode, 'pad_difference')
     end
     if opts.DifferenceNegativeAsMissing
         note = strrep(note,'values below 0 use lowest color','negative differences blank');
+    end
+    if isRatio
+        label = 'J_s / J_{s,baseline}';
+        if opts.PADDisplayAverageDays == 3
+            label = '\langle J_s / J_{s,baseline}\rangle_{3d}';
+        end
+        note = sprintf('Sector ratio; baseline %s to %s UTC; values below 1 retained', ...
+            datestr(interval(1),'dd-mmm-yyyy'), ...
+            datestr(interval(2)-seconds(1),'dd-mmm-yyyy'));
+        audit.ColorLimitPolicy = ['Linear dimensionless ratio scale from zero; ', ...
+            'upper tails saturate for display only; values below one retained.'];
+        audit = rmfield(audit,'AbsoluteDifferenceColorPercentile');
+        audit.RatioColorPercentile = opts.ColorPercentiles(2);
     end
 else
     %% sector-number map: no magnetic field or attitude requirement
@@ -169,7 +207,7 @@ for sector = 1:7
     output.(sprintf('DisplayUpperEdge_S%d_deg', sector)) = nan(height(output), 1);
 end
 for row = find(usable).'
-    if strcmp(mode, 'pad_difference')
+    if isBaselinePAD
         [centers, sectors] = sort(pitch(row, :));
         middle = (centers(1:end-1) + centers(2:end))/2;
         edges = [max(0, 2*centers(1)-middle(1)), middle, ...
@@ -181,7 +219,7 @@ for row = find(usable).'
     for k = 1:7
         sector = sectors(k);
         value = values(row, sector);
-        if strcmp(mode, 'pad_difference')
+        if isBaselinePAD
             low = edges(k); high = edges(k+1);
             colorValue = value;
             output.(sprintf('DisplayPA_S%d_deg', sector))(row) = pitch(row, sector);
@@ -204,7 +242,7 @@ for row = find(usable).'
     end
 end
 view(ax, 2);
-if strcmp(mode, 'pad_difference')
+if isBaselinePAD
     set(ax, 'YDir', 'normal', 'YLim', [0 180], 'YTick', [0 45 90 135 180]);
 else
     set(ax, 'YDir', 'reverse', 'YLim', [0.5 8.5], ...
@@ -216,11 +254,11 @@ cb = colorbar(ax, 'Location', 'eastoutside');
 cb.Label.String = label;
 cb.Label.Interpreter = 'tex';
 cb.FontSize = 8;
-if strcmp(mode, 'pad_difference')
+if isBaselinePAD
     cb.Ticks = linspace(limits(1),limits(2),5);
     labels = string(compose('%.3g',cb.Ticks));
     labels(1) = "<= " + labels(1);
-    if opts.DifferenceNegativeAsMissing, labels(1) = "0"; end
+    if opts.DifferenceNegativeAsMissing || isRatio, labels(1) = "0"; end
     cb.TickLabels = labels;
 end
 % User request: method notes belong in the audit, not inside the figure.

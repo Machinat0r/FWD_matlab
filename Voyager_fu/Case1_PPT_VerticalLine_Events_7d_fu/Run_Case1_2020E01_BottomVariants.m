@@ -22,7 +22,7 @@ addParameter(parser, 'PADDisplayAverageDays', 1, ...
 parse(parser, varargin{:});
 options = parser.Results;
 modes = string(options.Modes);
-assert(all(ismember(modes, ["pad_difference", "sector"])));
+assert(all(ismember(modes, ["pad_difference", "pad_ratio", "sector"])));
 cfg = Case1_Config;
 Case1_Add_IRFU_Path(cfg.IRFURoot);
 root = fullfile(fileparts(cfg.OutputRoot), '2020E01_Variants');
@@ -120,7 +120,9 @@ referenceUpper = [];
 for k = 1:numel(modes)
     mode = modes(k);
     averageDays = 1;
-    if mode == "pad_difference", averageDays = options.PADDisplayAverageDays; end
+    if ismember(mode,["pad_difference","pad_ratio"])
+        averageDays = options.PADDisplayAverageDays;
+    end
     out = fullfile(root,char(mode));
     report = Voyager_Case1_Plot_Events(common{:}, ...
         'LECPBottomMode',char(mode), 'BaselineUTC',baselineUTC, ...
@@ -149,11 +151,12 @@ for k = 1:numel(modes)
             'One of the a--e line arrays or axis limits changed.');
     end
     J = T{:,cellstr(compose('Flux_S%d_1d',1:7))};
-    if mode == "pad_difference"
+    if ismember(mode,["pad_difference","pad_ratio"])
         ref = T.EpochUTC>=baselineUTC(1) & T.EpochUTC<baselineUTC(2);
         b = mean(J(ref,:),1,'omitnan');
         assert(max(abs(b-sectorMean(best,:)))<1e-10);
         expected = J-b;
+        if mode == "pad_ratio", expected = J./b; end
         if averageDays == 3
             dailyDifference = expected;
             utcDay = dateshift(T.EpochUTC,'start','day');
@@ -163,8 +166,10 @@ for k = 1:numel(modes)
                 expected(row,:) = mean(dailyDifference(inWindow,:),1,'omitnan');
             end
         end
-        result.SignedNegativeDifferenceCells = nnz(expected(plotted,:)<0);
-        if options.DifferenceNegativeAsMissing
+        if mode == "pad_difference"
+            result.SignedNegativeDifferenceCells = nnz(expected(plotted,:)<0);
+        end
+        if options.DifferenceNegativeAsMissing && mode == "pad_difference"
             expected(expected<0) = NaN;
         end
         actualValues = displayed(plotted,:);
@@ -172,7 +177,13 @@ for k = 1:numel(modes)
         assert(isequal(isnan(actualValues),isnan(expectedValues)));
         validValues = isfinite(expectedValues);
         assert(all(abs(actualValues(validValues)-expectedValues(validValues))<1e-10));
-        result.NegativeDifferenceCells = nnz(displayed<0);
+        if mode == "pad_difference"
+            result.NegativeDifferenceCells = nnz(displayed<0);
+        else
+            result.RatioBelowOneCells = nnz(displayed<1);
+            result.RatioRange = [min(displayed,[],'all','omitnan'), ...
+                max(displayed,[],'all','omitnan')];
+        end
         result.BaselineSectorFlux = b;
     else
         assert(~audit.PitchAngleCalculated && ~audit.MagneticFieldRequired);

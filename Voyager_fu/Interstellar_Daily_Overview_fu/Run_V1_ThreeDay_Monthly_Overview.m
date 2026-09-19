@@ -1,4 +1,4 @@
-function result = Run_V1_ThreeDay_Monthly_Overview(visible,requestedMode)
+function result = Run_V1_ThreeDay_Monthly_Overview(visible,requestedMode,outputRoot,makePlot)
 % 六扇区版本：四个面板的非重叠三日平均、UTC自然月平均和Pearson相关。
 % 原始CDF -> 既有日统计 -> 各面板独立按窗口算术平均。
 if nargin<1
@@ -14,6 +14,8 @@ requestedMode = validatestring(requestedMode,{'both','three_day','monthly'});
 CodeDir = 'C:/Users/Administrator/Documents/FWD_matlab/Voyager_fu/';
 ParentDir = 'Z:/SPART-WORK/Data/Voyager/';
 OutputDir = 'C:/Users/Administrator/Documents/Recovery-Work-Voyager_betatron/V1_Interstellar_Daily_Overview/averaged_no_S4/';
+if nargin>=3 && ~isempty(outputRoot), OutputDir=char(outputRoot); end
+if nargin<4, makePlot=true; end
 addpath([CodeDir,'Interstellar_Daily_Overview_fu']);
 if ~isfolder(OutputDir)
     mkdir(OutputDir);
@@ -104,7 +106,10 @@ for m = 1:numel(mode)
     end
     [correlation,pairUsed] = correlateWindows(average,mode{m});
     allCorrelations = [allCorrelations;correlation]; %#ok<AGROW>
-    files = drawPanels(t,average,StartUTC,EndUTC,plotTitle,mode{m},OutputDir,visible);
+    files = strings(0,1);
+    if makePlot
+        files = drawPanels(t,average,StartUTC,EndUTC,plotTitle,mode{m},OutputDir,visible);
+    end
     result.(mode{m}) = struct('Windows',windows,'DailyBinIndex',binIndex, ...
         'Correlation',correlation,'PairUsed',pairUsed,'OutputFiles',files, ...
         'HourlyP1BinIndex',hourlyBinIndex);

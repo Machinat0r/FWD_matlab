@@ -1,0 +1,16 @@
+function boundaries=Voyager_Boundary_Dates(spacecraft)
+% NASA CRS mission chronology, verified 2026-09-11.
+% Calendar dates are plotted at UTC day start; no sub-day crossing time is implied.
+validateattributes(spacecraft,{'numeric'},{'scalar','integer','>=',1,'<=',2});
+if spacecraft==1
+    time=datetime([2004 2012],[12 8],[16 25],'TimeZone','UTC');
+else
+    time=datetime([2007 2018],[8 11],[30 5],'TimeZone','UTC');
+end
+boundaries=struct('Spacecraft',spacecraft,'TimeUTC',time, ...
+    'Name',["Termination shock","Heliopause"],'ShortName',["TS","HP"], ...
+    'Colors',[0.72 0.10 0.12;0.00 0.42 0.27], ...
+    'SourceURL','https://voyager.gsfc.nasa.gov/mission.html', ...
+    'VerifiedOn','2026-09-11','DateResolution','UTC calendar day', ...
+    'DisplayTimeConvention','00:00 UTC anchors the cited date, not a measured sub-day time.');
+end
