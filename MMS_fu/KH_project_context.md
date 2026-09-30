@@ -274,3 +274,239 @@ AGENTS.md 的用途依照 [OpenAI 官方项目说明文档](https://learn.chatgp
 - 核验证据：Z:\SPART-WORK\Data\MMS\derived\KH\catalog_audit_20260903\cdf_presence.json 和 public_availability.json。后者为官方目录证据，burst只统计窗口内起始文件；survey/fast只到UTC日期级，不能据此断言事件内覆盖。目录返回截断标志时，文件数仅表示已返回部分。
 - 本次仅整理目录、核查CDF和检索论文；未重画原事件图，未改变FOTE/FOTE-V方法。
 
+
+## 2026-09-19：SMILE_MMS 官网图片下载（后台运行中）
+
+用户要求下载MMS官网burst和quicklook页面中2026-07-20（含）之后所有卫星、所有时段的全部图片，并明确包含各仪器的单独图。
+目标目录：C:\Users\Administrator\Documents\KH\SMILE_MMS。
+用户随后要求按仪器分类，不按时间建立文件夹。最终结构：仪器（综合图、ASPOC、EIS、FEEPS、FIELDS、FPI、HPCA） / MMS1–MMS4或多星综合 / burst或quicklook / 官网原文件名。日期和时段仅保留在原文件名中。
+
+2026-09-19读取官网完整索引：burst 2252张（563时段×4星，最新2026-08-15），quicklook 39235张（41种图类型，最新2026-09-16），总计41487张。全部记录起始日期>=2026-07-20；包含官网目录中的fpi_mms_summ多星图。
+官网连续返回HTTP429，程序自动等待、降低请求频率并断点续传；完整任务可能跨夜或更久。不得把“已启动后台下载”说成已全部完成。
+
+代码：
+- C:\Users\Administrator\Documents\FWD_matlab\MMS_fu\SMILE_MMS_download_plots_20260919.ps1
+- C:\Users\Administrator\Documents\FWD_matlab\MMS_fu\SMILE_MMS_download_controller_20260919.ps1
+
+后台控制程序2026-09-19 15:18（北京时间）启动，首次PID 76460；后续不要只凭PID判断进程，应核查程序命令行或状态文件。控制程序连续下载、核验PNG首尾和完整清单，最多六轮补下缺失项，完成时写download_complete.json。
+过程文件在 $env:TEMP\MMS_plots_20260919：controller_status.json（complete/phase）、all_progress.json（当轮进度）、all_download.jsonl（逐图记录/哈希）、expected_manifest.json、missing_images.json、controller_stdout.log、controller_stderr.log、controller_pid.txt。
+目标文件夹只放图片。旧日期层级已清除，已有图片已移入仪器目录。
+查询完成情况时必须读取这些状态文件并核对实际文件数量；截至本记录写入时任务仍在下载中。
+
+
+## 2026-09-21：SMILE_MMS 下载加速
+
+用户要求“能否想办法加速”。已检查实际吞吐量并修改同一下载程序，保留全部41487张清单及按仪器/卫星/类型分类。先前程序的请求间隔只会增加，最终停留在6000 ms；最近两小时实际平均约7.1秒/张。
+
+已改为全局协调的自适应请求间隔：下限2000 ms，收到HTTP429/503时共同暂停并优先遵守Retry-After，间隔增加25%；连续成功40次且距上次调整至少2分钟后，间隔减少15%，最低恢复到2000 ms。排队线程在实际发出请求前重新检查全局暂停，避免在限流后仍按旧排期发请求。保留连接复用、已下载文件验证、原子写入和最终全清单核验。
+
+20张短测均成功；随后连续下载67张，2026-09-21 08:36:29–08:40:10 UTC，约220秒，平均3.34秒/张，包含官网限流等待，未包含程序重启和既有文件核验耗时。这是短时实测，不能保证未来始终保持该速度或按固定时间完成。
+
+最终程序北京时间16:40重新启动，PID 109648（查询时仍应核查进程/状态，不仅依赖PID）；已确认后台新增图片且错误日志为空。过程目录仍为 $env:TEMP\MMS_plots_20260919。最新输出日志为 controller_stdout_accelerated_v2.log / controller_stderr_accelerated_v2.log；controller_pid.txt、controller_status.json、all_progress.json、all_download.jsonl 仍为原有入口。加速记录另见 acceleration_restart.json、acceleration_measurement.json。throttle.json version=2保存当前间隔和暂停时刻，后续重启遵守未到期的暂停。
+
+截至北京时间16:41，实际已下载约24202张，仍有约17285张；尚未完成。进度文件中的success是当前轮已处理数量，刚重启扫描时低于磁盘文件总数；controller_status.json在下载阶段的valid/missing只是该轮起始值，不能用于实时计数。统计当前完成量时应核对目标目录和完整清单。完成后仍由原控制程序生成 download_complete.json。
+
+
+## 2026-09-21 21:08：优先下载120分钟Quicklook
+
+用户明确要求“优先下载120min长度的quicklook”。已将工作程序排序的最高优先级改为kind=quicklook且原文件名以_0120.png结尾，覆盖全部仪器、全部卫星；随后继续其他时长和原有完整清单。目标目录分类保持仪器/卫星/模式，不建立日期目录。
+
+重排时120分钟Quicklook共24780张，已有15086张，余9694张。原下载进程已替换为PID 86736，仍使用原控制程序、相同完整清单和限流状态；未重置尚未到期的官网等待。最新日志为TEMP\MMS_plots_20260919下的controller_stdout_priority120.log和controller_stderr_priority120.log；启动记录priority120_start.json，controller_pid.txt及其他通用状态文件继续更新。2026-09-21 13:09:30 UTC已确认新下载的文件是120分钟Quicklook，HTTP200；错误日志为空。尚未完成全部120分钟图片或全任务，后续查询仍须核对磁盘与完整清单。
+
+
+## 2026-09-21：120分钟Quicklook已下载图片打包并邮件交付
+
+用户要求将目前已下载的120分钟Quicklook图片打包并通过邮件发给本人。已按北京时间2026-09-21 21:12:41快照打包15115张，均来自原清单的quicklook且文件名以_0120.png结尾；保留仪器/卫星/quicklook目录和官网原文件名。逐张核对PNG首尾，并对压缩包解压流与源图进行SHA256比对，15115张全部通过。
+
+本地完整ZIP：C:\Users\Administrator\Documents\KH\MMS_Quicklook_120min_20260921_211241.zip，969860346字节，SHA256 AF747E1D6768C7910DFF4CD294BEBE86A8A24E02632C5A8DAAA867830D6A65C9。此文件是本次用户要求的交付物，不能作为无用过程文件清理。
+
+上传通道限制单文件512MiB，约500MB分包上传又遇到60秒超时，最终使用10个约100MB、可独立解压的ZIP交付；全部分包内容合起来恰为同一批15115张，无重复，逐张内容校验通过。云端读取核对10个文件的名称、大小和下载能力一致；云端文件夹保持本人私有。
+下载文件夹：https://drive.google.com/drive/folders/1vo3qgHTm_18PD2qEMnmBur0yq3EdhU8_
+收件人已从连接账号确认：fuwending429@gmail.com。已通过Gmail发送给本人，主题“MMS 120分钟 Quicklook 图片压缩包（15,115张，2026-09-21）”，消息/线程ID 1a0c42380b489389，返回标签含SENT和INBOX。邮件包含下载链接、全部分包解压到同一目录的说明及本地完整ZIP位置。
+
+本次交付仅为已下载图片快照，不代表全部120分钟图已下载完成。原后台优先下载任务保持运行。过程快照、分包和回执仍位于TEMP\MMS_plots_20260919，回执package120_email_receipt.json。
+
+## 2026-09-22：120分钟Quicklook新增图片第二次邮件交付
+
+用户要求检查是否下载完并把剩下的发送过来，沿用上次120分钟Quicklook和本人Gmail范围。2026-09-22 23:30:55北京时间快照：120分钟图片已下载19170/24780张，尚缺5610张；其余时长Quicklook 14455张和Burst 2252张按原清单均已有文件。控制程序PID 86736仍正常运行，处于第2轮补下载；不得声称全部完成。
+
+本次新增4055张，严格排除首批15115张，逐张校验PNG首尾及压缩包内解压后的SHA256，均通过。完整新增ZIP：
+C:\Users\Administrator\Documents\KH\MMS_Quicklook_120min_additional_20260922_233055.zip
+大小279387272字节，SHA256 346C3AB06135A333E012F0AE1165CBD0259016156C5CB3B091C48DEF56B6489D。
+云端使用3个约100MB可独立解压ZIP，文件名、字节大小及下载能力均已读回核对。新增子文件夹位于上次交付文件夹下，仍为用户本人私有：
+https://drive.google.com/drive/folders/1aTwgwvnT-ijFE-soe67Cqeqz6fV8_-bo
+
+已发送至fuwending429@gmail.com，主题“MMS 120分钟Quicklook新增图片（4,055张，2026-09-22）”，消息/线程ID 1a0c9c19b43de4c4，回执标签含SENT和INBOX。邮件明确标注打包时间与尚未全部下载完成。
+
+过程目录仍为TEMP\MMS_plots_20260919。本次快照、结果、回执分别为MMS_Quicklook_120min_additional_20260922_233055_snapshot.json、MMS_Quicklook_120min_additional_20260922_233055_result.json、MMS_Quicklook_120min_additional_20260922_233055_email_receipt.json。新增累计已发送清单package120_sent_paths.json，共19170条：后续增量发送必须先读取该累计清单和成功发送回执，排除已发送图片，不能仅排除最初package120_snapshot.json。打包期间和发送后新下载的图片不自动计入本批。
+
+## 2026-09-23：原下载清单全部完成，120分钟图片全部邮件交付
+
+用户再次询问是否下载完。下载控制程序于北京时间2026-09-23 02:39:28完成第2轮，download_complete.json和controller_status.json均确认complete。今日15:18再次遍历原清单逐文件检查PNG首8字节和IEND尾12字节：41487张全部有效存在，无缺失、无首尾损坏；后台进程已正常退出。
+
+分类完成数：120分钟Quicklook 24780张；其他时长Quicklook 14455张；Burst 2252张。总计2689226533字节（约2.69 GB），图片仍在C:\Users\Administrator\Documents\KH\SMILE_MMS。完成范围是2026-07-20（含）之后、2026-09-19获取的官网清单，不代表已同步后续网站新增图片。
+
+沿用用户此前“把剩下的给我发过来”的授权，已向本人fuwending429@gmail.com补发最后5610张120分钟Quicklook，排除累计已经发送的19170张。最终三批15115+4055+5610=24780张，覆盖完整120分钟清单，不重复。
+
+本批本地完整ZIP：C:\Users\Administrator\Documents\KH\MMS_Quicklook_120min_final_20260923_151937.zip
+大小323882184字节；SHA256 93E92F002ECCDA368BF144D97483739663B1246680C59616FFF90A54731CC248。逐张解压流SHA256与源图核对通过。云端使用4个可独立解压的ZIP，已读取核对名称、文件大小及下载能力，目录仍为本人私有。
+本批下载文件夹：https://drive.google.com/drive/folders/1JbkBY369DFfFbG8OlEQ9i83PBjDuE22E
+完整交付总目录：https://drive.google.com/drive/folders/1vo3qgHTm_18PD2qEMnmBur0yq3EdhU8_
+
+邮件主题“MMS图片已全部下载完成：补发最后5,610张120分钟Quicklook”，消息/线程ID 1a0cd25bf1b1d174，发送回执标签包含SENT和INBOX。TEMP\MMS_plots_20260919中的MMS_Quicklook_120min_final_20260923_151937_email_receipt.json记录本批完整回执；package120_sent_paths.json现为24780条并逐项对应完整120分钟清单。此后不要重复发送这些图片；如要求下载新日期，先明确这是扩展原网站清单的后续任务。
+
+## 2026-09-24：20 个事件 overview 改为 PPT，恢复原程序图形风格
+
+用户要求把上一版107页PDF改为PPT，删除底部模式时间条，压紧panel，y轴标注使用原程序，并提供实际跑图程序。60张原始CDF科学图已由MATLAB重新绘制；107页PPT保持原事件/卫星顺序和44页官方参考图。9个物理panel依次为B、Vi、Ve、E、N、Ti、Te、Ei、Ee；原程序轴标注与温度三条曲线保留，panel间隙为0.002归一化图高。原有Overview_download.m / Overview_download_mms4.m未覆盖。
+
+交付目录：C:\Users\Administrator\Documents\KH\MMS_event_overviews_PPT_20260924
+PPT：MMS_20_events_MMS1-4_overviews_20260924.pptx（107页，32818779字节）
+程序包：MMS_overview_MATLAB_programs_20260924.zip（40132字节，含实际.m、事件/原CDF清单和README）
+本机代码位于MMS_fu；入口run_MMS_event_overviews_20260924，读取主函数MMS_event_overview_20260924，绘图函数Overview_download_events_20260924。默认15个有CDF事件、MMS1–4；完成记录存在会跳过，第三参数true可预览重画。原CDF沿用Z盘归档；本次未新下载。
+
+数据来源、时间范围、坐标系、模式覆盖和样本数与上一版核对一致，60图验证无错误。PPT文件验证、107页PowerPoint实际渲染和逐页视觉检查均完成。科学图以高清图片嵌入，曲线需用MATLAB修改重画。官网参考图的原始坐标系、标签与顶部状态条保留。8月11日仍仅取得所需L2磁场；8月28–29日及9月16日所需CDF在上一版查询中未取得，继续保留官网参考页，未宣称数据补齐。
+
+PPT Drive ID：1ZV6UAytT6BVPwfbihTkqL-ziSoAPsl2D
+程序ZIP Drive ID：1u7yXt9-ElDCs5Cafwh6oR8zNwsayBzXt
+两者在原20事件交付文件夹1tOsVUrPLXCjnQhRKCGtUtqpkI3MvCLtP内，权限仅本人。
+已发往fuwending429@gmail.com，主题“MMS overview 修订版：107页PPT与MATLAB跑图程序”，PPT用下载链接，MATLAB ZIP作为附件。邮件ID/线程ID：1a0d2916dc69a791，读回确认SENT和INBOX。
+验证与完整交付回执：Z:\SPART-WORK\Data\MMS\derived\event_overview_20260924。
+
+
+
+## 2026-09-24：PPT加入20个事件的四星位置图
+
+用户要求使用原MMS_orbit程序把各事件卫星位置放入PPT。已完成127页新版：每个事件overview前新增1页MMS1–4地心位置/相对构型图，其余107页在PowerPoint渲染后逐像素与上一版一致。20页新增页均已单独检查。使用GSM，单一时刻直接使用，区间取中点，UTC；RE=6372 km沿用原函数。
+
+原稿参考：FWD_matlab\新建文件夹\MMS_orbit.m。调用的mms.mms4_pl_conf因本机毫秒时间格式错误，使用兼容副本MMS_orbit_pl_conf_20260924.m：仅改名、自调用/回调名以及UTC显示格式，原文件未覆盖。布局函数将原7个物理panel及图例排为两行，扩展X范围，保留原坐标轴物理量和符号。入口MMS_orbit_events_20260924(eventNumbers,force)，默认1:20、force=false，已完成项跳过；true强制重画。实际代码位于MMS_fu。
+
+位置数据全部归档Z:\SPART-WORK\Data\MMS。EV01–EV15新增24个MEC CDF（66216155字节），在原mms1–4/mec/srvy/l2/epht89d/2026/07或08目录。EV16–EV20暂未取得MEC，采用NASA SSCWeb官方GSE星历，存于ancillary\sscweb\2026，原生60秒，样本包围范围内调用irf_resamp对齐、原IRFU函数转换到GSM。EV15额外SSC数据用于交叉核对，绝对位置差最大27.505km，星间相对矢量差最大0.165km，此核对仅适用于这个交集样例。下载的20个DEFEPH原始文件保留在mms1–4/ancillary/defeph/2026，但未用于最终图形，避免旧IRFU转换未完整处理J2000的问题。
+
+边界线为原程序模型；EV06、07、08、09、11、12、19、20采用默认P=2nPa/Bz=0nT，均在图上标注assumed model。其余事件用原函数取得的OMNI参数。不能把模型线当成实际边界观测；卫星坐标全部来自星历。
+
+交付目录：C:\Users\Administrator\Documents\KH\MMS_event_overviews_PPT_20260924
+PPT：MMS_20_events_MMS1-4_overviews_with_orbits_20260924.pptx，127页，35814481字节，
+SHA256 8502016850D847F1E98FF55FEA3FE0C1AA1ECC3B74C9AD4047CC22F637A9AC33。
+程序：MMS_orbit_MATLAB_programs_20260924.zip，15561字节，含实际3个MATLAB函数、事件清单、原稿参考及说明。
+orbits子目录含20个PNG和20个MATLAB FIG。
+审计、来源、每页坐标/时刻、PPT页索引及交付回执在Z:\SPART-WORK\Data\MMS\derived\event_orbits_20260924。
+
+Drive PPT ID：1HiMteiLX4vfi7I5HKuhLZELoV-dHmelU
+Drive ZIP ID：19i18ODYRZh6XcaoT7rDpYvnyuXpVclRC
+两者仍在本人私有文件夹1tOsVUrPLXCjnQhRKCGtUtqpkI3MvCLtP，未改变分享权限。
+已发送fuwending429@gmail.com，主题“MMS 20事件PPT已加入四星位置（127页）及轨道绘图程序”。
+邮件ID/线程ID1a0d2bc940b15039，读回确认SENT和INBOX。PPT以链接、轨道程序ZIP以附件交付。
+
+## 2026-09-24：遵照原 overview 直接脚本格式重写并重新跑完
+
+用户再次明确要求尽可能直接调用 IRFU/用户已有程序，避免新写 function，按原 overview 的 %% 分区和变量、标注方式写代码。此要求已补充到 KH/AGENTS.md。
+
+两份实际新脚本（均无 function 定义，替代本任务上一版自定义函数入口）：
+- MMS_fu/Overview_events_original_style_20260924.m：EventList=1:20; Spacecraft=1:4; 直接读取 Z 盘原CDF、调用IRFU读取和绘图。Burst优先，其余survey/fast；不平滑、不插值科学数据，缺口保留。E按600秒块读取，调用库中reduce_to_width做绘图min/max降采样，显示bins不作为原生时间戳。B/Vi/Ve使用irf_plot的reduce选项。9 panel原标签和颜色，间距0.002，无底部模式条。
+- MMS_fu/MMS_orbit_original_style_20260924.m：直接按原MMS_orbit.m调用mms.mms4_pl_conf；EV01–15用MEC，EV16–20直接读取已归档SSCWeb JSON，把原生60秒时间轴/GSE位置交给现成IRFU函数。无另行30秒预重采样。
+
+原IRFU mms.mms4_pl_conf.m仅两处日期显示格式由HH:MM:SS.mmm改为HH:MM:SS，修复本机GenericTimeArray格式兼容问题；完整原文件备份在Z盘derived/events_original_style_20260924/mms4_pl_conf_before_date_format_fix.m。科学算法未改。用户原Overview_download.m、Overview_download_mms4.m、MMS_orbit.m保持原样。
+
+全部80个事件/卫星任务完成：60张原始数据overview（EV01–15），20个无L2记录（EV16–20），20张四星位置图。EV13–15仍只有磁场L2，MMS4电子缺测保持空白；本地归档无FPI Vi/Ve burst，Vi/Ve使用可用fast。本次未补下载科学CDF，沿用前次数据可用性查询日期，未宣称新的在线查询。
+B/Vi/Ve/E共480项原生采样点数/模式比较无差异。谱图使用mms.variable2ts居中时间及原能量矩阵，裁到请求区间。
+
+交付目录：C:/Users/Administrator/Documents/KH/MMS_events_original_style_20260924
+PPT：MMS_20_events_original_style_20260924.pptx，127页，30930172字节，SHA256 ab4f736a641a8cb93fe99bfd13e2b725bddadbe91a7330c8a67e9ce77b564813。
+MATLAB包：MMS_original_style_MATLAB_20260924.zip，36618字节，SHA256 44505f44f7d0ccbb6e5210a90212fc6d9f6b7c20269b010b75ef2723433af22b。
+包内含实际两份脚本、20事件JSON、README、3份用户原稿参考，已逐字节核对与本地实际运行代码一致。
+PPT构建代码：MMS_fu/MMS_original_style_20260924_ppt.mjs。127页均通过结构/布局检查及PowerPoint实际渲染；81个修改页逐页目视检查，46个原官方参考/索引页与原PPT渲染逐像素一致；80张科学/轨道嵌图逐字节与新输出一致。
+
+Drive PPT ID 1QK5MU9tkPOKJH92Ufej-m0GzTvZOgpXL；
+Drive ZIP ID 1YsWdcq7kjZJD_9INI55-Ir7Yo1Efxbjc。
+仍在本人私有文件夹1tOsVUrPLXCjnQhRKCGtUtqpkI3MvCLtP，权限核对仅fuwending429@gmail.com本人。
+已发往fuwending429@gmail.com，主题“MMS 20个事件：按原overview格式重写并重跑的PPT及MATLAB程序（2026-09-24）”，PPT使用下载链接，MATLAB ZIP附在邮件中。
+邮件ID/线程ID 1a0d2f7c73be4b81，回读确认SENT、收件人及主题。
+完整运行状态、每页来源/坐标、包哈希、最终验证与邮件交付回执：Z:/SPART-WORK/Data/MMS/derived/events_original_style_20260924。
+
+## 2026-09-24：v2 完成坐标/布局修订，并加入 FEEPS、HPCA
+
+按用户确认，在同一张 overview 下方增加 FEEPS 电子/离子全向能谱、HPCA H+/He+/He++/O+ 密度及四种离子能谱（7个新panel）。60张原始CDF overview全部重跑为16个panel，20张轨道图重画，127页PPT检查完成。44页官方quicklook按用户要求保持原样；与原版PowerPoint渲染逐像素一致。两页索引也未改。
+
+重画图移除事件竖线、模式时间条，时间标签水平，panel紧排，原物理量标签保留。B、Vi、Ve、E均为GSM；E只读取GSE并由irf_gse2gsm转换，只有DSL则留空；标题不标坐标系。轨道XY/XZ相邻，地球纵轴居中，卫星位置留足边缘空间。科学数据未平滑/插值，burst有效段优先、其余survey/fast，真实缺口保留。
+
+实际科学代码：
+- MMS_fu/Overview_events_original_style_20260924_v2.m
+- MMS_fu/MMS_orbit_original_style_20260924_v2.m
+- MMS_fu/MMS_IRFU_particle_compatibility_20260924_v2.m
+
+以上为直接脚本，无新增 MATLAB function 定义，沿用用户原%%分区、IRFU读取绘图和mms.mms4_pl_conf。原用户程序未覆盖。IRFU get_data.m做两项已核实的兼容修正：HPCA He++ survey入口白名单拼写；FEEPS未启用探头精确占位值-2147483648（CDF声明FILLVAL不同）先置NaN再由原有探头均值处理。正常burst样例不变，修正前文件与逐行diff均保存在本版Z盘derived目录，程序包附说明及diff。不加入新探头质量门槛/物理过滤。
+
+本轮2094个FEEPS/HPCA原始CDF、23612476209字节全部保存在Z:/SPART-WORK/Data/MMS官方产品分类中，保留文件名/版本；无全量CSV/MAT转换。下载校验CDF签名和长度，最终归档校验通过。查询清单/候选覆盖/下载记录在derived/events_original_style_20260924_v2/particles。8月11日原有仪器仍只有B，新增可用FEEPS/HPCA；EV16–20无所需L2、仅保留官方参考页与位置图。FPI Vi/Ve仍使用现有fast，未因新增FEEPS/HPCA burst而宣称FPI moments已有burst。
+
+所有80个事件/卫星记录完成（60张图+20个无L2记录），20个轨道完成，无错误、无过期输出。对照v1核对原生点数、时间区间、GSM、缺测与位置；除授权移除的MMS4 DSL电场外，原有原生点数一致。127页PowerPoint实渲染；60张overview、20张轨道、封面目视检查，其余46页与原版逐像素一致，80张嵌图逐字节与输出PNG一致。源代码ZIP逐字节核对通过。
+
+交付目录：C:/Users/Administrator/Documents/KH/MMS_events_original_style_20260924_v2
+PPT：MMS_20_events_original_style_20260924_v2.pptx，127页，65326695字节。
+SHA256 f2fe892d72f4d9694077e015beacb3ca162327ae7368e802343905bcb4bef6ee
+程序ZIP：MMS_original_style_MATLAB_20260924_v2.zip，54221字节。
+SHA256 e8e329403f59a2750eae89c1b5100d8f0a99e3069892e66cbea894e5a63b8f82
+包含实际脚本、事件JSON、运行说明、原程序参考、现成下载器及兼容差异文件。
+
+Drive PPT ID：1hPi-q6jg0N-2Hr6yM-OJysYK37PiadsN
+Drive ZIP ID：1wtFqblFhzLL51eb95cu_FqpG8UhZFjv2
+仍在本人私有文件夹1tOsVUrPLXCjnQhRKCGtUtqpkI3MvCLtP，读回大小一致，权限仅fuwending429@gmail.com本人。
+邮件主题“【更新 v2】20 个事件 MMS1–4 overview：加入 FEEPS/HPCA，PPT 与实际跑图程序”。
+已于北京时间2026-09-24 23:08:41发往fuwending429@gmail.com；邮件/线程ID 1a0d3f6315b28119，回读确认SENT、收件人与54221字节ZIP附件。PPT通过私有下载链接交付。
+完整科学验证、最终逐页核对、源文件包哈希和邮件/上传回执在Z:/SPART-WORK/Data/MMS/derived/events_original_style_20260924_v2。
+
+## 2026-09-27：能谱下限按用户要求调整为20 eV，已交付
+
+用户要求：所有原下限低于10 eV的能谱panel下限改为20 eV。仅调整自行绘制的图，保留各能谱原上限；FEEPS原下限不低于10 eV的能谱保持原范围。官方quicklook沿用用户此前要求保持原样。
+
+实际主程序：MMS_fu/Overview_events_original_style_20260927.m，从20260924_v2直接脚本复制，仅新增能谱YLim条件设置、轴范围记录及新输出路径，无新MATLAB function。全部80个事件/卫星任务完成，60张overview重画、20个无L2记录；本次复用Z盘CDF，未新下载或查询可用性。数据点数、模式、时间、缺测、坐标、上限与v2一致。修改diff附程序包。
+
+交付目录：C:/Users/Administrator/Documents/KH/MMS_events_original_style_20260927
+PPT：MMS_20_events_original_style_20260927.pptx，127页，64718876字节，SHA256 74dd57b3a6f97b2cd20cfa4be0f58462c7e1afd1cf777ff3189f1690a25f1d0e。
+程序ZIP：MMS_original_style_MATLAB_20260927.zip，55863字节，SHA256 3aafad62730db4c83bf3395766738a1f41176a5057e00eb2e0aaa36e8b1fefaa。
+127页PowerPoint实际渲染；60张重画图逐页目视核对，60张嵌图逐字节与新PNG一致；其余67页与v2逐像素一致（含20轨道和44官方quicklook）。结构、布局、导入检查均通过。
+
+私有Drive PPT ID：1Gw4RyNagcaFG71Et4OSV0SM0lPG26eEt；ZIP ID：1s67NmQEtZC9YPy6nvhEVrqSmrKn1M_3h。读回大小一致，权限仅fuwending429@gmail.com本人。
+已发送至fuwending429@gmail.com，主题“MMS overview 更新：能谱下限调整为 20 eV（20260927）”，PPT私有链接、ZIP附件。邮件/线程ID 1a0e38c47a66bc20，回读确认SENT、收件人和55863字节附件。
+科学/逐页验证、包校验和交付回执保存在Z:/SPART-WORK/Data/MMS/derived/events_original_style_20260927。
+## 2026-09-29：EV01 MMS1去掉FEEPS/HPCA，已完成本地重画
+
+用户提供EV01 MMS2截图，并明确要求同一事件重画MMS1、去掉下方全部FEEPS/HPCA。已从Overview_events_original_style_20260927.m复制为Overview_EV01_MMS1_9panels_20260929.m，移除这些仪器的读取/绘图及无关兼容段，默认EventList=1、Spacecraft=1。保留前9个panel，原load data及B至FPI能谱绘图段逐字相同，无新MATLAB function。
+
+时间2026-07-20 23:50至2026-07-21 04:10 UTC；矢量GSM；两张FPI能谱范围20–40000 eV；标题MMS1、时间标签水平、无事件竖线。MATLAB实跑完成，九个panel均有数据；时间、原生点数、模式、电场分段与20260927版完全一致。PNG目视检查通过。
+
+输出：C:/Users/Administrator/Documents/KH/MMS_EV01_MMS1_20260929/EV01_MMS1_overview.png（579676字节，SHA256 7f53ea4b3572b67ba4232558a2947a207d3bbc380bd631f549b38cf7f5b31f8c）；同目录MMS_EV01_MMS1_MATLAB_20260929.zip（11811字节，含实际脚本、事件JSON、说明及修改diff，逐字节核对通过）。科学记录/校验在Z:/SPART-WORK/Data/MMS/derived/EV01_MMS1_9panels_20260929。原整批PPT保持原样。
+
+尝试按先前授权发送图片与程序至fuwending429@gmail.com，但Gmail工具返回user rejected MCP tool call。此次邮件未发送，没有重试；成果本地交付。
+## 2026-09-29：Case_for_SMILE.pptx中5个时间段的AE图已完成
+
+用户要求按C:/Users/Administrator/Documents/Recovery-Work_SMILE-MMS/Case_for_SMILE.pptx中给出的事件时间分别画AE。已提取并目视核对全部8页，以第2、3、4、5、8页“事件时间”文字为准：Case1 2026-07-21 00:00–04:00；Case2 2026-07-24 08:00至07-25 05:00；Case3 07-28 05:10–06:00；Case4 08-04 01:50–03:00；Case5 08-11 06:50–08:30，全部UTC。
+
+数据为NASA CDAWeb OMNI_HRO_1MIN的AE_INDEX（nT，1分钟，WDC Kyoto quicklook）。原CDF omni_hro_1min_20260701_v01.cdf、omni_hro_1min_20260801_v01.cdf已保存到Z:/SPART-WORK/Data/MMS/ancillary/omni/hro_1min/2026，每个8772893字节。来源说明 https://omniweb.gsfc.nasa.gov/html/omni_min_data.html 。
+
+新直接MATLAB脚本 MMS_fu/AE_Case_for_SMILE_20260929.m 使用dataobj/get_ts/irf.ts2mat/irf_tlim/irf_plot/irf_zoom/irf_subplot，无新function。AE为整数CDF，按原始FILLVAL=99999掩码在double绘图数组中保留NaN并逐点核对原变量；不平滑、不插值、不重新平均。沿用irf_tlim的[start,end)选择，坐标轴与PPT范围一致。5个事件分别240/1260/50/70/100个有效分钟样本，没有缺测。跨日Case2标出两个日期。
+
+交付目录C:/Users/Administrator/Documents/KH/Case_SMILE_AE_20260929，含Case1–5独立PNG及Case_for_SMILE_AE.pdf（5页矢量图，每个事件一页）。PDF5页目视检查通过，最终Case2日期标注检查通过，其余4页与已检查渲染逐像素一致。来源、哈希、运行与验证记录在Z盘derived/Case_SMILE_AE_20260929。代码说明README_AE_Case_for_SMILE_20260929.md在MMS_fu。原PPT未修改。
+
+用户已明确不需要邮件发送，当前及本次后续交付直接保存本地。
+## 2026-09-29：MMS1 2026-07-25 01:00–04:00 UTC九panel overview
+
+按用户给出的MMS1九panel参考图及精确时间范围，直接复制Overview_EV01_MMS1_9panels_20260929.m为Overview_MMS1_20260725_0100_0400.m。仅修改事件/时间（本次不另加10分钟）、标题和输出路径；原数据读取、GSM转换、9个panel及20 eV能谱下限不变，无新MATLAB function。
+
+复用已有MMS_event_overview_20260923_download.py的查询/下载函数，通过MMS1_20260725_0100_0400_download.py补齐6个CDF、164503698字节，全部按官方产品层级存入Z:/SPART-WORK/Data/MMS。当天FGM/EDP burst唯一候选从04:46:33开始，在所选区间外；FPI burst moments未查询到。本图使用FGM survey及FPI/EDP fast。
+
+MATLAB已实跑完成，9个panel均有数据，B 172798点、FPI各2400点、E 345596点；矢量GSM、无事件竖线、时间标签水平、能谱20–40000 eV、无FEEPS/HPCA。原始缺口处理沿用前脚本。PNG目视检查及记录/原CDF长度签名检查通过。
+
+输出 C:/Users/Administrator/Documents/KH/MMS1_20260725_0100_0400/20260725_0100_0400_MMS1_overview.png。查询、下载、运行、代码diff和校验记录在Z盘derived/MMS1_20260725_0100_0400。仅本地保存，无邮件。
+## 2026-09-29：MMS1磁尾2026-07-20—08-15四小时分段图已完成
+
+用户要求X<0时每4h两张图，分别为B/Vi/AE三panel，以及B/Vi/AE/Ni/离子能谱五panel；仅MMS1。用户确认从每次进入X<0开始，每4h分段，末尾不足4h保留。日期包括8月15日全天，UTC/GSM。官方MEC epht89d原生30s轨道通过相邻点interp1估计X=0穿越；四小时网格以实际进入时刻为起点，再与日期范围取交集。首个进入发生在7月19日，因此首段截取为7月20日00:00—01:44:41.649，保留原进入时刻的网格。
+
+得到8次磁尾经过、162段，磁尾累计620.716小时，实际生成324张PNG，全部完成无绘图错误。输出C:/Users/Administrator/Documents/KH/MMS1_tail_20260720_0815，子目录B_Vi_AE及B_Vi_AE_Ni_Ei；index.html可逐段浏览两张图，MMS1_tail_windows.csv为时间和中点位置清单，MMS1_tail_MATLAB_programs.zip为实际程序包。
+
+MATLAB直接脚本MMS_fu/MMS1_tail_20260720_0815_intervals.m及Overview_MMS1_tail_20260720_0815.m，沿用原overview的%%结构及B/Vi/Ni/FPI能谱绘图段，调用现成IRFU函数，无新增MATLAB function。标题为时段中点GSM位置（RE=6372km）；紧凑panel、水平UTC时间标签、无事件标记竖线；Ni按本次截图使用红色，离子能谱20—40000eV。未平滑/填补观测缺口；FGM burst优先，survey补缺。
+
+原始MMS文件800个（MEC 30个+科学产品770个）均存Z:/SPART-WORK/Data/MMS官方层级；复用185个、补下载615个。科学产品共3348316093字节，MEC共80984666字节。47段有FGM burst。SDC本批FPI dis-moms burst无文件，fast到8月8日；单独复查8月9/11/15日仍空。CDAWeb orig_data接口查询8月9—15日fast及全时段burst也返回空清单，7月25日fast返回7文件作为接口有效对照。本批75段完全没有离子L2数据，3个离子panel明确标注No available L2 data；其他段中的局部缺口保留。
+
+AE复用Z:/SPART-WORK/Data/MMS/ancillary/omni/hro_1min/2026下7/8月OMNI原始CDF。AE_INDEX为1分钟Kyoto quicklook，按整数CDF的FILLVAL掩码在double中保留NaN并逐点核对原变量；本批所有AE分钟记录有效，没有缺测。各段时长、AE计数、图片解码/哈希、CDF长度/文件头、程序包逐字节验证通过；162张五panel图已通过14张缩略检查页审阅，并检查了完整尺寸的3/5panel、缺测和短尾段样例。
+
+查询、分段、来源及完整验证/交付记录位于Z:/SPART-WORK/Data/MMS/derived/MMS1_tail_20260720_0815。过程日志/检查页保存在TEMP/MMS1_tail_20260720_0815，未混入KH交付目录。本次仅保存本地，无邮件。

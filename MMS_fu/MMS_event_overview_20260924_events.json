@@ -1,0 +1,22 @@
+[
+  {"id":"EV01","start":"2026-07-21T00:00:00Z","end":"2026-07-21T04:00:00Z","label":"KH at the magnetopause"},
+  {"id":"EV02","start":"2026-07-24T07:00:00Z","end":"2026-07-24T07:00:00Z","label":"Reconnection or approach to plasma-sheet center?"},
+  {"id":"EV03","start":"2026-07-24T09:20:00Z","end":"2026-07-24T09:20:00Z","label":"Dipolarization with flow vortex"},
+  {"id":"EV04","start":"2026-07-28T05:20:00Z","end":"2026-07-28T05:20:00Z","label":"Dipolarization with flow vortex"},
+  {"id":"EV05","start":"2026-07-28T06:15:00Z","end":"2026-07-28T06:15:00Z","label":"Successive dipolarizations and flow bursts?"},
+  {"id":"EV06","start":"2026-07-28T21:30:00Z","end":"2026-07-28T21:30:00Z","label":"Dipolarization with flow vortex"},
+  {"id":"EV07","start":"2026-07-28T23:10:00Z","end":"2026-07-28T23:10:00Z","label":"Reconnection"},
+  {"id":"EV08","start":"2026-07-31T11:10:00Z","end":"2026-07-31T11:10:00Z","label":"Reconnection front with electron acceleration"},
+  {"id":"EV09","start":"2026-07-31T12:00:00Z","end":"2026-07-31T13:00:00Z","label":"Turbulent reconnection"},
+  {"id":"EV10","start":"2026-07-31T18:40:00Z","end":"2026-07-31T18:40:00Z","label":"Reconnection with front"},
+  {"id":"EV11","start":"2026-08-04T01:10:00Z","end":"2026-08-04T01:30:00Z","label":"Successive dipolarizations and flow bursts?"},
+  {"id":"EV12","start":"2026-08-04T07:00:00Z","end":"2026-08-04T07:00:00Z","label":"Reconnection?"},
+  {"id":"EV13","start":"2026-08-11T08:00:00Z","end":"2026-08-11T09:00:00Z","label":"Successive dipolarizations and flow bursts?"},
+  {"id":"EV14","start":"2026-08-11T14:55:00Z","end":"2026-08-11T15:05:00Z","label":"Dipolarization with flow vortex"},
+  {"id":"EV15","start":"2026-08-11T17:00:00Z","end":"2026-08-11T17:10:00Z","label":"Dipolarization with flow vortex"},
+  {"id":"EV16","start":"2026-08-28T23:05:00Z","end":"2026-08-28T23:05:00Z","label":"Possible successive dipolarization fronts; needs checking"},
+  {"id":"EV17","start":"2026-08-29T04:00:00Z","end":"2026-08-29T05:00:00Z","label":"Possible successive dipolarization fronts; needs checking"},
+  {"id":"EV18","start":"2026-08-29T20:40:00Z","end":"2026-08-29T21:00:00Z","label":"Possible KH vortices at the PSBL?"},
+  {"id":"EV19","start":"2026-09-16T00:00:00Z","end":"2026-09-16T00:10:00Z","label":"Dipolarization with flow vortex"},
+  {"id":"EV20","start":"2026-09-16T01:40:00Z","end":"2026-09-16T01:50:00Z","label":"Successive dipolarizations and flow bursts?"}
+]
