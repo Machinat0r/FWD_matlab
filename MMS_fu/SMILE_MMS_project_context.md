@@ -322,3 +322,22 @@ AE来源为NASA CDAWeb OMNI_HRO_1MIN的AE_INDEX，nT，原生1min，WDC Kyoto qu
 - 用户要求在FWD_matlab下新建SMILE_fu，并把SMILE程序放入。已创建C:\Users\Administrator\Documents\FWD_matlab\SMILE_fu，将Read_SMILE_UVI.m和Read_SMILE_UVI_CDF_20261003.m从MMS_fu移动到该目录。逐文件SHA256核对一致，程序内容未变；今后SMILE卫星仪器新程序统一保存到SMILE_fu。
 - 本次分类以实际处理对象为依据。名称含SMILE的历史MMS quicklook下载程序处理MMS图片，AE_Case_for_SMILE读取OMNI AE，因此归在MMS与辅助分析目录。联合项目承接记录继续位于MMS_fu\SMILE_MMS_project_context.md。
 - AGENTS.md的代码目录约定及本记录中的UVI程序入口已同步更新。源CDF、已有图件和结果输出目录保持既定位置。程序没有依赖旧代码目录的内部路径，本次无需修改读取或计算逻辑。移动校验和说明文件备份位于TEMP\SMILE_UVI_program_move_20261003。
+### 2026-10-03：清理读取脚本注释，新增逐文件三图主程序
+
+- 用户要求Read_SMILE_UVI只保留大块%%注释，并新增调用该读取程序的主程序；对已提供两个CDF分别读取，每文件一张图、同图包含三类图像。
+- Read_SMILE_UVI.m已删除全部普通整行与行尾注释，仅留%%分区。为主程序调用移除原clear;clc，FilePath/FileType/ic/IrfDir仅在不存在时赋默认值；原读取与时间解码保留。每次重置特定常用输出，避免切换产品后残留上次图像变量。
+- 新入口SMILE_fu\Main_SMILE_UVI.m同为直接脚本/%%分区，无新增function。顶部设置InputDir、InputFiles、ProductType、OutputDir。循环分别设置FilePath并run同目录Read_SMILE_UVI.m，累计Data/Info/UTC保存到AllUVI/AllInfo/AllUTC，原数组保留。
+- 主程序对每文件生成独立1x3图，依次Corrected image、GEO grid image、AACGM grid image，灰色为精确FILLVAL，数组行向下增加，不赋予地理方向；两图同类panel共用全范围线性色标，单位读取原属性。图题显示EPOCH与曝光区间UTC。仅绘图副本double化和FILLVAL转NaN，无新增平均、平滑、插值、背景扣除、重投影或定标。
+- 已生成Recovery-Work_SMILE-MMS\SMILE_UVI_readout_20261003\SMILE_UVI_L2_AURORA-GEO_20260720T230011(1)_three_images.png及...230041(1)_three_images.png；原两帧合并预览保留。运行主程序会显示两张MATLAB figure并保存PNG。
+- MATLAB实跑与独立核对通过：两文件46变量对原生cdflib逐元素相符（沿用已确认的数组排列及字符padding表示差异），6个图像CData与原数组的精确FILLVAL副本一致，2张图各3个image，AlphaData、YDir、共同CLim与两帧时间均核对通过。已目视检查两图标签、色标与布局。checkcode的主程序numel==1建议已改isscalar，未改变行为。
+- 注释删除前读取脚本备份、运行和验证日志留TEMP\SMILE_UVI_main_20261003。主程序只支持本次每文件一帧三类图像的绘图结构，读取脚本仍按原变量读取；本次未改变原CDF或旧科研图。
+
+### 2026-10-03：SMILE UVI 主程序改用 jet 色图
+
+用户要求提高红蓝颜色对比度。Main_SMILE_UVI.m 中唯一修改为 colormap(Ax,jet(256))，已用本机 MATLAB 重新生成 SMILE_UVI_readout_20261003 内两个 *_three_images.png。已验证两张图的六个 panel 均使用 jet(256)，色标保持线性、原数值范围不变，坐标覆盖完整图像数组。数据读取、FILLVAL 显示规则和其他绘图设置保持原状，本次未增加科学假设。修改前的程序和图件备份、运行日志位于临时目录 SMILE_UVI_main_20261003。
+### 2026-10-04：UVI 色标上限降为此前的 3/5
+
+用户要求将当前色标上限调低至3/5。Main_SMILE_UVI.m在计算两帧共同有效值范围后增加 ColorLimits(:,2) = ColorLimits(:,2)*3/5;，各下限保持原值。三个新上限依次为35947.2、998.295703125、963.397106831 Rayleigh，两帧同类panel仍共用范围，使用jet(256)线性色图。已用MATLAB重新生成SMILE_UVI_readout_20261003内两张*_three_images.png，并核对六个panel上限、下限、色图和完整坐标范围通过。超过新上限的数据按最高端颜色显示，数组数值及FILLVAL显示规则沿用原设置，无新增科学假设。已目视检查两图；修改前程序、图件备份及日志保存在TEMP\SMILE_UVI_upper_limit_20261004。
+### 2026-10-04：仅第一个 UVI panel 上限再降为当前的 3/5
+
+用户要求只调整第一个panel。Main_SMILE_UVI.m增加 ColorLimits(1,2) = ColorLimits(1,2)*3/5;，该上限由35947.2降到21568.32 Rayleigh。GEO、AACGM上限仍为998.295703125、963.397106831 Rayleigh。已用MATLAB重新生成两张*_three_images.png，验证两图三个panel的上限并完成目视检查；读取、数据数值、完整坐标、jet及下限均沿用原设置。未新增科学假设。修改前程序、图件与运行日志留TEMP\SMILE_UVI_first_panel_limit_20261004。
