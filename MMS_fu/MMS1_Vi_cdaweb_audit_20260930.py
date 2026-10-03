@@ -43,6 +43,39 @@ def query(spec):
     (OUT / f'{name}.metadata.json').write_text(json.dumps(meta, indent=2), encoding='utf-8')
     return name, meta, rows
 
+if '--map-only' in sys.argv:
+    audit = json.loads((OUT/'summary.json').read_text())
+    windows = json.loads((OUT.parent.parent/'windows.json').read_text())
+    missing = audit['missing_requested_files']
+    rows = []
+    for window in windows:
+        hits = []
+        for file in missing:
+            a = dt.datetime.fromisoformat(file['start_utc'].replace('Z','+00:00')).timestamp()
+            b = dt.datetime.fromisoformat(file['end_utc'].replace('Z','+00:00')).timestamp()
+            if b >= window['startEpoch'] and a < window['endEpoch']:
+                hits.append(file)
+        if hits:
+            plotted = json.loads((OUT.parent.parent/f"{window['id']}_overview.json").read_text())
+            rows.append({'window_number':window['number'],'window_id':window['id'],
+                'window_start_utc':window['startUTC'],'window_end_utc':window['endUTC'],
+                'existing_Vi_native_counts':plotted['nativeCounts'][plotted['nativeCountNames'].index('Vi')],
+                'missing_file_count':len(hits),'missing_files':[x['filename'] for x in hits],
+                'file_metadata_first_start':min(x['start_utc'] for x in hits),
+                'file_metadata_last_end':max(x['end_utc'] for x in hits)})
+    result = {'missing_file_count':len(missing),'window_count':len(rows),
+        'window_numbers':[x['window_number'] for x in rows],
+        'note':'The overlaps use CDAWeb FileDescription StartTime/EndTime. They identify windows to recheck; actual finite bulk-velocity records require reading the CDF.',
+        'last_modified_note':'CDAWeb FileDescription LastModified records a modification timestamp. It does not establish the first public availability time.',
+        'windows':rows}
+    (OUT/'missing_files_window_map.json').write_text(json.dumps(result,indent=2),encoding='utf-8')
+    with (OUT/'missing_files_window_map.csv').open('w',newline='',encoding='utf-8-sig') as stream:
+        writer=csv.DictWriter(stream,fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    print(json.dumps(result,indent=2))
+    sys.exit(0)
+
 if '--checks-only' in sys.argv:
     checks = [
         ('fast_check_week1', 'FAST', '20260719T000000Z', '20260726T000000Z'),

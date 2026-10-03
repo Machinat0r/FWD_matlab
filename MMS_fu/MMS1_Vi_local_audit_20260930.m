@@ -2,13 +2,16 @@
 % 只读原始 CDF 和原图记录；使用原绘图的 IRFU 接口及坐标转换。
 % 时间 UTC，速度 km/s；不平滑、不补缺、不新增质量筛选。
 % 结果为文件/窗口统计与时间缺口，写入 Z 盘 derived；不保存全量速度副本。
-clearvars -except AuditPilot
+clearvars -except AuditPilot AuditAfterDownload
 if ~exist('AuditPilot','var'), AuditPilot=false; end
+if ~exist('AuditAfterDownload','var'), AuditAfterDownload=false; end
 %% 路径及现成 IRFU 接口
 IRFDir='C:\Users\Administrator\Documents\irfu-matlab-master';
 ParentDir='Z:\SPART-WORK\Data\MMS';
 RecordDir=fullfile(ParentDir,'derived','MMS1_tail_20260720_0815');
 AuditDir=fullfile(RecordDir,'Vi_completeness_20260930','local');
+BaselineDir=AuditDir;
+if AuditAfterDownload, AuditDir=fullfile(AuditDir,'after_download'); end
 if AuditPilot, AuditDir=fullfile(AuditDir,'pilot'); end
 if ~isfolder(AuditDir), mkdir(AuditDir); end
 addpath(IRFDir); irf('check_path');
@@ -21,6 +24,11 @@ Files=[dir(fullfile(ParentDir,'mms1','fpi','fast','l2','dis-moms','2026','07','*
     dir(fullfile(ParentDir,'mms1','fpi','fast','l2','dis-moms','2026','08','*.cdf'))];
 [~,FileOrder]=sort({Files.name}); Files=Files(FileOrder);
 Files=Files(startsWith({Files.name},'mms1_fpi_fast_l2_dis-moms_'));
+if AuditAfterDownload
+    BaselineFiles=jsondecode(fileread(fullfile(BaselineDir,'cdf_files.json')));
+    Files=Files(~ismember({Files.name},{BaselineFiles.name}));
+    assert(numel(Files)==49,'补下载后审计应只包含已确认的 49 个新增 CDF');
+end
 if AuditPilot, Files=Files(1); Windows=Windows(2); end
 %% 逐文件直接读 CDF：明确采样时间、有效点与原始积分时间宽度
 FileRows=cell(numel(Files),1); AllGSE=zeros(0,4); AllHalfWidth=zeros(0,1);
@@ -72,6 +80,14 @@ FileRows=vertcat(FileRows{:});
 fid=fopen(fullfile(AuditDir,'cdf_files.json'),'w','n','UTF-8'); fprintf(fid,'%s',jsonencode(FileRows)); fclose(fid);
 writetable(struct2table(FileRows,'AsArray',true),fullfile(AuditDir,'cdf_files.csv'));
 [~,ix]=sort(AllGSE(:,1)); AllGSE=AllGSE(ix,:); AllHalfWidth=AllHalfWidth(ix);
+if AuditAfterDownload
+    % 按原始实测时标确定受新增 CDF 影响的窗口，避免按文件名推断覆盖。
+    Selected=false(numel(Windows),1);
+    for iw=1:numel(Windows)
+        Selected(iw)=any(AllGSE(:,1)>=Windows(iw).startEpoch & AllGSE(:,1)<=Windows(iw).endEpoch);
+    end
+    Windows=Windows(Selected);
+end
 %% 原生有效采样的积分覆盖并集：记录所有大于 1 ms 的空档
 % 1 ms 仅消除双精度时标舍入，不作为科学数据质量门槛。
 Valid=any(isfinite(AllGSE(:,2:4)),2); tv=AllGSE(Valid,1); hw=AllHalfWidth(Valid);
@@ -98,6 +114,7 @@ for iw=1:numel(Windows)
         'burstRows',0,'burstGseAnyFinite',0,'burstGsmAnyFinite',0,...
         'fastRows',0,'fastGseAnyFinite',0,'fastGsmAnyFinite',0,'fastGseAllFinite',0,'fastGsmAllFinite',0,...
         'directRows',0,'directAnyFinite',0,'databaseMatchesDirectTimes',false,'databaseMatchesDirectValues',false,...
+        'databaseMatchesDirectVelocities',false,'databaseMaxTimeOffsetSeconds',NaN,'databaseCountsMatchDirect',false,...
         'matchesOriginalCounts',false,'coordinateValidCountLoss',0,...
         'coverageSeconds',0,'uncoveredSeconds',0,'gapCount',0,'maxGapSeconds',0,...
         'gapCategory','','firstValidUTC','','lastValidUTC','');
@@ -120,6 +137,12 @@ for iw=1:numel(Windows)
                 W.directRows=size(Direct,1); W.directAnyFinite=sum(any(isfinite(Direct(:,2:4)),2));
                 W.databaseMatchesDirectTimes=isequal(GSE(:,1),Direct(:,1));
                 W.databaseMatchesDirectValues=isequaln(GSE,Direct);
+                W.databaseMatchesDirectVelocities=isequaln(GSE(:,2:4),Direct(:,2:4));
+                W.databaseCountsMatchDirect=W.fastRows==W.directRows && W.fastGseAnyFinite==W.directAnyFinite;
+                if size(GSE,1)==size(Direct,1)
+                    W.databaseMaxTimeOffsetSeconds=0;
+                    if ~isempty(GSE), W.databaseMaxTimeOffsetSeconds=max(abs(GSE(:,1)-Direct(:,1))); end
+                end
                 if anyGse>0
                     vv=GSE(any(isfinite(GSE(:,2:4)),2),1);
                     W.firstValidUTC=char(datetime(vv(1),'ConvertFrom','posixtime','TimeZone','UTC','Format',"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
@@ -168,12 +191,16 @@ fid=fopen(fullfile(AuditDir,'window_gaps.json'),'w','n','UTF-8'); fprintf(fid,'%
 writetable(struct2table(GapRows,'AsArray',true),fullfile(AuditDir,'window_gaps.csv'));
 %% 汇总及审计依据
 Summary=struct('auditUTC',char(datetime('now','TimeZone','UTC','Format',"yyyy-MM-dd'T'HH:mm:ss'Z'")),...
+    'afterDownload',AuditAfterDownload,...
     'fileCount',numel(FileRows),'fileReadErrors',sum(~cellfun('isempty',{FileRows.error})),...
     'fileRows',sum([FileRows.rows]),'fileAnyFinite',sum([FileRows.anyFinite]),'filePartialFinite',sum([FileRows.partialFinite]),...
     'windows',numel(WindowRows),'windowReadErrors',sum(~cellfun('isempty',{WindowRows.error})),...
     'originalCountMismatches',sum(~[WindowRows.matchesOriginalCounts]),...
     'databaseDirectTimeMismatches',sum(~[WindowRows.databaseMatchesDirectTimes]),...
     'databaseDirectValueMismatches',sum(~[WindowRows.databaseMatchesDirectValues]),...
+    'databaseDirectVelocityMismatches',sum(~[WindowRows.databaseMatchesDirectVelocities]),...
+    'databaseDirectCountMismatches',sum(~[WindowRows.databaseCountsMatchDirect]),...
+    'databaseMaxTimeOffsetSeconds',max([WindowRows.databaseMaxTimeOffsetSeconds]),...
     'coordinateValidCountLoss',sum([WindowRows.coordinateValidCountLoss]),...
     'burstValidSamples',sum([WindowRows.burstGsmAnyFinite]),'fastValidSamples',sum([WindowRows.fastGsmAnyFinite]),...
     'entirelyBlankWindows',sum(strcmp({WindowRows.gapCategory},'entire_window_blank')),...
@@ -181,6 +208,6 @@ Summary=struct('auditUTC',char(datetime('now','TimeZone','UTC','Format',"yyyy-MM
     'coveredWindows',sum(strcmp({WindowRows.gapCategory},'covered')),...
     'coverageHours',sum([WindowRows.coverageSeconds])/3600,'uncoveredHours',sum([WindowRows.uncoveredSeconds])/3600,...
     'cadenceSecondsRange',[min([FileRows.cadenceMedianSeconds]) max([FileRows.cadenceMedianSeconds])],...
-    'notes','Finite counts follow original any-component rule; direct CDF and DB values compared exactly. Coverage is union of finite sample integration supports using CDF delta variables; 1 ms tolerance only for numeric time representation. No scientific quality filter or interpolation.');
+    'notes','Finite counts follow original any-component rule. CDF and DB velocities and counts are compared exactly; time-only differences arise because existing IRFU variable2ts recalculates sample centers using median cadence of the loaded records. Coverage is union of finite sample integration supports using CDF delta variables; 1 ms tolerance only for numeric time representation. No scientific quality filter or interpolation.');
 fid=fopen(fullfile(AuditDir,'summary.json'),'w','n','UTF-8'); fprintf(fid,'%s',jsonencode(Summary)); fclose(fid);
 disp(Summary); fprintf('LOCAL_VI_AUDIT_FINISHED\n');
